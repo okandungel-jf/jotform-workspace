@@ -28,11 +28,6 @@ function useTheme(frame: number, _fps: number): ThemeVars {
     ['#7C3AED', '#2563EB'],
   );
 
-  const _darkProgress = interpolate(frame, [530, 570], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
-
   const bgColor = interpolateColors(frame, [530, 570], ['#F9FAFB', '#111827']);
   const cardBg = interpolateColors(frame, [530, 570], ['#FFFFFF', '#1F2937']);
   const textColor = interpolateColors(
@@ -757,13 +752,6 @@ export const AppShowcase: React.FC = () => {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
-
-  // Smooth the scroll with easing
-  const _smoothScroll = interpolate(
-    spring({ frame: Math.max(0, frame - 30), fps, config: { damping: 40, stiffness: 20, mass: 2 } }),
-    [0, 1],
-    [0, maxScroll],
-  );
 
   const finalScroll = frame < 50 ? 0 : Math.min(scrollY, maxScroll);
 
