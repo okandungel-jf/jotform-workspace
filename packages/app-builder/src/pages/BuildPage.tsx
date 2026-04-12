@@ -9,6 +9,8 @@ import {
   type StateValues,
 } from '@jf/app-elements'
 import { Icon } from '@jf/design-system'
+import phoneStatusBar from '@jf/design-system/src/assets/phone-status-bar.svg'
+import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
 import {
   DndContext,
   DragOverlay,
@@ -388,7 +390,7 @@ function AddPageDivider({ onClick }: { onClick: () => void }) {
 
 type RightPanelMode = 'preview' | 'designer' | 'properties'
 
-export function BuildPage() {
+export function BuildPage({ previewMode = true }: { previewMode?: boolean }) {
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
   const [components, setComponents] = useState<RegisteredComponent[]>(ComponentRegistry.getAll())
   const [pages, setPages] = useState<AppPage[]>([
@@ -967,7 +969,7 @@ export function BuildPage() {
       </main>
 
       {/* Right Panel - Designer/Properties or Live Preview */}
-      <aside className="build-page__right">
+      <aside className={`build-page__right ${previewMode ? '' : 'build-page__right--hidden'}`}>
         {rightPanel === 'properties' && selectedElement && selectedComponent ? (
           <div className="build-page__properties">
             <div className="build-page__panel-header">
@@ -1045,9 +1047,59 @@ export function BuildPage() {
             ))}
           </div>
         ) : (
-          <div className="build-page__live-preview">
-            <div className="build-page__device-frame">
-              <p>Live Preview</p>
+          <div className="live-preview">
+            <div className="live-preview__header">
+              <span className="live-preview__title">Live Preview</span>
+              <div className="live-preview__toolbar">
+                <button className="live-preview__dropdown">
+                  <Icon name="mobile" category="technology" size={16} />
+                  <span>Phone</span>
+                  <Icon name="angle-down" category="arrows" size={16} />
+                </button>
+                <button className="live-preview__tool-btn">
+                  <Icon name="magnifying-glass-plus" size={16} />
+                </button>
+                <button className="live-preview__tool-btn">
+                  <Icon name="qr" category="media" size={16} />
+                </button>
+              </div>
+            </div>
+            <div className="live-preview__body">
+              <div className="live-preview__phone">
+                {/* Layer 1: Gray shell */}
+                <div className="live-preview__phone-shell" />
+                {/* Layer 3: Black bezel */}
+                <div className="live-preview__phone-bezel" />
+                {/* Layer 4: Screen */}
+                <div className="live-preview__phone-screen">
+                  <img src={phoneStatusBar} alt="" className="live-preview__status-bar" />
+                  <div className="live-preview__content-scaler">
+                    <div className="live-preview__content app-scope">
+                      <AppHeader layout="Center" title={appTitle} subtitle={appSubtitle} />
+                      {pages.map((page, pageIndex) => (
+                        <div key={page.id} className={`themes-view__canvas ${pageIndex === 0 ? 'themes-view__canvas--first' : ''}`}>
+                          <div className="themes-view__app">
+                            {page.elements.map((element) => {
+                              const comp = ComponentRegistry.get(element.componentId)
+                              if (!comp) return null
+                              const previewProps = {
+                                ...element.properties,
+                                'Add New Card': false,
+                              }
+                              return (
+                                <section key={element.id} className="themes-view__section">
+                                  {comp.render(element.variants, previewProps, element.states)}
+                                </section>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <img src={phoneHomeIndicator} alt="" className="live-preview__home-indicator" />
+                </div>
+              </div>
             </div>
           </div>
         )}
