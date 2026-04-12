@@ -20,7 +20,7 @@ interface ThemeVars {
   font: string;
 }
 
-function useTheme(frame: number, fps: number): ThemeVars {
+function useTheme(frame: number, _fps: number): ThemeVars {
   // Phase 2 theme transitions
   const brandColor = interpolateColors(
     frame,
@@ -28,7 +28,7 @@ function useTheme(frame: number, fps: number): ThemeVars {
     ['#7C3AED', '#2563EB'],
   );
 
-  const darkProgress = interpolate(frame, [530, 570], [0, 1], {
+  const _darkProgress = interpolate(frame, [530, 570], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
@@ -759,7 +759,7 @@ export const AppShowcase: React.FC = () => {
   });
 
   // Smooth the scroll with easing
-  const smoothScroll = interpolate(
+  const _smoothScroll = interpolate(
     spring({ frame: Math.max(0, frame - 30), fps, config: { damping: 40, stiffness: 20, mass: 2 } }),
     [0, 1],
     [0, maxScroll],
