@@ -14,6 +14,9 @@ export interface ProductItem {
 export interface ProductListProps {
   layout?: ProductListLayout;
   title?: string;
+  subtitle?: string;
+  currency?: string;
+  showToolbar?: boolean;
   searchPlaceholder?: string;
   buttonLabel?: string;
   selected?: boolean;
@@ -32,11 +35,44 @@ const ImagePlaceholder: FC<{ size?: number }> = ({ size = 80 }) => (
 );
 
 // ============================================
+// Inline edit helpers
+// ============================================
+function handleEditFocus(e: React.FocusEvent<HTMLElement>, defaultValue: string) {
+  if (e.currentTarget.textContent === defaultValue) {
+    e.currentTarget.textContent = ''
+    e.currentTarget.dataset.placeholder = defaultValue
+    e.currentTarget.classList.add('jf-product-item__placeholder')
+  }
+}
+
+function handleEditInput(e: React.FormEvent<HTMLElement>) {
+  if (e.currentTarget.textContent) {
+    e.currentTarget.classList.remove('jf-product-item__placeholder')
+  } else {
+    e.currentTarget.classList.add('jf-product-item__placeholder')
+  }
+}
+
+function handleEditBlur(e: React.FocusEvent<HTMLElement>, defaultValue: string, onUpdate: (val: string) => void) {
+  const text = e.currentTarget.textContent || ''
+  e.currentTarget.classList.remove('jf-product-item__placeholder')
+  delete e.currentTarget.dataset.placeholder
+  if (text) {
+    onUpdate(text)
+  } else {
+    e.currentTarget.textContent = defaultValue
+    onUpdate(defaultValue)
+  }
+}
+
+// ============================================
 // Card Item (used in 2/3 column layouts)
 // ============================================
-const ProductCardItem: FC<{ product: ProductItem; buttonLabel: string }> = ({
+const ProductCardItem: FC<{ product: ProductItem; buttonLabel: string; currency: string; onUpdate?: (updates: Partial<ProductItem>) => void }> = ({
   product,
   buttonLabel,
+  currency,
+  onUpdate,
 }) => {
   const [liked, setLiked] = useState(false);
   return (
@@ -49,8 +85,29 @@ const ProductCardItem: FC<{ product: ProductItem; buttonLabel: string }> = ({
     </div>
     <div className="jf-product-item__content">
       <div className="jf-product-item__info">
-        <p className="jf-product-item__name">{product.name}</p>
-        <p className="jf-product-item__price">{product.price}</p>
+        <p
+          className="jf-product-item__name"
+          contentEditable
+          suppressContentEditableWarning
+          onFocus={(e) => handleEditFocus(e, 'Product Name')}
+          onInput={handleEditInput}
+          onBlur={(e) => handleEditBlur(e, 'Product Name', (val) => onUpdate?.({ name: val }))}
+        >
+          {product.name}
+        </p>
+        <p className="jf-product-item__price">
+          <span className="jf-product-item__currency">{currency}</span>
+          <span
+            className="jf-product-item__amount"
+            contentEditable
+            suppressContentEditableWarning
+            onFocus={(e) => handleEditFocus(e, '10.00')}
+            onInput={handleEditInput}
+            onBlur={(e) => handleEditBlur(e, '10.00', (val) => onUpdate?.({ price: val }))}
+          >
+            {product.price}
+          </span>
+        </p>
       </div>
       <div className="jf-product-item__action">
         <Button
@@ -72,9 +129,11 @@ const ProductCardItem: FC<{ product: ProductItem; buttonLabel: string }> = ({
 // ============================================
 // Basic Item (used in single column layout)
 // ============================================
-const ProductBasicItem: FC<{ product: ProductItem; buttonLabel: string }> = ({
+const ProductBasicItem: FC<{ product: ProductItem; buttonLabel: string; currency: string; onUpdate?: (updates: Partial<ProductItem>) => void }> = ({
   product,
   buttonLabel,
+  currency,
+  onUpdate,
 }) => {
   const [liked, setLiked] = useState(false);
   return (
@@ -84,8 +143,29 @@ const ProductBasicItem: FC<{ product: ProductItem; buttonLabel: string }> = ({
     </div>
     <div className="jf-product-item__body">
       <div className="jf-product-item__info">
-        <p className="jf-product-item__name">{product.name}</p>
-        <p className="jf-product-item__price">{product.price}</p>
+        <p
+          className="jf-product-item__name"
+          contentEditable
+          suppressContentEditableWarning
+          onFocus={(e) => handleEditFocus(e, 'Product Name')}
+          onInput={handleEditInput}
+          onBlur={(e) => handleEditBlur(e, 'Product Name', (val) => onUpdate?.({ name: val }))}
+        >
+          {product.name}
+        </p>
+        <p className="jf-product-item__price">
+          <span className="jf-product-item__currency">{currency}</span>
+          <span
+            className="jf-product-item__amount"
+            contentEditable
+            suppressContentEditableWarning
+            onFocus={(e) => handleEditFocus(e, '10.00')}
+            onInput={handleEditInput}
+            onBlur={(e) => handleEditBlur(e, '10.00', (val) => onUpdate?.({ price: val }))}
+          >
+            {product.price}
+          </span>
+        </p>
       </div>
       <div className="jf-product-item__right">
         <button className={`jf-product-item__like jf-product-item__like--inline${liked ? ' liked' : ''}`} onClick={() => setLiked(!liked)}>
@@ -109,8 +189,8 @@ const ProductBasicItem: FC<{ product: ProductItem; buttonLabel: string }> = ({
 // ============================================
 // Add New Product Card
 // ============================================
-const AddNewProductCard: FC = () => (
-  <div className="jf-product-item jf-product-item--add-new">
+const AddNewProductCard: FC<{ onClick?: () => void }> = ({ onClick }) => (
+  <div className="jf-product-item jf-product-item--add-new" onClick={onClick}>
     <Icon name="CirclePlus" size={40} />
     <span className="jf-product-item__add-label">Add New Product</span>
   </div>
@@ -119,8 +199,8 @@ const AddNewProductCard: FC = () => (
 // ============================================
 // Add New Product Basic (single column)
 // ============================================
-const AddNewProductBasic: FC = () => (
-  <div className="jf-product-item jf-product-item--add-new jf-product-item--add-new-basic">
+const AddNewProductBasic: FC<{ onClick?: () => void }> = ({ onClick }) => (
+  <div className="jf-product-item jf-product-item--add-new jf-product-item--add-new-basic" onClick={onClick}>
     <Icon name="CirclePlus" size={28} />
     <span className="jf-product-item__add-label">Add New Product</span>
   </div>
@@ -138,9 +218,7 @@ const LAYOUT_ICONS: { layout: ProductListLayout; iconName: string }[] = [
 // Product List Component
 // ============================================
 const DEFAULT_PRODUCTS: ProductItem[] = [
-  { name: 'Product Name', price: '$10.00' },
-  { name: 'Product Name', price: '$10.00' },
-  { name: 'Product Name', price: '$10.00' },
+  { name: 'Product Name', price: '10.00' },
 ];
 
 // ============================================
@@ -182,20 +260,28 @@ const SkeletonProductBasic: FC<{ animClass: string }> = ({ animClass }) => (
 export const ProductList: FC<ProductListProps> = ({
   layout: initialLayout = 'TwoColumns',
   title = 'Products',
+  subtitle = '',
+  currency = '$',
+  showToolbar = true,
   searchPlaceholder = 'Search Products',
   buttonLabel = 'Add to Cart',
   selected = false,
   shrinked = false,
-  products = DEFAULT_PRODUCTS,
+  products: initialProducts = DEFAULT_PRODUCTS,
   showAddNew = true,
   skeleton = false,
   skeletonAnimation = 'pulse',
 }) => {
   const [layout, setLayout] = useState<ProductListLayout>(initialLayout);
+  const [products, setProducts] = useState<ProductItem[]>(initialProducts);
 
   useEffect(() => {
     setLayout(initialLayout);
   }, [initialLayout]);
+
+  const handleAddProduct = () => {
+    setProducts((prev) => [...prev, { name: 'Product Name', price: '10.00' }]);
+  };
 
   const isSingle = layout === 'SingleColumn';
 
@@ -217,7 +303,10 @@ export const ProductList: FC<ProductListProps> = ({
   if (skeleton) {
     return (
       <div className={rootClasses}>
+        <div className="jf-product-list__heading">
         <h3 className="jf-product-list__title">{title}</h3>
+        <p className={`jf-product-list__subtitle ${!subtitle ? 'jf-product-list__subtitle--empty' : ''}`}>{subtitle}</p>
+      </div>
         <div className="jf-product-list__toolbar">
           <div className="jf-product-list__search">
             <Icon name="Search" size={20} className="jf-product-list__search-icon" forceStyle="outline" />
@@ -257,42 +346,50 @@ export const ProductList: FC<ProductListProps> = ({
   return (
     <div className={rootClasses}>
       {/* Title */}
-      <h3 className="jf-product-list__title">{title}</h3>
+      <div className="jf-product-list__heading">
+        <h3 className="jf-product-list__title">{title}</h3>
+        <p className={`jf-product-list__subtitle ${!subtitle ? 'jf-product-list__subtitle--empty' : ''}`}>{subtitle}</p>
+      </div>
 
       {/* Toolbar: Search + Layout Icons */}
-      <div className="jf-product-list__toolbar">
-        <div className="jf-product-list__search">
-          <Icon name="Search" size={20} className="jf-product-list__search-icon" forceStyle="outline" />
-          <input
-            type="text"
-            className="jf-product-list__search-input"
-            placeholder={searchPlaceholder}
-          />
+      {showToolbar && (
+        <div className="jf-product-list__toolbar">
+          <div className="jf-product-list__search">
+            <Icon name="Search" size={20} className="jf-product-list__search-icon" forceStyle="outline" />
+            <input
+              type="text"
+              className="jf-product-list__search-input"
+              placeholder={searchPlaceholder}
+            />
+          </div>
+          <div className="jf-product-list__layout-switch">
+            {LAYOUT_ICONS.map(({ layout: l, iconName }) => (
+              <button
+                key={l}
+                className={`jf-product-list__layout-btn${layout === l ? ' active' : ''}`}
+                onClick={() => setLayout(l)}
+                title={l}
+              >
+                <Icon name={iconName} size={18} />
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="jf-product-list__layout-switch">
-          {LAYOUT_ICONS.map(({ layout: l, iconName }) => (
-            <button
-              key={l}
-              className={`jf-product-list__layout-btn${layout === l ? ' active' : ''}`}
-              onClick={() => setLayout(l)}
-              title={l}
-            >
-              <Icon name={iconName} size={18} />
-            </button>
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* Product Grid */}
       <div className={gridClasses}>
-        {products.map((product, i) =>
-          isSingle ? (
-            <ProductBasicItem key={i} product={product} buttonLabel={buttonLabel} />
+        {products.map((product, i) => {
+          const handleUpdate = (updates: Partial<ProductItem>) => {
+            setProducts((prev) => prev.map((p, idx) => idx === i ? { ...p, ...updates } : p))
+          }
+          return isSingle ? (
+            <ProductBasicItem key={i} product={product} buttonLabel={buttonLabel} currency={currency} onUpdate={handleUpdate} />
           ) : (
-            <ProductCardItem key={i} product={product} buttonLabel={buttonLabel} />
+            <ProductCardItem key={i} product={product} buttonLabel={buttonLabel} currency={currency} onUpdate={handleUpdate} />
           )
-        )}
-        {showAddNew && (isSingle ? <AddNewProductBasic /> : <AddNewProductCard />)}
+        })}
+        {showAddNew && (isSingle ? <AddNewProductBasic onClick={handleAddProduct} /> : <AddNewProductCard onClick={handleAddProduct} />)}
       </div>
     </div>
   );

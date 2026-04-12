@@ -18,8 +18,11 @@ ComponentRegistry.register({
 
   properties: [
     { name: 'Title', type: 'text', default: 'Products' },
+    { name: 'Subtitle', type: 'text', default: '' },
+    { name: 'Currency', type: 'text', default: '$' },
     { name: 'Search Placeholder', type: 'text', default: 'Search Products' },
     { name: 'Button Label', type: 'text', default: 'Add to Cart' },
+    { name: 'Show Toolbar', type: 'boolean', default: true },
     { name: 'Show Images', type: 'boolean', default: false },
     { name: 'Selected', type: 'boolean', default: false },
     { name: 'Shrinked', type: 'boolean', default: false },
@@ -142,16 +145,19 @@ ComponentRegistry.register({
     const showImages = props['Show Images'] as boolean;
     const products = showImages
       ? [
-          { name: 'Wireless Headphones', price: '$79.99', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop' },
-          { name: 'Smart Watch', price: '$199.99', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop' },
-          { name: 'Leather Bag', price: '$129.99', image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=300&fit=crop' },
-          { name: 'Running Shoes', price: '$89.99', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop' },
+          { name: 'Wireless Headphones', price: '79.99', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop' },
+          { name: 'Smart Watch', price: '199.99', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop' },
+          { name: 'Leather Bag', price: '129.99', image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=300&fit=crop' },
+          { name: 'Running Shoes', price: '89.99', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop' },
         ]
       : undefined;
     return (
       <ProductList
         layout={variants['Layout'] === 'List' ? 'SingleColumn' : 'TwoColumns'}
         title={props['Title'] as string}
+        subtitle={props['Subtitle'] as string}
+        currency={props['Currency'] as string}
+        showToolbar={props['Show Toolbar'] as boolean}
         searchPlaceholder={props['Search Placeholder'] as string}
         buttonLabel={props['Button Label'] as string}
         selected={props['Selected'] as boolean}

@@ -99,6 +99,10 @@ const INLINE_EDITABLE_MAP: Record<string, { selector: string; property: string }
     { selector: '.jf-sign-doc__title', property: 'Label' },
     { selector: '.jf-sign-doc__desc', property: 'Description' },
   ],
+  'product-list': [
+    { selector: '.jf-product-list__title', property: 'Title' },
+    { selector: '.jf-product-list__subtitle', property: 'Subtitle' },
+  ],
   'donation-box': [
     { selector: '.jf-donation__title', property: 'Title' },
     { selector: '.jf-donation__description', property: 'Description' },

@@ -410,8 +410,30 @@ body {
   }
 }
 
+// Product name/price inline edit — only when element is selected
+.build-page__canvas-element .jf-product-item__name,
+.build-page__canvas-element .jf-product-item__price {
+  cursor: default;
+  outline: none;
+}
+
+.build-page__canvas-element--selected .jf-product-item__name,
+.build-page__canvas-element--selected .jf-product-item__price {
+  cursor: text;
+}
+
+// Hide add-new product card, show only when selected
+.build-page__canvas-element .jf-product-item--add-new {
+  display: none;
+}
+
+.build-page__canvas-element--selected .jf-product-item--add-new {
+  display: flex;
+}
+
 // Show empty subtitle placeholder when element is selected
-.build-page__canvas-element--selected .jf-heading__subtitle--empty {
+.build-page__canvas-element--selected .jf-heading__subtitle--empty,
+.build-page__canvas-element--selected .jf-product-list__subtitle--empty {
   display: block;
 }
 

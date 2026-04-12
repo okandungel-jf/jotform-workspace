@@ -9,6 +9,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  border-radius: var(--radius-lg);
 
   &--selected {
     outline: 2px solid var(--border-info);
@@ -21,18 +22,44 @@
 }
 
 // =========================================
-// Title: Paragraph/Large/Bold
+// Heading wrapper
+// =========================================
+.jf-product-list__heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+// =========================================
+// Title: Heading/H5/Bold — matches DonationBox title
 // =========================================
 .jf-product-list__title {
-  font-size: 18px;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-heading-sm);
   font-weight: var(--font-weight-bold);
-  line-height: 28px;
+  line-height: var(--line-height-heading-sm);
   color: var(--fg-primary);
+  letter-spacing: -0.48px;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-height: 28px;
+  max-height: 128px;
   margin: 0;
+}
+
+// =========================================
+// Subtitle: Label/Large/Regular — matches Heading subtitle
+// =========================================
+.jf-product-list__subtitle {
+  font-size: var(--font-size-label-lg);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-label-lg);
+  color: var(--fg-secondary);
+  overflow: hidden;
+  margin: 0;
+
+  &--empty {
+    display: none;
+  }
 }
 
 // =========================================
@@ -256,6 +283,13 @@
   max-height: var(--line-height-paragraph-md);
   width: 100%;
   margin: 0;
+  outline: none;
+}
+
+.jf-product-item__placeholder::before {
+  content: attr(data-placeholder);
+  color: var(--fg-disabled);
+  pointer-events: none;
 }
 
 // Paragraph/Large/Bold (18px)
@@ -265,10 +299,19 @@
   line-height: 28px;
   color: var(--fg-primary);
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
   max-height: 28px;
   width: 100%;
+  display: flex;
+  align-items: baseline;
+}
+
+.jf-product-item__currency {
+  user-select: none;
+}
+
+.jf-product-item__amount {
+  outline: none;
   margin: 0;
 }
 
