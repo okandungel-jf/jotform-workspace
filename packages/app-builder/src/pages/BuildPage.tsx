@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   ComponentRegistry,
-  IconLibraryProvider,
   AppHeader,
   EmptyState,
   type RegisteredComponent,
@@ -9,6 +8,7 @@ import {
   type PropertyValues,
   type StateValues,
 } from '@jf/app-elements'
+import { Icon } from '@jf/design-system'
 
 interface CanvasElement {
   id: string
@@ -18,7 +18,14 @@ interface CanvasElement {
   states: StateValues
 }
 
+interface AppPage {
+  id: string
+  name: string
+  elements: CanvasElement[]
+}
+
 let elementCounter = 0
+let pageCounter = 1
 
 function createCanvasElement(comp: RegisteredComponent): CanvasElement {
   const variants: VariantValues = {}
@@ -45,12 +52,28 @@ function createCanvasElement(comp: RegisteredComponent): CanvasElement {
   }
 }
 
+function AddPageDivider({ onClick }: { onClick: () => void }) {
+  return (
+    <div className="add-page-divider" onClick={(e) => e.stopPropagation()}>
+      <div className="add-page-divider__line" />
+      <button className="add-page-divider__btn" onClick={onClick}>
+        <Icon name="plus-sm" category="general" size={24} />
+        <span>Add a Page</span>
+      </button>
+      <div className="add-page-divider__line" />
+    </div>
+  )
+}
+
 type RightPanelMode = 'preview' | 'designer' | 'properties'
 
 export function BuildPage() {
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
   const [components, setComponents] = useState<RegisteredComponent[]>(ComponentRegistry.getAll())
-  const [canvasElements, setCanvasElements] = useState<CanvasElement[]>([])
+  const [pages, setPages] = useState<AppPage[]>([
+    { id: 'page-1', name: 'Home', elements: [] },
+  ])
+  const [activePageId, setActivePageId] = useState('page-1')
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -72,10 +95,16 @@ export function BuildPage() {
 
   const handleAddElement = useCallback((comp: RegisteredComponent) => {
     const element = createCanvasElement(comp)
-    setCanvasElements((prev) => [...prev, element])
+    setPages((prev) =>
+      prev.map((page) =>
+        page.id === activePageId
+          ? { ...page, elements: [...page.elements, element] }
+          : page
+      )
+    )
     setSelectedElementId(element.id)
     setRightPanel('properties')
-  }, [])
+  }, [activePageId])
 
   const handleSelectElement = useCallback((elementId: string) => {
     setSelectedElementId(elementId)
@@ -83,9 +112,29 @@ export function BuildPage() {
   }, [])
 
   const handleRemoveElement = useCallback((elementId: string) => {
-    setCanvasElements((prev) => prev.filter((el) => el.id !== elementId))
+    setPages((prev) =>
+      prev.map((page) => ({
+        ...page,
+        elements: page.elements.filter((el) => el.id !== elementId),
+      }))
+    )
     setSelectedElementId((prev) => (prev === elementId ? null : prev))
     setRightPanel('preview')
+  }, [])
+
+  const handleAddPage = useCallback((afterPageId: string) => {
+    const newPage: AppPage = {
+      id: `page-${++pageCounter}`,
+      name: `Page ${pageCounter}`,
+      elements: [],
+    }
+    setPages((prev) => {
+      const idx = prev.findIndex((p) => p.id === afterPageId)
+      const next = [...prev]
+      next.splice(idx + 1, 0, newPage)
+      return next
+    })
+    setActivePageId(newPage.id)
   }, [])
 
   useEffect(() => {
@@ -103,29 +152,42 @@ export function BuildPage() {
   }, [selectedElementId, handleRemoveElement])
 
   const handlePropertyChange = useCallback((elementId: string, name: string, value: string | boolean | number) => {
-    setCanvasElements((prev) =>
-      prev.map((el) =>
-        el.id === elementId
-          ? { ...el, properties: { ...el.properties, [name]: value } }
-          : el
-      )
+    setPages((prev) =>
+      prev.map((page) => ({
+        ...page,
+        elements: page.elements.map((el) =>
+          el.id === elementId
+            ? { ...el, properties: { ...el.properties, [name]: value } }
+            : el
+        ),
+      }))
     )
   }, [])
 
   const handleVariantChange = useCallback((elementId: string, group: string, value: string) => {
-    setCanvasElements((prev) =>
-      prev.map((el) =>
-        el.id === elementId
-          ? { ...el, variants: { ...el.variants, [group]: value } }
-          : el
-      )
+    setPages((prev) =>
+      prev.map((page) => ({
+        ...page,
+        elements: page.elements.map((el) =>
+          el.id === elementId
+            ? { ...el, variants: { ...el.variants, [group]: value } }
+            : el
+        ),
+      }))
     )
   }, [])
 
-  const selectedElement = canvasElements.find((el) => el.id === selectedElementId) || null
-  const selectedComponent = selectedElement
-    ? ComponentRegistry.get(selectedElement.componentId) || null
-    : null
+  // Find selected element across all pages
+  let selectedElement: CanvasElement | null = null
+  let selectedComponent: RegisteredComponent | null = null
+  for (const page of pages) {
+    const found = page.elements.find((el) => el.id === selectedElementId)
+    if (found) {
+      selectedElement = found
+      selectedComponent = ComponentRegistry.get(found.componentId) || null
+      break
+    }
+  }
 
   return (
     <div className="build-page">
@@ -159,46 +221,59 @@ export function BuildPage() {
         setSelectedElementId(null)
         setRightPanel('preview')
       }}>
-        <IconLibraryProvider>
         <div className="app-scope">
           <div className="themes-view__device">
             <AppHeader layout="Center" title="App Title" subtitle="Your app subtitle" />
-            <div className="themes-view__canvas" onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                setSelectedElementId(null)
-                setRightPanel('preview')
-              }
-            }}>
-              <div className="themes-view__app">
-                {canvasElements.length === 0 ? (
-                  <section className="themes-view__section themes-view__section--center">
-                    <EmptyState />
-                  </section>
-                ) : (
-                  canvasElements.map((element) => {
-                    const comp = ComponentRegistry.get(element.componentId)
-                    if (!comp) return null
-                    return (
-                      <section
-                        key={element.id}
-                        className={`themes-view__section build-page__canvas-element ${selectedElementId === element.id ? 'build-page__canvas-element--selected' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleSelectElement(element.id)
-                        }}
-                      >
-                        <div className="build-page__canvas-element-content">
-                          {comp.render(element.variants, element.properties, element.states)}
-                        </div>
+
+            {pages.map((page, pageIndex) => (
+              <div key={page.id}>
+                  <div
+                  className={`themes-view__canvas ${pageIndex === 0 ? 'themes-view__canvas--first' : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setActivePageId(page.id)
+                    if (e.target === e.currentTarget) {
+                      setSelectedElementId(null)
+                      setRightPanel('preview')
+                    }
+                  }}
+                >
+                  <div className="themes-view__app">
+                    {page.elements.length === 0 ? (
+                      <section className="themes-view__section themes-view__section--center build-page__empty-state">
+                        <EmptyState />
                       </section>
-                    )
-                  })
+                    ) : (
+                      page.elements.map((element) => {
+                        const comp = ComponentRegistry.get(element.componentId)
+                        if (!comp) return null
+                        const isShrinked = element.properties['Shrinked'] === true
+                        return (
+                          <section
+                            key={element.id}
+                            className={`themes-view__section build-page__canvas-element ${selectedElementId === element.id ? 'build-page__canvas-element--selected' : ''} ${isShrinked ? 'build-page__canvas-element--shrinked' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleSelectElement(element.id)
+                            }}
+                          >
+                            <div className="build-page__canvas-element-content">
+                              {comp.render(element.variants, element.properties, element.states)}
+                            </div>
+                          </section>
+                        )
+                      })
+                    )}
+                  </div>
+                </div>
+
+                {(pageIndex > 0 || page.elements.length > 0) && (
+                  <AddPageDivider onClick={() => handleAddPage(page.id)} />
                 )}
               </div>
-            </div>
+            ))}
           </div>
         </div>
-        </IconLibraryProvider>
       </main>
 
       {/* Right Panel - Designer/Properties or Live Preview */}

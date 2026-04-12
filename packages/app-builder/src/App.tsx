@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { IconLibraryProvider } from '@jf/app-elements'
 import { TopBar } from './shell/TopBar.tsx'
 import { BuildPage } from './pages/BuildPage.tsx'
 import { SettingsPage } from './pages/SettingsPage.tsx'
@@ -10,6 +11,7 @@ export function App() {
   const [activePage, setActivePage] = useState<Page>('build')
 
   return (
+    <IconLibraryProvider>
     <div className="builder">
       <TopBar activePage={activePage} onPageChange={setActivePage} />
       <div className="builder__content">
@@ -18,5 +20,6 @@ export function App() {
         {activePage === 'publish' && <PublishPage />}
       </div>
     </div>
+    </IconLibraryProvider>
   )
 }

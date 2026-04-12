@@ -27,7 +27,7 @@
   --ds-radius-lg: 12px;
 
   // Builder typography
-  --ds-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ds-font-family: var(--font-family-circular, 'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   --ds-font-size-sm: 12px;
   --ds-font-size-md: 14px;
   --ds-font-size-lg: 16px;
@@ -201,14 +201,27 @@ body {
   .themes-view__device {
     width: 100%;
     max-width: 100%;
+
+    > div {
+      width: 100%;
+    }
   }
 
   .themes-view__canvas {
+    width: 100%;
     max-width: 680px;
-    margin: -16px auto 32px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-xl);
+
+    &--first {
+      margin-top: -16px;
+    }
   }
 
   .themes-view__app {
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: var(--space-4);
     padding: var(--space-6);
   }
@@ -262,6 +275,75 @@ body {
 }
 
 // ============================================
+// Multipage
+// ============================================
+.build-page__page-wrapper {
+  width: 100%;
+}
+
+.build-page__page-title {
+  font-size: var(--font-size-label-md, 14px);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--fg-secondary);
+  padding: var(--space-4) 0 var(--space-2);
+  max-width: 680px;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+.add-page-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0;
+  margin: var(--space-4) auto;
+  width: 100%;
+  max-width: 680px;
+}
+
+.add-page-divider__line {
+  flex: 1;
+  height: 0;
+  border-top: 1px dashed var(--fg-tertiary, #6c73a8);
+  opacity: 0.4;
+}
+
+.add-page-divider__btn {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 var(--space-1, 4px) 0 0;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm, 4px);
+  color: var(--fg-tertiary, #6c73a8);
+  font-family: var(--font-family-circular);
+  font-size: var(--font-size-label-md, 14px);
+  font-weight: var(--font-weight-medium, 500);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: var(--bg-surface-brand-hover, #dbd6fa);
+    color: var(--fg-brand);
+  }
+}
+
+.add-page-divider__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+}
+
+.build-page__empty-state {
+  width: 100%;
+}
+
+// ============================================
 // Canvas Elements
 // ============================================
 .build-page__canvas-element {
@@ -275,6 +357,12 @@ body {
   &--selected {
     outline-color: var(--border-info);
   }
+
+  &--shrinked {
+    flex: 1 1 calc(50% - var(--space-4) / 2);
+    max-width: calc(50% - var(--space-4) / 2);
+    min-width: 0;
+  }
 }
 
 .build-page__canvas-element-content {
@@ -287,7 +375,7 @@ body {
 }
 
 // Hide component-level selected outlines in canvas — builder handles selection
-.build-page__canvas-element .jf-paragraph--selected {
+.build-page__canvas-element [class*="--selected"] {
   outline: none;
 }
 

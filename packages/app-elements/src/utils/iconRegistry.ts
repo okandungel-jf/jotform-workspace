@@ -193,9 +193,9 @@ for (const [lucideName, mappings] of Object.entries(NAME_MAP)) {
   }
 }
 
-// Cached registries
+// Cached registries — pre-load lucide so icons render on first frame
 const registryCache: Partial<Record<string, Record<string, IconComp>>> = {
-  lucide: lucideIcons as unknown as Record<string, IconComp>,
+  'lucide:outline': lucideIcons as unknown as Record<string, IconComp>,
 };
 
 function cacheKey(lib: IconLibrary, style: IconStyle = 'outline'): string {
