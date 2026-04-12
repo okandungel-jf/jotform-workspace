@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Icon } from '../components/Icon/Icon';
-import { useIconLibrary, type IconLibrary, type IconStyle } from '../context/IconLibraryContext';
+import { useIconLibrary, type IconLibrary } from '../context/IconLibraryContext';
 import { loadLibrary } from '../utils/iconRegistry';
 import { generatePalette, applySecondaryPaletteToDOM, resetSecondaryPalette } from '../utils/colorPalette';
 import type { PaletteShade } from '../utils/colorPalette';
@@ -370,7 +370,7 @@ interface AppDesignerProps {
 }
 
 export function AppDesigner({ onClose, targetSelector = '.app-scope' }: AppDesignerProps) {
-  const { library: activeIconLibrary, iconStyle: activeIconStyle, setLibrary: setIconLibrary, setIconStyle } = useIconLibrary();
+  const { setLibrary: setIconLibrary, setIconStyle } = useIconLibrary();
 
   // Theme state
   const [color, setColor] = useState(DEFAULT_COLOR);
@@ -513,17 +513,6 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope' }: AppDesig
       return currentBody;
     });
   }, [applyHeadingFontToDOM]);
-
-  const handleIconLibraryChange = useCallback(async (lib: IconLibrary) => {
-    await loadLibrary(lib, 'outline');
-    setIconLibrary(lib);
-    setIconStyle('outline');
-  }, [setIconLibrary, setIconStyle]);
-
-  const handleIconStyleChange = useCallback(async (style: IconStyle) => {
-    await loadLibrary(activeIconLibrary, style);
-    setIconStyle(style);
-  }, [activeIconLibrary, setIconStyle]);
 
   const handleRadiusChange = useCallback((scale: RadiusScale) => {
     setRadius(scale);
@@ -907,45 +896,6 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope' }: AppDesig
         <FontDropdown fonts={FONT_OPTIONS} active={font} onChange={handleFontChange} />
       </div>
 
-      {/* Icon Style */}
-      <div className="v2-section">
-        <h3 className="v2-section__title">Icon Style</h3>
-        <div className="themes-view__icon-library-options themes-view__icon-library-options--4col">
-          {([
-            { lib: 'lucide' as const, style: 'outline' as const, svg: (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
-              </svg>
-            )},
-            { lib: 'phosphor' as const, style: 'outline' as const, svg: (
-              <svg width="24" height="24" viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth="16" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="32" y="48" width="192" height="160" rx="8"/><circle cx="96" cy="112" r="20"/><path d="M224,168l-44.69-44.69a8,8,0,0,0-11.31,0L100.69,190.6,83.31,173.31a8,8,0,0,0-11.31,0L32,213.09"/>
-              </svg>
-            )},
-            { lib: 'tabler' as const, style: 'outline' as const, svg: (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 8h.01"/><rect width="16" height="16" x="4" y="4" rx="3"/><path d="m4 15 4-4a3 5 0 0 1 3 0l5 5"/><path d="m14 14 1-1a3 5 0 0 1 3 0l2 2"/>
-              </svg>
-            )},
-            { lib: 'phosphor' as const, style: 'fill' as const, svg: (
-              <svg width="24" height="24" viewBox="0 0 256 256" fill="currentColor">
-                <path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm-60,64a12,12,0,1,1,12,12A12,12,0,0,1,156,104ZM40,200V172l52-52,80,80Zm176,0H194.63l-56-56,20-20L216,181.38Z"/>
-              </svg>
-            )},
-          ]).map(({ lib, style, svg }) => {
-            const isActive = activeIconLibrary === lib && activeIconStyle === style;
-            return (
-              <button
-                key={`${lib}-${style}`}
-                className={`themes-view__icon-library-btn${isActive ? ' active' : ''}`}
-                onClick={() => { handleIconLibraryChange(lib); handleIconStyleChange(style); }}
-              >
-                {svg}
-              </button>
-            );
-          })}
-        </div>
-      </div>
     </>
   );
 }
