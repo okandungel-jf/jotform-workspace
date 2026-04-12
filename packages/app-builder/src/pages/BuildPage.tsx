@@ -404,7 +404,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [dragActiveId, setDragActiveId] = useState<string | null>(null)
   const [pendingPanelElementId, setPendingPanelElementId] = useState<string | null>(null)
   const [isPanelDrag, setIsPanelDrag] = useState(false)
-  const [leftPanelOpen, setLeftPanelOpen] = useState(true)
+  const [leftPanelOpen, setLeftPanelOpen] = useState(false)
   const appTitle = appTitleProp
   const setAppTitle = (title: string) => onAppTitleChange?.(title)
   const [appSubtitle, setAppSubtitle] = useState('')
