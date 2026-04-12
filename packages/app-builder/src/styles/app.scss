@@ -669,11 +669,22 @@ body {
   border-top: 1px solid var(--secondary-border-medium);
 }
 
+.build-page__floating-buttons {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 0;
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+}
+
 .build-page__add-element-btn {
   position: absolute;
   top: 24px;
   left: 16px;
-  z-index: 2;
   width: 56px;
   height: 56px;
   border-radius: var(--radius-rounded);
@@ -703,7 +714,6 @@ body {
   position: absolute;
   top: 24px;
   right: 16px;
-  z-index: 2;
   width: 56px;
   height: 56px;
   border-radius: var(--radius-rounded);
@@ -919,7 +929,7 @@ body {
   position: absolute;
   inset: 0;
   border-radius: 72px;
-  background: var(--secondary-background-light);
+  background: var(--bg-fill-brand-hover);
   box-shadow:
     0px 4px 22px 0px rgba(0, 0, 0, 0.24),
     0px 1.46px 8.03px 0px rgba(0, 0, 0, 0.17),
@@ -933,8 +943,8 @@ body {
 // Layer 2: Black bezel with white glow
 .live-preview__phone-bezel {
   position: absolute;
-  inset: 6px;
-  border-radius: 66px;
+  inset: 4px;
+  border-radius: 68px;
   background: var(--gray-900);
   border: 1px solid #000;
   box-shadow:
@@ -954,8 +964,8 @@ body {
 // Layer 4: Screen (content area)
 .live-preview__phone-screen {
   position: absolute;
-  inset: 18px;
-  border-radius: 54px;
+  inset: 16px;
+  border-radius: 56px;
   overflow: hidden;
   z-index: 1;
 }
@@ -984,6 +994,7 @@ body {
   display: block;
   width: 100%;
   height: auto;
+  color: var(--fg-inverse);
 }
 
 // ---- Preview Content ----
@@ -992,7 +1003,7 @@ body {
   inset: 0;
   overflow-y: auto;
   scrollbar-width: none;
-  background: var(--background-white);
+  background: var(--bg-surface);
   padding-top: 54px;
 
   &::-webkit-scrollbar {
@@ -1036,6 +1047,15 @@ body {
   right: 0;
   z-index: 2;
   padding-bottom: 21px;
+  background: var(--bg-surface);
+
+  .bottom-nav__item:hover {
+    color: inherit;
+  }
+
+  .bottom-nav__item--active:hover {
+    color: var(--fg-brand);
+  }
 }
 
 .live-preview__home-indicator {
@@ -1043,10 +1063,15 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 2;
+  z-index: 3;
   display: block;
   width: 100%;
   height: auto;
+  opacity: 0.3;
+
+  [data-theme='dark'] & {
+    filter: invert(1);
+  }
 }
 
 // Panel header is now .build-page__left-header (see above)

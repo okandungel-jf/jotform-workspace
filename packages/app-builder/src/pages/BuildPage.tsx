@@ -12,8 +12,8 @@ import {
   type StateValues,
 } from '@jf/app-elements'
 import { Icon } from '@jf/design-system'
-import phoneStatusBar from '@jf/design-system/src/assets/phone-status-bar.svg'
 import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
+import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import {
   DndContext,
   DragOverlay,
@@ -816,6 +816,17 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         )
       }
     }
+
+    // Remove first page if it's empty after cross-page move
+    setPages((prev) => {
+      if (prev.length <= 1) return prev
+      if (prev[0].elements.length === 0) {
+        const remaining = prev.slice(1)
+        setActivePageId(remaining[0].id)
+        return remaining
+      }
+      return prev
+    })
   }, [findPageForElement, pages, pendingPanelElementId])
 
   // Find dragged element for overlay
@@ -923,19 +934,15 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         setSelectedElementId(null)
         setRightPanel('preview')
       }}>
-          <button className={`build-page__add-element-btn${leftPanelOpen ? ' build-page__add-element-btn--hidden' : ''}`} onClick={(e) => {
-            e.stopPropagation()
-            setLeftPanelOpen(true)
-          }}>
-            <Icon name="plus" category="general" size={24} />
-          </button>
-          <button className={`build-page__design-btn${rightPanel === 'designer' ? ' build-page__design-btn--hidden' : ''}`} onClick={(e) => {
-            e.stopPropagation()
-            setRightPanel('designer')
-            setSelectedElementId(null)
-          }}>
-            <Icon name="paint-roller-vertical-filled" category="editor" size={32} />
-          </button>
+          {/* Floating Buttons */}
+          <div className="build-page__floating-buttons">
+            <button className={`build-page__add-element-btn${leftPanelOpen ? ' build-page__add-element-btn--hidden' : ''}`} onClick={(e) => { e.stopPropagation(); setLeftPanelOpen(true); }}>
+              <Icon name="plus" category="general" size={24} />
+            </button>
+            <button className={`build-page__design-btn${rightPanel === 'designer' ? ' build-page__design-btn--hidden' : ''}`} onClick={(e) => { e.stopPropagation(); setRightPanel('designer'); setSelectedElementId(null); }}>
+              <Icon name="paint-roller-vertical-filled" category="editor" size={32} />
+            </button>
+          </div>
           <div className="app-scope">
             <div className="themes-view__device">
               <div ref={appHeaderRef}>
@@ -981,7 +988,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                     </SortableContext>
                   </div>
 
-                  {(pageIndex > 0 || page.elements.length > 0) && (
+                  {(pageIndex > 0 || page.elements.length > 0 || dragActiveId) && (
                     <AddPageDivider onClick={() => handleAddPage(page.id)} />
                   )}
                 </div>
@@ -1099,14 +1106,14 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
             <div className="live-preview__body">
               <div className="live-preview__phone">
                 {/* Layer 1: Gray shell */}
-                <div className="live-preview__phone-shell" />
+                <div className="live-preview__phone-shell app-scope" />
                 {/* Layer 3: Black bezel */}
                 <div className="live-preview__phone-bezel" />
                 {/* Layer 4: Screen */}
                 <div className="live-preview__phone-screen">
                   <div className={`live-preview__status-bar-bg app-scope${activePageId === pages[0]?.id ? ' live-preview__status-bar-bg--header' : ''}`} />
-                  <img src={phoneStatusBar} alt="" className="live-preview__status-bar" />
-                  <div className="live-preview__content-scaler">
+                  <PhoneStatusBar className="live-preview__status-bar" />
+                  <div className="live-preview__content-scaler app-scope">
                     <div className="live-preview__content app-scope">
                       {(() => {
                         const activePage = pages.find((p) => p.id === activePageId) || pages[0]
