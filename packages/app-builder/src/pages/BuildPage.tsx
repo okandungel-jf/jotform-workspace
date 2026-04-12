@@ -1112,7 +1112,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                 {/* Layer 4: Screen */}
                 <div className="live-preview__phone-screen">
                   <div className={`live-preview__status-bar-bg app-scope${activePageId === pages[0]?.id ? ' live-preview__status-bar-bg--header' : ''}`} />
-                  <PhoneStatusBar className="live-preview__status-bar" />
+                  <PhoneStatusBar className={`live-preview__status-bar app-scope${activePageId === pages[0]?.id ? ' live-preview__status-bar--header' : ''}`} style={{ color: activePageId === pages[0]?.id ? 'var(--fg-inverse)' : 'var(--fg-primary, #000)' }} />
                   <div className="live-preview__content-scaler app-scope">
                     <div className="live-preview__content app-scope">
                       {(() => {
