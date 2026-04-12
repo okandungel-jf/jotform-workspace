@@ -1,5 +1,5 @@
 import { ComponentRegistry } from '../../types/registry';
-import { ProductList } from './ProductList';
+import { ProductList, type ProductItem } from './ProductList';
 import type { VariantValues, PropertyValues, StateValues } from '../../types/component';
 import productListScss from './ProductList.scss?raw';
 
@@ -28,6 +28,7 @@ ComponentRegistry.register({
     { name: 'Shrinked', type: 'boolean', default: false },
     { name: 'Add New Card', type: 'boolean', default: true },
     { name: 'Skeleton', type: 'boolean', default: false },
+    { name: 'Products', type: 'text', default: JSON.stringify([{ name: 'Product Name', price: '10.00' }]) },
   ],
 
   states: [],
@@ -141,16 +142,20 @@ ComponentRegistry.register({
     },
   ],
 
-  render(variants: VariantValues, props: PropertyValues, _states: StateValues): React.ReactNode {
+  render(variants: VariantValues, props: PropertyValues, _states: StateValues, onPropertyChange?: (name: string, value: string | boolean | number) => void): React.ReactNode {
     const showImages = props['Show Images'] as boolean;
-    const products = showImages
-      ? [
-          { name: 'Wireless Headphones', price: '79.99', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop' },
-          { name: 'Smart Watch', price: '199.99', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop' },
-          { name: 'Leather Bag', price: '129.99', image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=300&fit=crop' },
-          { name: 'Running Shoes', price: '89.99', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop' },
-        ]
-      : undefined;
+    let products: ProductItem[] | undefined;
+    try {
+      products = JSON.parse(props['Products'] as string);
+    } catch {
+      products = undefined;
+    }
+    if (showImages) {
+      products = (products || []).map((p) => ({
+        ...p,
+        image: p.image || `https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop`,
+      }));
+    }
     return (
       <ProductList
         layout={variants['Layout'] === 'List' ? 'SingleColumn' : 'TwoColumns'}
@@ -165,6 +170,7 @@ ComponentRegistry.register({
         products={products}
         showAddNew={props['Add New Card'] as boolean}
         skeleton={props['Skeleton'] as boolean}
+        onProductsChange={onPropertyChange ? (newProducts) => onPropertyChange('Products', JSON.stringify(newProducts)) : undefined}
       />
     );
   },

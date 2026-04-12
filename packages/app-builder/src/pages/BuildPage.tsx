@@ -299,7 +299,7 @@ const SortableElement = memo(function SortableElement({
         <Icon name="grid-dots-vertical" category="general" size={24} />
       </div>
       <div ref={contentRef} className="build-page__canvas-element-content">
-        {comp.render(element.variants, element.properties, element.states)}
+        {comp.render(element.variants, element.properties, element.states, (name, value) => onPropertyChange(element.id, name, value))}
       </div>
     </section>
   )

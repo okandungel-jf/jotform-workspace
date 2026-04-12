@@ -25,6 +25,7 @@ export interface ProductListProps {
   showAddNew?: boolean;
   skeleton?: boolean;
   skeletonAnimation?: 'pulse' | 'shimmer';
+  onProductsChange?: (products: ProductItem[]) => void;
 }
 
 // ============================================
@@ -267,20 +268,20 @@ export const ProductList: FC<ProductListProps> = ({
   buttonLabel = 'Add to Cart',
   selected = false,
   shrinked = false,
-  products: initialProducts = DEFAULT_PRODUCTS,
+  products = DEFAULT_PRODUCTS,
   showAddNew = true,
   skeleton = false,
   skeletonAnimation = 'pulse',
+  onProductsChange,
 }) => {
   const [layout, setLayout] = useState<ProductListLayout>(initialLayout);
-  const [products, setProducts] = useState<ProductItem[]>(initialProducts);
 
   useEffect(() => {
     setLayout(initialLayout);
   }, [initialLayout]);
 
   const handleAddProduct = () => {
-    setProducts((prev) => [...prev, { name: 'Product Name', price: '10.00' }]);
+    onProductsChange?.([...products, { name: 'Product Name', price: '10.00' }]);
   };
 
   const isSingle = layout === 'SingleColumn';
@@ -381,7 +382,7 @@ export const ProductList: FC<ProductListProps> = ({
       <div className={gridClasses}>
         {products.map((product, i) => {
           const handleUpdate = (updates: Partial<ProductItem>) => {
-            setProducts((prev) => prev.map((p, idx) => idx === i ? { ...p, ...updates } : p))
+            onProductsChange?.(products.map((p, idx) => idx === i ? { ...p, ...updates } : p))
           }
           return isSingle ? (
             <ProductBasicItem key={i} product={product} buttonLabel={buttonLabel} currency={currency} onUpdate={handleUpdate} />

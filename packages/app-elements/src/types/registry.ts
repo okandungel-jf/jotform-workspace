@@ -5,7 +5,8 @@ export interface RegisteredComponent extends ComponentDefinition {
   render: (
     variants: VariantValues,
     props: PropertyValues,
-    states: StateValues
+    states: StateValues,
+    onPropertyChange?: (name: string, value: string | boolean | number) => void
   ) => React.ReactNode;
 }
 

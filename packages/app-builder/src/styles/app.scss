@@ -581,6 +581,11 @@ body {
   flex: 1;
   overflow-y: auto;
   background: var(--bg-page, #f3f3fe);
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   .themes-view__device {
     width: 100%;
@@ -593,7 +598,7 @@ body {
 
   .themes-view__canvas {
     width: 100%;
-    max-width: 680px;
+    max-width: 644px;
     margin: 0 auto;
     box-shadow: var(--shadow-sm);
     border-radius: var(--radius-xl);
@@ -630,6 +635,8 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+  z-index: 1;
 
   &--hidden {
     margin-right: -420px;
@@ -775,15 +782,17 @@ body {
   position: absolute;
   inset: 18px;
   border-radius: 54px;
-  background: var(--background-lightest);
   overflow: hidden;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
 }
 
 // ---- Status Bar ----
 .live-preview__status-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
   display: block;
   width: 100%;
   height: auto;
@@ -791,9 +800,11 @@ body {
 
 // ---- Preview Content ----
 .live-preview__content-scaler {
-  flex: 1;
+  position: absolute;
+  inset: 0;
   overflow-y: auto;
   scrollbar-width: none;
+  background: var(--background-white);
 
   &::-webkit-scrollbar {
     display: none;
@@ -811,6 +822,11 @@ body {
   }
 
 
+  .jf-app-header {
+    padding-top: calc(54px + var(--space-12));
+    min-height: calc(272px + 54px);
+  }
+
   .themes-view__canvas {
     width: 100%;
     max-width: 100%;
@@ -826,11 +842,14 @@ body {
 }
 
 .live-preview__home-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
   display: block;
   width: 100%;
   height: auto;
-  margin-top: auto;
-  flex-shrink: 0;
 }
 
 // Panel header is now .build-page__left-header (see above)
