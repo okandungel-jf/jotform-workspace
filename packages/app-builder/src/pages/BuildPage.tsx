@@ -166,7 +166,7 @@ const SortableElement = memo(function SortableElement({
   isSelected: boolean
   isDragActive: boolean
   onSelect: (id: string) => void
-  onPropertyChange: (elementId: string, property: string, value: string) => void
+  onPropertyChange: (elementId: string, property: string, value: string | boolean | number) => void
 }) {
   const comp = ComponentRegistry.get(element.componentId)
   const isShrinked = element.properties['Shrinked'] === true
