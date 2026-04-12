@@ -1088,7 +1088,7 @@ body {
 .add-page-divider__line {
   flex: 1;
   height: 0;
-  border-top: 1px dashed var(--fg-tertiary, #6c73a8);
+  border-top: 1px dashed var(--fg-disabled);
   opacity: 0.4;
 }
 
@@ -1100,7 +1100,7 @@ body {
   background: none;
   border: none;
   border-radius: var(--radius-sm, 4px);
-  color: var(--fg-tertiary, #6c73a8);
+  color: var(--fg-disabled);
   font-family: var(--font-family-circular);
   font-size: var(--font-size-label-md, 14px);
   font-weight: var(--font-weight-medium, 500);
