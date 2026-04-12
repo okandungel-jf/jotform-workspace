@@ -672,6 +672,18 @@ body {
 }
 
 // ============================================
+// App Designer Panel
+// ============================================
+.build-page__designer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--secondary-background-medium);
+}
+
+// ============================================
 // Live Preview Panel
 // ============================================
 .live-preview {

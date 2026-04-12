@@ -60,3 +60,6 @@ export { EmptyState } from './components/EmptyState';
 export { Testimonial } from './components/Testimonial';
 export { SocialFollow } from './components/SocialFollow';
 export { DailyTaskManager } from './components/DailyTaskManager';
+
+// Layout
+export { AppDesigner, applyDefaultTheme } from './layout/AppDesigner';

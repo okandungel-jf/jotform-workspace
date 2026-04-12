@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef, memo } from 'react'
 import {
   ComponentRegistry,
   AppHeader,
+  AppDesigner,
+  applyDefaultTheme,
   EmptyState,
   type RegisteredComponent,
   type VariantValues,
@@ -416,6 +418,11 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
     return ComponentRegistry.subscribe(() => {
       setComponents(ComponentRegistry.getAll())
     })
+  }, [])
+
+  // Apply default theme on mount so components are styled before AppDesigner opens
+  useEffect(() => {
+    applyDefaultTheme()
   }, [])
 
   // AppHeader inline editing
@@ -914,7 +921,11 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         setSelectedElementId(null)
         setRightPanel('preview')
       }}>
-          <button className="build-page__design-btn" onClick={(e) => e.stopPropagation()}>
+          <button className="build-page__design-btn" onClick={(e) => {
+            e.stopPropagation()
+            setRightPanel(rightPanel === 'designer' ? 'preview' : 'designer')
+            setSelectedElementId(null)
+          }}>
             <Icon name="paint-roller-vertical-filled" category="editor" size={32} />
           </button>
           <div className="app-scope">
@@ -973,8 +984,14 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
       </main>
 
       {/* Right Panel - Designer/Properties or Live Preview */}
-      <aside className={`build-page__right ${previewMode ? '' : 'build-page__right--hidden'}`}>
-        {rightPanel === 'properties' && selectedElement && selectedComponent ? (
+      <aside className={`build-page__right ${previewMode || rightPanel === 'designer' ? '' : 'build-page__right--hidden'}`}>
+        {/* App Designer — always mounted, toggled via display */}
+        <div className="build-page__designer" data-theme="dark" style={{ display: rightPanel === 'designer' ? undefined : 'none' }}>
+          <AppDesigner onClose={() => setRightPanel('preview')} targetSelector=".app-scope" />
+        </div>
+
+        {/* Properties Panel */}
+        {rightPanel === 'properties' && selectedElement && selectedComponent && (
           <div className="build-page__properties">
             <div className="build-page__panel-header">
               <h2>{selectedComponent.name}</h2>
@@ -1050,7 +1067,10 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
               </div>
             ))}
           </div>
-        ) : (
+        )}
+
+        {/* Live Preview */}
+        {rightPanel !== 'designer' && !(rightPanel === 'properties' && selectedElement && selectedComponent) && (
           <div className="live-preview">
             <div className="live-preview__header">
               <span className="live-preview__title">Live Preview</span>
