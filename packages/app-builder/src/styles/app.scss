@@ -315,6 +315,30 @@ body {
   letter-spacing: var(--letter-spacing-md);
 }
 
+.build-page__element-item--dragging {
+  .build-page__element-item {
+    pointer-events: none;
+
+    &,
+    &:hover {
+      background: var(--ds-bg-secondary);
+    }
+
+    .build-page__element-icon,
+    &:hover .build-page__element-icon {
+      background: var(--ds-bg-surface-dark);
+    }
+  }
+}
+
+.build-page__panel-overlay {
+  width: 318px;
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--ds-radius-md);
+  overflow: hidden;
+  color: var(--ds-text-primary);
+}
+
 .build-page__element-divider {
   height: 0;
   border: none;

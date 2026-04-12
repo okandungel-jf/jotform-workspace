@@ -14,6 +14,7 @@ import {
   DragOverlay,
   closestCenter,
   PointerSensor,
+  useDraggable,
   useDroppable,
   useSensor,
   useSensors,
@@ -315,6 +316,51 @@ const DragOverlayContent = memo(function DragOverlayContent({ element }: { eleme
   )
 })
 
+function PanelDragOverlay({ componentId }: { componentId: string }) {
+  const iconInfo = ELEMENT_ICON_MAP[componentId]
+  const comp = ComponentRegistry.get(componentId)
+  if (!comp) return null
+
+  return (
+    <div className="build-page__element-item build-page__panel-overlay">
+      <div className="build-page__element-icon">
+        {iconInfo ? (
+          <Icon name={iconInfo.icon} category={iconInfo.iconCategory} size={24} />
+        ) : (
+          <Icon name="grid-2-filled" category="layout" size={24} />
+        )}
+      </div>
+      <div className="build-page__element-content">
+        <span className="build-page__element-name">{comp.name}</span>
+      </div>
+    </div>
+  )
+}
+
+function DraggablePanelItem({
+  comp,
+  children,
+}: {
+  comp: RegisteredComponent
+  children: React.ReactNode
+}) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `panel:${comp.id}`,
+    data: { type: 'panel-item', component: comp },
+  })
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className={isDragging ? 'build-page__element-item--dragging' : ''}
+    >
+      {children}
+    </div>
+  )
+}
+
 function DroppablePage({ pageId, children }: { pageId: string; children: React.ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id: pageId })
   return (
@@ -351,6 +397,8 @@ export function BuildPage() {
   const [activePageId, setActivePageId] = useState('page-1')
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null)
   const [dragActiveId, setDragActiveId] = useState<string | null>(null)
+  const [pendingPanelElementId, setPendingPanelElementId] = useState<string | null>(null)
+  const [isPanelDrag, setIsPanelDrag] = useState(false)
   const [appTitle, setAppTitle] = useState('App Title')
   const [appSubtitle, setAppSubtitle] = useState('')
   const appHeaderRef = useRef<HTMLDivElement>(null)
@@ -561,8 +609,30 @@ export function BuildPage() {
   }, [pages])
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
-    setDragActiveId(event.active.id as string)
-  }, [])
+    const id = event.active.id as string
+    const isPanel = id.startsWith('panel:')
+    setIsPanelDrag(isPanel)
+    setDragActiveId(id)
+
+    if (isPanel) {
+      setSelectedElementId(null)
+      setRightPanel('preview')
+
+      // Create a temporary element and add it to the active page
+      const comp = event.active.data.current?.component as RegisteredComponent | undefined
+      if (comp) {
+        const newElement = createCanvasElement(comp)
+        setPendingPanelElementId(newElement.id)
+        setPages((prev) =>
+          prev.map((page) =>
+            page.id === activePageId
+              ? { ...page, elements: [...page.elements, newElement] }
+              : page
+          )
+        )
+      }
+    }
+  }, [activePageId])
 
   const handleDragOver = useCallback((event: DragOverEvent) => {
     const { active, over } = event
@@ -572,6 +642,55 @@ export function BuildPage() {
 
     const activeId = active.id as string
     const overId = over.id as string
+
+    // Panel items: reposition the pending element
+    if (activeId.startsWith('panel:') && pendingPanelElementId) {
+      const pendingPageId = findPageForElement(pendingPanelElementId)
+      let targetPageId = findPageForElement(overId)
+      if (!targetPageId) {
+        const isPage = pages.some((p) => p.id === overId)
+        if (isPage) targetPageId = overId
+      }
+      if (!targetPageId) return
+
+      if (pendingPageId && pendingPageId !== targetPageId) {
+        // Move pending element to the target page
+        setPages((prev) => {
+          const sourcePage = prev.find((p) => p.id === pendingPageId)!
+          const element = sourcePage.elements.find((el) => el.id === pendingPanelElementId)!
+          if (!element) return prev
+          const overIndex = prev.find((p) => p.id === targetPageId)!.elements.findIndex((el) => el.id === overId)
+          const insertIndex = overIndex >= 0 ? overIndex : 0
+
+          return prev.map((page) => {
+            if (page.id === pendingPageId) {
+              return { ...page, elements: page.elements.filter((el) => el.id !== pendingPanelElementId) }
+            }
+            if (page.id === targetPageId) {
+              const newElements = [...page.elements]
+              newElements.splice(insertIndex, 0, element)
+              return { ...page, elements: newElements }
+            }
+            return page
+          })
+        })
+      } else if (pendingPageId === targetPageId && overId !== pendingPanelElementId) {
+        // Reorder within same page
+        setPages((prev) =>
+          prev.map((page) => {
+            if (page.id !== targetPageId) return page
+            const oldIndex = page.elements.findIndex((el) => el.id === pendingPanelElementId)
+            const newIndex = page.elements.findIndex((el) => el.id === overId)
+            if (oldIndex === -1 || newIndex === -1) return page
+            const newElements = [...page.elements]
+            const [moved] = newElements.splice(oldIndex, 1)
+            newElements.splice(newIndex, 0, moved)
+            return { ...page, elements: newElements }
+          })
+        )
+      }
+      return
+    }
 
     // Determine source and target pages
     const sourcePageId = findPageForElement(activeId)
@@ -609,7 +728,7 @@ export function BuildPage() {
         return page
       })
     })
-  }, [findPageForElement, pages])
+  }, [findPageForElement, pages, pendingPanelElementId])
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
@@ -619,6 +738,27 @@ export function BuildPage() {
 
     const activeId = active.id as string
     const overId = over.id as string
+
+    // Handle panel item drop
+    if (activeId.startsWith('panel:') && pendingPanelElementId) {
+      if (over) {
+        // Successful drop — keep element, select it
+        const targetPageId = findPageForElement(pendingPanelElementId)
+        setSelectedElementId(pendingPanelElementId)
+        setRightPanel('properties')
+        if (targetPageId) setActivePageId(targetPageId)
+      } else {
+        // Cancelled — remove pending element
+        setPages((prev) =>
+          prev.map((page) => ({
+            ...page,
+            elements: page.elements.filter((el) => el.id !== pendingPanelElementId),
+          }))
+        )
+      }
+      setPendingPanelElementId(null)
+      return
+    }
 
     const sourcePageId = findPageForElement(activeId)
     if (!sourcePageId) return
@@ -664,7 +804,7 @@ export function BuildPage() {
         )
       }
     }
-  }, [findPageForElement, pages])
+  }, [findPageForElement, pages, pendingPanelElementId])
 
   // Find dragged element for overlay
   let draggedElement: CanvasElement | null = null
@@ -691,6 +831,13 @@ export function BuildPage() {
   }
 
   return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+    >
     <div className="build-page">
       {/* Left Panel - App Elements */}
       <aside className="build-page__left">
@@ -730,21 +877,23 @@ export function BuildPage() {
                   const iconInfo = ELEMENT_ICON_MAP[comp.id]
                   return (
                     <div key={comp.id}>
-                      <div
-                        className="build-page__element-item"
-                        onClick={() => handleAddElement(comp)}
-                      >
-                        <div className="build-page__element-icon">
-                          {iconInfo ? (
-                            <Icon name={iconInfo.icon} category={iconInfo.iconCategory} size={24} />
-                          ) : (
-                            <Icon name="grid-2-filled" category="layout" size={24} />
-                          )}
+                      <DraggablePanelItem comp={comp}>
+                        <div
+                          className="build-page__element-item"
+                          onClick={() => handleAddElement(comp)}
+                        >
+                          <div className="build-page__element-icon">
+                            {iconInfo ? (
+                              <Icon name={iconInfo.icon} category={iconInfo.iconCategory} size={24} />
+                            ) : (
+                              <Icon name="grid-2-filled" category="layout" size={24} />
+                            )}
+                          </div>
+                          <div className="build-page__element-content">
+                            <span className="build-page__element-name">{comp.name}</span>
+                          </div>
                         </div>
-                        <div className="build-page__element-content">
-                          <span className="build-page__element-name">{comp.name}</span>
-                        </div>
-                      </div>
+                      </DraggablePanelItem>
                       {itemIndex < validItems.length - 1 && (
                         <hr className="build-page__element-divider" />
                       )}
@@ -762,13 +911,6 @@ export function BuildPage() {
         setSelectedElementId(null)
         setRightPanel('preview')
       }}>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
-        >
           <div className="app-scope">
             <div className="themes-view__device">
               <div ref={appHeaderRef}>
@@ -804,7 +946,7 @@ export function BuildPage() {
                               key={element.id}
                               element={element}
                               isSelected={selectedElementId === element.id}
-                              isDragActive={dragActiveId === element.id}
+                              isDragActive={dragActiveId === element.id || pendingPanelElementId === element.id}
                               onSelect={handleSelectElement}
                               onPropertyChange={handlePropertyChange}
                             />
@@ -822,10 +964,6 @@ export function BuildPage() {
             </div>
           </div>
 
-          <DragOverlay>
-            {draggedElement ? <DragOverlayContent element={draggedElement} /> : null}
-          </DragOverlay>
-        </DndContext>
       </main>
 
       {/* Right Panel - Designer/Properties or Live Preview */}
@@ -915,5 +1053,14 @@ export function BuildPage() {
         )}
       </aside>
     </div>
+
+      <DragOverlay dropAnimation={isPanelDrag ? null : undefined}>
+        {dragActiveId?.startsWith('panel:') ? (
+          <PanelDragOverlay componentId={dragActiveId.replace('panel:', '')} />
+        ) : draggedElement ? (
+          <DragOverlayContent element={draggedElement} />
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   )
 }
