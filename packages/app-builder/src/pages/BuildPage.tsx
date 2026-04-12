@@ -226,6 +226,14 @@ const SortableElement = memo(function SortableElement({
       }
     }
 
+    // Auto-activate Paragraph toolbar when selected
+    if (isSelected && element.componentId === 'paragraph') {
+      const editor = container.querySelector('.jf-paragraph__editor') as HTMLElement | null
+      if (editor) {
+        requestAnimationFrame(() => editor.click())
+      }
+    }
+
     return () => cleanups.forEach((fn) => fn())
   }, [isSelected, element.componentId, element.id, comp, onPropertyChange])
 
