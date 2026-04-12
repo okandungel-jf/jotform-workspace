@@ -346,7 +346,6 @@ export function BuildPage() {
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
     setDragActiveId(null)
-    setOverPageId(null)
 
     if (!over) return
 
