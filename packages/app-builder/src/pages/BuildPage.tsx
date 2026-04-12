@@ -928,9 +928,9 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
           }}>
             <Icon name="plus" category="general" size={24} />
           </button>
-          <button className="build-page__design-btn" onClick={(e) => {
+          <button className={`build-page__design-btn${rightPanel === 'designer' ? ' build-page__design-btn--hidden' : ''}`} onClick={(e) => {
             e.stopPropagation()
-            setRightPanel(rightPanel === 'designer' ? 'preview' : 'designer')
+            setRightPanel('designer')
             setSelectedElementId(null)
           }}>
             <Icon name="paint-roller-vertical-filled" category="editor" size={32} />
