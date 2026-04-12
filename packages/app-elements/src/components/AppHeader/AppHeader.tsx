@@ -45,9 +45,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         </div>
         <div className="jf-app-header__text">
           <h1 className="jf-app-header__title">{title}</h1>
-          {subtitle && (
-            <p className="jf-app-header__subtitle">{subtitle}</p>
-          )}
+          <p className={`jf-app-header__subtitle ${!subtitle ? 'jf-app-header__subtitle--empty' : ''}`}>{subtitle}</p>
         </div>
       </div>
     </div>

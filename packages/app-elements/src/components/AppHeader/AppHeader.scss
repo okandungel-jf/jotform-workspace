@@ -8,6 +8,8 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  // icon(80) + gap(16) + title(~36) + gap(4) + subtitle(~24) + padding(48+64)
+  min-height: 272px;
   padding: var(--space-12) var(--space-4) var(--space-16);
   background: var(--bg-fill-brand);
   font-family: var(--font-family);
@@ -108,4 +110,11 @@
   color: var(--fg-inverse);
   opacity: 0.5;
   margin: 0;
+
+  &--empty {
+    height: 0;
+    overflow: hidden;
+    margin: 0;
+    opacity: 0;
+  }
 }

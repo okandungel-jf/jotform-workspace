@@ -304,6 +304,9 @@ export function BuildPage() {
   const [activePageId, setActivePageId] = useState('page-1')
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null)
   const [dragActiveId, setDragActiveId] = useState<string | null>(null)
+  const [appTitle, setAppTitle] = useState('App Title')
+  const [appSubtitle, setAppSubtitle] = useState('')
+  const appHeaderRef = useRef<HTMLDivElement>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -316,6 +319,96 @@ export function BuildPage() {
       setComponents(ComponentRegistry.getAll())
     })
   }, [])
+
+  // AppHeader inline editing
+  useEffect(() => {
+    const container = appHeaderRef.current
+    if (!container) return
+
+    const titleEl = container.querySelector('.jf-app-header__title') as HTMLElement | null
+    const subtitleEl = container.querySelector('.jf-app-header__subtitle') as HTMLElement | null
+
+    const fields = [
+      { el: titleEl, defaultValue: 'App Title', setter: setAppTitle },
+      { el: subtitleEl, defaultValue: '', setter: setAppSubtitle },
+    ]
+
+    const cleanups: (() => void)[] = []
+
+    for (const { el, defaultValue, setter } of fields) {
+      if (!el) continue
+
+      el.contentEditable = 'true'
+      el.style.outline = 'none'
+      el.style.cursor = 'text'
+      const placeholderText = defaultValue || (el.className.includes('subtitle') ? 'Subtitle' : 'Title')
+      el.dataset.placeholder = placeholderText
+
+
+      const handleFocus = () => {
+        // Show subtitle placeholder when title is focused
+        if (!el.className.includes('subtitle')) {
+          const sub = container.querySelector('.jf-app-header__subtitle') as HTMLElement | null
+          if (sub && sub.classList.contains('jf-app-header__subtitle--empty')) {
+            sub.classList.remove('jf-app-header__subtitle--empty')
+            sub.classList.add('build-page__inline-placeholder')
+          }
+        }
+        if (el.className.includes('subtitle--empty')) {
+          el.classList.remove('jf-app-header__subtitle--empty')
+        }
+        if (defaultValue && el.textContent === defaultValue) {
+          el.textContent = ''
+          el.classList.add('build-page__inline-placeholder')
+        }
+        if (!el.textContent) {
+          el.classList.add('build-page__inline-placeholder')
+        }
+      }
+
+      const handleInput = () => {
+        if (el.textContent) {
+          el.classList.remove('build-page__inline-placeholder')
+        } else {
+          el.classList.add('build-page__inline-placeholder')
+        }
+      }
+
+      const handleBlur = () => {
+        const newText = el.textContent || ''
+        el.classList.remove('build-page__inline-placeholder')
+        if (newText) {
+          setter(newText)
+        } else {
+          setter(defaultValue)
+          if (defaultValue) {
+            el.textContent = defaultValue
+          } else if (el.className.includes('subtitle')) {
+            el.classList.add('jf-app-header__subtitle--empty')
+          }
+        }
+        // If title blurs and subtitle is still empty, hide it
+        if (!el.className.includes('subtitle')) {
+          const sub = container.querySelector('.jf-app-header__subtitle') as HTMLElement | null
+          if (sub && !sub.textContent) {
+            sub.classList.remove('build-page__inline-placeholder')
+            sub.classList.add('jf-app-header__subtitle--empty')
+          }
+        }
+      }
+
+      el.addEventListener('focus', handleFocus)
+      el.addEventListener('input', handleInput)
+      el.addEventListener('blur', handleBlur)
+      cleanups.push(() => {
+        el.removeEventListener('focus', handleFocus)
+        el.removeEventListener('input', handleInput)
+        el.removeEventListener('blur', handleBlur)
+      })
+    }
+
+    return () => cleanups.forEach((fn) => fn())
+  }, [appTitle, appSubtitle])
 
   const HIDDEN_ELEMENTS = ['empty-state', 'app-header', 'bottom-navigation', 'color-picker']
 
@@ -593,7 +686,9 @@ export function BuildPage() {
         >
           <div className="app-scope">
             <div className="themes-view__device">
-              <AppHeader layout="Center" title="App Title" subtitle="Your app subtitle" />
+              <div ref={appHeaderRef}>
+                <AppHeader layout="Center" title={appTitle} subtitle={appSubtitle} />
+              </div>
 
               {pages.map((page, pageIndex) => (
                 <div key={page.id}>

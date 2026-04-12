@@ -431,6 +431,11 @@ body {
   display: flex;
 }
 
+// AppHeader inline edit placeholder (white text on dark bg)
+.jf-app-header .build-page__inline-placeholder::before {
+  color: rgba(255, 255, 255, 0.4);
+}
+
 // Show empty subtitle placeholder when element is selected
 .build-page__canvas-element--selected .jf-heading__subtitle--empty,
 .build-page__canvas-element--selected .jf-product-list__subtitle--empty,
