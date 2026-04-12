@@ -390,7 +390,7 @@ function AddPageDivider({ onClick }: { onClick: () => void }) {
 
 type RightPanelMode = 'preview' | 'designer' | 'properties'
 
-export function BuildPage({ previewMode = true }: { previewMode?: boolean }) {
+export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Title', onAppTitleChange }: { previewMode?: boolean; appTitle?: string; onAppTitleChange?: (title: string) => void }) {
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
   const [components, setComponents] = useState<RegisteredComponent[]>(ComponentRegistry.getAll())
   const [pages, setPages] = useState<AppPage[]>([
@@ -401,7 +401,8 @@ export function BuildPage({ previewMode = true }: { previewMode?: boolean }) {
   const [dragActiveId, setDragActiveId] = useState<string | null>(null)
   const [pendingPanelElementId, setPendingPanelElementId] = useState<string | null>(null)
   const [isPanelDrag, setIsPanelDrag] = useState(false)
-  const [appTitle, setAppTitle] = useState('App Title')
+  const appTitle = appTitleProp
+  const setAppTitle = (title: string) => onAppTitleChange?.(title)
   const [appSubtitle, setAppSubtitle] = useState('')
   const appHeaderRef = useRef<HTMLDivElement>(null)
 
@@ -913,6 +914,9 @@ export function BuildPage({ previewMode = true }: { previewMode?: boolean }) {
         setSelectedElementId(null)
         setRightPanel('preview')
       }}>
+          <button className="build-page__design-btn" onClick={(e) => e.stopPropagation()}>
+            <Icon name="paint-roller-vertical-filled" category="editor" size={32} />
+          </button>
           <div className="app-scope">
             <div className="themes-view__device">
               <div ref={appHeaderRef}>

@@ -577,7 +577,35 @@ body {
   border-top: 1px solid var(--secondary-border-medium);
 }
 
+.build-page__design-btn {
+  position: absolute;
+  top: 24px;
+  right: 16px;
+  z-index: 2;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-rounded);
+  background: var(--accent-default);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  color: var(--text-white);
+  transition: background 0.15s;
+
+  .jf-icon {
+    transform: translate(2px, 0) rotate(-45deg);
+  }
+
+  &:hover {
+    background: var(--accent-dark);
+  }
+}
+
 .build-page__canvas {
+  position: relative;
   flex: 1;
   overflow-y: auto;
   background: var(--bg-page, #f3f3fe);
@@ -908,7 +936,7 @@ body {
   padding: 0;
   margin: var(--space-4) auto;
   width: 100%;
-  max-width: 680px;
+  max-width: 644px;
 }
 
 .add-page-divider__line {

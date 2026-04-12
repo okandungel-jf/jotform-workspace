@@ -10,6 +10,7 @@ type Page = 'build' | 'settings' | 'publish'
 export function App() {
   const [activePage, setActivePage] = useState<Page>('build')
   const [previewMode, setPreviewMode] = useState(true)
+  const [appTitle, setAppTitle] = useState('App Title')
 
   return (
     <IconLibraryProvider>
@@ -19,9 +20,10 @@ export function App() {
         onPageChange={setActivePage}
         previewMode={previewMode}
         onPreviewToggle={() => setPreviewMode(!previewMode)}
+        appName={appTitle}
       />
       <div className="builder__content">
-        {activePage === 'build' && <BuildPage previewMode={previewMode} />}
+        {activePage === 'build' && <BuildPage previewMode={previewMode} appTitle={appTitle} onAppTitleChange={setAppTitle} />}
         {activePage === 'settings' && <SettingsPage />}
         {activePage === 'publish' && <PublishPage />}
       </div>
