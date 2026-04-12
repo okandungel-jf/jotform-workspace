@@ -438,10 +438,11 @@ body {
   overflow: hidden;
   box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
   z-index: 2;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s ease, box-shadow 0.3s ease;
 
   &--hidden {
     margin-left: -318px;
+    box-shadow: none;
   }
 
   @media (max-width: 768px) {
@@ -747,15 +748,16 @@ body {
   background: var(--secondary-background-medium);
   border-left: none;
   padding: 0;
-  transition: margin-right 0.3s ease;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
   z-index: 1;
+  transition: margin-right 0.3s ease, box-shadow 0.3s ease;
 
   &--hidden {
     margin-right: -420px;
+    box-shadow: none;
   }
 
   @media (max-width: 768px) {
