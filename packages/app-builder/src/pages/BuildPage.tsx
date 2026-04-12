@@ -403,6 +403,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [dragActiveId, setDragActiveId] = useState<string | null>(null)
   const [pendingPanelElementId, setPendingPanelElementId] = useState<string | null>(null)
   const [isPanelDrag, setIsPanelDrag] = useState(false)
+  const [leftPanelOpen, setLeftPanelOpen] = useState(true)
   const appTitle = appTitleProp
   const setAppTitle = (title: string) => onAppTitleChange?.(title)
   const [appSubtitle, setAppSubtitle] = useState('')
@@ -850,10 +851,10 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
     >
     <div className="build-page">
       {/* Left Panel - App Elements */}
-      <aside className="build-page__left">
+      <aside className={`build-page__left${leftPanelOpen ? '' : ' build-page__left--hidden'}`}>
         <div className="build-page__left-header">
           <h2>App Elements</h2>
-          <button className="build-page__left-close">
+          <button className="build-page__left-close" onClick={() => setLeftPanelOpen(false)}>
             <Icon name="xmark" size={24} />
           </button>
         </div>
@@ -921,6 +922,12 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         setSelectedElementId(null)
         setRightPanel('preview')
       }}>
+          <button className={`build-page__add-element-btn${leftPanelOpen ? ' build-page__add-element-btn--hidden' : ''}`} onClick={(e) => {
+            e.stopPropagation()
+            setLeftPanelOpen(true)
+          }}>
+            <Icon name="plus" category="general" size={24} />
+          </button>
           <button className="build-page__design-btn" onClick={(e) => {
             e.stopPropagation()
             setRightPanel(rightPanel === 'designer' ? 'preview' : 'designer')
