@@ -18,7 +18,11 @@
 // Editor
 .jf-paragraph__editor {
   width: 100%;
-  padding: var(--space-2);
+  padding: 0;
+
+  .jf-paragraph--selected & {
+    padding: var(--space-1);
+  }
   font-family: var(--font-family);
   font-weight: var(--font-weight-regular);
   color: var(--fg-primary);
@@ -53,7 +57,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: var(--space-2);
+  padding: var(--space-1);
 
   &--tooltip {
     position: absolute;

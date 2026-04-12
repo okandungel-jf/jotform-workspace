@@ -343,6 +343,12 @@ body {
   width: 100%;
 }
 
+.build-page__droppable--over {
+  outline: 2px dashed var(--border-info);
+  outline-offset: -2px;
+  border-radius: var(--radius-lg);
+}
+
 // ============================================
 // Canvas Elements
 // ============================================
@@ -353,6 +359,7 @@ body {
   outline-offset: 4px;
   border-radius: var(--radius-lg);
   transition: outline-color 0.15s;
+  position: relative;
 
   &--selected {
     outline-color: var(--border-info);
@@ -362,6 +369,32 @@ body {
     flex: 1 1 calc(50% - var(--space-4) / 2);
     max-width: calc(50% - var(--space-4) / 2);
     min-width: 0;
+    align-self: flex-start;
+  }
+}
+
+.build-page__canvas-element--dragging {
+  opacity: 1;
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-lg);
+  background: var(--bg-fill);
+}
+
+.build-page__drag-handle {
+  position: absolute;
+  left: -24px;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  color: var(--fg-disabled);
+  opacity: 0;
+  cursor: grab;
+  transition: opacity 0.15s;
+
+  .build-page__canvas-element:hover &,
+  .build-page__canvas-element--selected & {
+    opacity: 1;
   }
 }
 
@@ -377,6 +410,19 @@ body {
 // Hide component-level selected outlines in canvas — builder handles selection
 .build-page__canvas-element [class*="--selected"] {
   outline: none;
+}
+
+// Hide paragraph toolbar & selected state when builder element is deselected
+.build-page__canvas-element:not(.build-page__canvas-element--selected) {
+  .jf-paragraph--selected {
+    background: none;
+  }
+  .jf-paragraph__toolbar {
+    display: none !important;
+  }
+  .jf-paragraph__editor {
+    padding: 0;
+  }
 }
 
 // ============================================

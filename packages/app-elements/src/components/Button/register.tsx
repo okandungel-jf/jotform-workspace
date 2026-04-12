@@ -38,8 +38,8 @@ ComponentRegistry.register({
 
   properties: [
     { name: 'Label', type: 'text', default: 'Button', showWhen: { Type: 'Standard' } },
-    { name: 'Left Icon', type: 'icon', default: 'Plus', showWhen: { Type: 'Standard' } },
-    { name: 'Right Icon', type: 'icon', default: 'Plus', showWhen: { Type: 'Standard' } },
+    { name: 'Left Icon', type: 'icon', default: 'none', showWhen: { Type: 'Standard' } },
+    { name: 'Right Icon', type: 'icon', default: 'none', showWhen: { Type: 'Standard' } },
     { name: 'Icon', type: 'icon', default: 'Plus', showWhen: { Type: 'Icon Only' } },
     { name: 'Shrinked', type: 'boolean', default: false, showWhen: { Type: 'Standard' } },
     { name: 'Full Width', type: 'boolean', default: false, showWhen: { Type: 'Standard' } },

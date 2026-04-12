@@ -9,6 +9,24 @@ import {
   type StateValues,
 } from '@jf/app-elements'
 import { Icon } from '@jf/design-system'
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  PointerSensor,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragStartEvent,
+  type DragEndEvent,
+  type DragOverEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  useSortable,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface CanvasElement {
   id: string
@@ -52,6 +70,86 @@ function createCanvasElement(comp: RegisteredComponent): CanvasElement {
   }
 }
 
+function SortableElement({
+  element,
+  isSelected,
+  isDragActive,
+  onSelect,
+}: {
+  element: CanvasElement
+  isSelected: boolean
+  isDragActive: boolean
+  onSelect: (id: string) => void
+}) {
+  const comp = ComponentRegistry.get(element.componentId)
+  const isShrinked = element.properties['Shrinked'] === true
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: element.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging || isDragActive ? 0.4 : 1,
+  }
+
+  if (!comp) return null
+
+  return (
+    <section
+      ref={setNodeRef}
+      style={style}
+      className={`themes-view__section build-page__canvas-element ${isSelected ? 'build-page__canvas-element--selected' : ''} ${isShrinked ? 'build-page__canvas-element--shrinked' : ''}`}
+      onClick={(e) => {
+        e.stopPropagation()
+        onSelect(element.id)
+      }}
+    >
+      <div
+        className="build-page__drag-handle"
+        {...attributes}
+        {...listeners}
+      >
+        <Icon name="grid-dots-vertical" category="general" size={24} />
+      </div>
+      <div className="build-page__canvas-element-content">
+        {comp.render(element.variants, element.properties, element.states)}
+      </div>
+    </section>
+  )
+}
+
+function DragOverlayContent({ element }: { element: CanvasElement }) {
+  const comp = ComponentRegistry.get(element.componentId)
+  if (!comp) return null
+
+  return (
+    <section className="themes-view__section build-page__canvas-element build-page__canvas-element--dragging">
+      <div className="build-page__canvas-element-content">
+        {comp.render(element.variants, element.properties, element.states)}
+      </div>
+    </section>
+  )
+}
+
+function DroppablePage({ pageId, children }: { pageId: string; children: React.ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id: pageId })
+  return (
+    <div
+      ref={setNodeRef}
+      className={`themes-view__app ${isOver ? 'build-page__droppable--over' : ''}`}
+    >
+      {children}
+    </div>
+  )
+}
+
 function AddPageDivider({ onClick }: { onClick: () => void }) {
   return (
     <div className="add-page-divider" onClick={(e) => e.stopPropagation()}>
@@ -75,6 +173,14 @@ export function BuildPage() {
   ])
   const [activePageId, setActivePageId] = useState('page-1')
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null)
+  const [dragActiveId, setDragActiveId] = useState<string | null>(null)
+  const [overPageId, setOverPageId] = useState<string | null>(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    })
+  )
 
   useEffect(() => {
     return ComponentRegistry.subscribe(() => {
@@ -177,6 +283,136 @@ export function BuildPage() {
     )
   }, [])
 
+  // Find which page an element belongs to
+  const findPageForElement = useCallback((elementId: string): string | null => {
+    for (const page of pages) {
+      if (page.elements.some((el) => el.id === elementId)) {
+        return page.id
+      }
+    }
+    return null
+  }, [pages])
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setDragActiveId(event.active.id as string)
+  }, [])
+
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const { active, over } = event
+    if (!over) {
+      setOverPageId(null)
+      return
+    }
+
+    const activeId = active.id as string
+    const overId = over.id as string
+
+    // Determine source and target pages
+    const sourcePageId = findPageForElement(activeId)
+
+    let targetPageId = findPageForElement(overId)
+    if (!targetPageId) {
+      const isPage = pages.some((p) => p.id === overId)
+      if (isPage) targetPageId = overId
+    }
+
+    setOverPageId(targetPageId)
+
+    // Only move if crossing pages
+    if (!sourcePageId || !targetPageId || sourcePageId === targetPageId) return
+
+    // Move element to target page immediately for visual feedback
+    setPages((prev) => {
+      const sourcePage = prev.find((p) => p.id === sourcePageId)!
+      const element = sourcePage.elements.find((el) => el.id === activeId)!
+      if (!element) return prev
+
+      const destPage = prev.find((p) => p.id === targetPageId)!
+      const overIndex = destPage.elements.findIndex((el) => el.id === overId)
+      const insertIndex = overIndex >= 0 ? overIndex : destPage.elements.length
+
+      return prev.map((page) => {
+        if (page.id === sourcePageId) {
+          return { ...page, elements: page.elements.filter((el) => el.id !== activeId) }
+        }
+        if (page.id === targetPageId) {
+          const newElements = [...page.elements]
+          newElements.splice(insertIndex, 0, element)
+          return { ...page, elements: newElements }
+        }
+        return page
+      })
+    })
+  }, [findPageForElement, pages])
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event
+    setDragActiveId(null)
+    setOverPageId(null)
+
+    if (!over) return
+
+    const activeId = active.id as string
+    const overId = over.id as string
+
+    const sourcePageId = findPageForElement(activeId)
+    if (!sourcePageId) return
+
+    // Determine target page
+    let targetPageId = findPageForElement(overId)
+    if (!targetPageId) {
+      const isPage = pages.some((p) => p.id === overId)
+      if (isPage) targetPageId = overId
+    }
+    if (!targetPageId) return
+
+    if (sourcePageId === targetPageId) {
+      // Same page reorder
+      if (activeId === overId) return
+      setPages((prev) =>
+        prev.map((page) => {
+          if (page.id !== sourcePageId) return page
+          const oldIndex = page.elements.findIndex((el) => el.id === activeId)
+          const newIndex = page.elements.findIndex((el) => el.id === overId)
+          if (oldIndex === -1 || newIndex === -1) return page
+          const newElements = [...page.elements]
+          const [moved] = newElements.splice(oldIndex, 1)
+          newElements.splice(newIndex, 0, moved)
+          return { ...page, elements: newElements }
+        })
+      )
+    } else {
+      // Cross-page move — already handled in handleDragOver
+      // Just reorder within the target page if needed
+      if (activeId !== overId) {
+        setPages((prev) =>
+          prev.map((page) => {
+            if (page.id !== targetPageId) return page
+            const oldIndex = page.elements.findIndex((el) => el.id === activeId)
+            const newIndex = page.elements.findIndex((el) => el.id === overId)
+            if (oldIndex === -1 || newIndex === -1) return page
+            const newElements = [...page.elements]
+            const [moved] = newElements.splice(oldIndex, 1)
+            newElements.splice(newIndex, 0, moved)
+            return { ...page, elements: newElements }
+          })
+        )
+      }
+    }
+  }, [findPageForElement, pages])
+
+  // Find dragged element for overlay
+  let draggedElement: CanvasElement | null = null
+  if (dragActiveId) {
+    for (const page of pages) {
+      const found = page.elements.find((el) => el.id === dragActiveId)
+      if (found) {
+        draggedElement = found
+        break
+      }
+    }
+  }
+
   // Find selected element across all pages
   let selectedElement: CanvasElement | null = null
   let selectedComponent: RegisteredComponent | null = null
@@ -221,59 +457,67 @@ export function BuildPage() {
         setSelectedElementId(null)
         setRightPanel('preview')
       }}>
-        <div className="app-scope">
-          <div className="themes-view__device">
-            <AppHeader layout="Center" title="App Title" subtitle="Your app subtitle" />
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="app-scope">
+            <div className="themes-view__device">
+              <AppHeader layout="Center" title="App Title" subtitle="Your app subtitle" />
 
-            {pages.map((page, pageIndex) => (
-              <div key={page.id}>
+              {pages.map((page, pageIndex) => (
+                <div key={page.id}>
                   <div
-                  className={`themes-view__canvas ${pageIndex === 0 ? 'themes-view__canvas--first' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setActivePageId(page.id)
-                    if (e.target === e.currentTarget) {
-                      setSelectedElementId(null)
-                      setRightPanel('preview')
-                    }
-                  }}
-                >
-                  <div className="themes-view__app">
-                    {page.elements.length === 0 ? (
-                      <section className="themes-view__section themes-view__section--center build-page__empty-state">
-                        <EmptyState />
-                      </section>
-                    ) : (
-                      page.elements.map((element) => {
-                        const comp = ComponentRegistry.get(element.componentId)
-                        if (!comp) return null
-                        const isShrinked = element.properties['Shrinked'] === true
-                        return (
-                          <section
-                            key={element.id}
-                            className={`themes-view__section build-page__canvas-element ${selectedElementId === element.id ? 'build-page__canvas-element--selected' : ''} ${isShrinked ? 'build-page__canvas-element--shrinked' : ''}`}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleSelectElement(element.id)
-                            }}
-                          >
-                            <div className="build-page__canvas-element-content">
-                              {comp.render(element.variants, element.properties, element.states)}
-                            </div>
+                    className={`themes-view__canvas ${pageIndex === 0 ? 'themes-view__canvas--first' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setActivePageId(page.id)
+                      if (e.target === e.currentTarget) {
+                        setSelectedElementId(null)
+                        setRightPanel('preview')
+                      }
+                    }}
+                  >
+                    <SortableContext
+                      items={page.elements.map((el) => el.id)}
+                      strategy={rectSortingStrategy}
+                      id={page.id}
+                    >
+                      <DroppablePage pageId={page.id}>
+                        {page.elements.length === 0 ? (
+                          <section className="themes-view__section themes-view__section--center build-page__empty-state">
+                            <EmptyState />
                           </section>
-                        )
-                      })
-                    )}
+                        ) : (
+                          page.elements.map((element) => (
+                            <SortableElement
+                              key={element.id}
+                              element={element}
+                              isSelected={selectedElementId === element.id}
+                              isDragActive={dragActiveId === element.id}
+                              onSelect={handleSelectElement}
+                            />
+                          ))
+                        )}
+                      </DroppablePage>
+                    </SortableContext>
                   </div>
-                </div>
 
-                {(pageIndex > 0 || page.elements.length > 0) && (
-                  <AddPageDivider onClick={() => handleAddPage(page.id)} />
-                )}
-              </div>
-            ))}
+                  {(pageIndex > 0 || page.elements.length > 0) && (
+                    <AddPageDivider onClick={() => handleAddPage(page.id)} />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+
+          <DragOverlay>
+            {draggedElement ? <DragOverlayContent element={draggedElement} /> : null}
+          </DragOverlay>
+        </DndContext>
       </main>
 
       {/* Right Panel - Designer/Properties or Live Preview */}
