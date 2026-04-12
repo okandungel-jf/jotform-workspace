@@ -4,7 +4,7 @@ import { useIconLibrary, type IconLibrary, type IconStyle } from '../context/Ico
 import { loadLibrary } from '../utils/iconRegistry';
 import { generatePalette, applySecondaryPaletteToDOM, resetSecondaryPalette } from '../utils/colorPalette';
 import type { PaletteShade } from '../utils/colorPalette';
-import { generateNeutralPalette, applyNeutralToDOM, resetNeutral } from '../utils/neutralTint';
+import { generateNeutralPalette, applyNeutralToDOM } from '../utils/neutralTint';
 import { ColorPicker } from './components/ColorPicker';
 import { ColorPicker as TokenColorPicker } from '../components/ColorPicker/ColorPicker';
 
@@ -48,49 +48,6 @@ const HEADING_FONT_OPTIONS = [
   'Space Grotesk',
   'Outfit',
   ...FONT_OPTIONS,
-];
-
-interface FontPairing {
-  heading: string;
-  body: string;
-  tags: string[];
-}
-
-const FONT_PAIRINGS: FontPairing[] = [
-  { heading: 'Playfair Display', body: 'DM Sans', tags: ['sophisticated', 'editorial'] },
-  { heading: 'Playfair Display', body: 'Source Serif 4', tags: ['elegant', 'traditional'] },
-  { heading: 'DM Serif Display', body: 'Libre Baskerville', tags: ['literary', 'warm'] },
-  { heading: 'Cormorant Garamond', body: 'Raleway', tags: ['elegant', 'dramatic'] },
-  { heading: 'Cormorant Garamond', body: 'Lora', tags: ['dramatic', 'literary'] },
-  { heading: 'EB Garamond', body: 'Inter', tags: ['academic', 'refined'] },
-  { heading: 'EB Garamond', body: 'Crimson Text', tags: ['scholarly', 'literary'] },
-  { heading: 'Merriweather', body: 'Mulish', tags: ['reliable', 'readable'] },
-  { heading: 'Lora', body: 'Nunito Sans', tags: ['warm', 'approachable'] },
-  { heading: 'Bitter', body: 'Open Sans', tags: ['reliable', 'editorial'] },
-  { heading: 'Bitter', body: 'Lora', tags: ['warm', 'narrative'] },
-  { heading: 'Space Grotesk', body: 'DM Sans', tags: ['playful', 'startup'] },
-  { heading: 'Sora', body: 'Public Sans', tags: ['modern', 'confident'] },
-  { heading: 'Outfit', body: 'Libre Baskerville', tags: ['structured', 'professional'] },
-  { heading: 'Outfit', body: 'IBM Plex Sans', tags: ['trustworthy', 'precise'] },
-  { heading: 'Montserrat', body: 'Karla', tags: ['modern', 'bold'] },
-  { heading: 'Plus Jakarta Sans', body: 'PT Serif', tags: ['curated', 'contemporary'] },
-  { heading: 'Plus Jakarta Sans', body: 'Inter', tags: ['friendly', 'professional'] },
-  { heading: 'Manrope', body: 'DM Sans', tags: ['analytical', 'clear'] },
-  { heading: 'Urbanist', body: 'Libre Franklin', tags: ['clean', 'startup'] },
-  { heading: 'Bricolage Grotesque', body: 'Figtree', tags: ['creative', 'geometric'] },
-  { heading: 'Oswald', body: 'Barlow', tags: ['commanding', 'editorial'] },
-  { heading: 'Anton', body: 'Work Sans', tags: ['bold', 'impactful'] },
-  { heading: 'Josefin Sans', body: 'Raleway', tags: ['elegant', 'sophisticated'] },
-  { heading: 'Quicksand', body: 'Cabin', tags: ['playful', 'approachable'] },
-  { heading: 'Poppins', body: 'Hind', tags: ['friendly', 'warm'] },
-  { heading: 'Nunito', body: 'Nunito Sans', tags: ['friendly', 'approachable'] },
-  { heading: 'Roboto Slab', body: 'Roboto', tags: ['systematic', 'professional'] },
-  { heading: 'Archivo Black', body: 'Archivo', tags: ['raw', 'brutalist'] },
-  { heading: 'Barlow Condensed', body: 'Barlow', tags: ['efficient', 'modern'] },
-  { heading: 'Fjalla One', body: 'Josefin Sans', tags: ['impactful', 'commanding'] },
-  { heading: 'Figtree', body: 'Overpass', tags: ['calm', 'clear'] },
-  { heading: 'Geist', body: 'Geist', tags: ['modern', 'minimal'] },
-  { heading: 'Inter', body: 'Inter', tags: ['clean', 'neutral'] },
 ];
 
 interface ColorScheme {
@@ -292,16 +249,6 @@ function getSecondaryColor(primaryHex: string, offsetDegrees: number): string {
   return hslHueToHex(secondaryHue);
 }
 
-function resetPalette() {
-  const root = document.documentElement;
-  const props = [
-    '--primary-50', '--primary-100', '--primary-200', '--primary-300', '--primary-400',
-    '--primary-500', '--primary-600', '--primary-700', '--primary-800', '--primary-900', '--primary-950',
-    '--fg-inverse',
-  ];
-  props.forEach(p => root.style.removeProperty(p));
-}
-
 function isDarkMode(): boolean {
   return document.documentElement.getAttribute('data-theme') === 'dark';
 }
@@ -313,10 +260,6 @@ function applyRadius(scale: RadiusScale, target: HTMLElement | null) {
   } else {
     target.setAttribute('data-radius', scale.toLowerCase());
   }
-}
-
-function resetRadius(target: HTMLElement | null) {
-  if (target) target.removeAttribute('data-radius');
 }
 
 /**
@@ -569,14 +512,6 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope' }: AppDesig
       applyHeadingFontToDOM(newFont, currentBody);
       return currentBody;
     });
-  }, [applyHeadingFontToDOM]);
-
-  const handlePairingSelect = useCallback((pairing: FontPairing) => {
-    setFont(pairing.body);
-    loadGoogleFont(pairing.body);
-    document.documentElement.style.setProperty('--font-family', `'${pairing.body}', -apple-system, BlinkMacSystemFont, sans-serif`);
-    setHeadingFont(pairing.heading);
-    applyHeadingFontToDOM(pairing.heading, pairing.body);
   }, [applyHeadingFontToDOM]);
 
   const handleIconLibraryChange = useCallback(async (lib: IconLibrary) => {
