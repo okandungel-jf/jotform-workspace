@@ -961,12 +961,26 @@ body {
 }
 
 // ---- Status Bar ----
+.live-preview__status-bar-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 54px;
+  z-index: 1;
+  background: var(--bg-surface);
+
+  &--header {
+    background: var(--bg-fill-brand);
+  }
+}
+
 .live-preview__status-bar {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 2;
+  z-index: 3;
   display: block;
   width: 100%;
   height: auto;
@@ -979,6 +993,7 @@ body {
   overflow-y: auto;
   scrollbar-width: none;
   background: var(--background-white);
+  padding-top: 54px;
 
   &::-webkit-scrollbar {
     display: none;
@@ -997,8 +1012,7 @@ body {
 
 
   .jf-app-header {
-    padding-top: calc(54px + var(--space-12));
-    min-height: calc(272px + 54px);
+    padding-top: var(--space-12);
   }
 
   .themes-view__canvas {
@@ -1013,6 +1027,15 @@ body {
     padding: var(--space-4, 16px);
     gap: var(--space-4, 16px);
   }
+}
+
+.live-preview__bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  padding-bottom: 21px;
 }
 
 .live-preview__home-indicator {

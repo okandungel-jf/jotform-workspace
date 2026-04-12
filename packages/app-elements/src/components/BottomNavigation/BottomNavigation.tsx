@@ -14,6 +14,7 @@ export interface BottomNavigationProps {
   items?: NavItem[];
   activeIndex?: number;
   selected?: boolean;
+  onItemClick?: (index: number) => void;
 }
 
 const DEFAULT_ITEMS: NavItem[] = [
@@ -30,6 +31,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   items = DEFAULT_ITEMS,
   activeIndex = 0,
   selected,
+  onItemClick,
 }) => {
   return (
     <nav className={`bottom-nav${selected ? ' component-selected' : ''}`}>
@@ -39,6 +41,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
           <div
             key={index}
             className={`bottom-nav__item${isActive ? ' bottom-nav__item--active' : ''}`}
+            onClick={() => onItemClick?.(index)}
           >
             <Icon name={item.icon} size={20} forceStyle={isActive ? 'fill' : undefined} />
             <span className="bottom-nav__label">{item.label}</span>

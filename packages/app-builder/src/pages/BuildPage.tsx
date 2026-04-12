@@ -4,6 +4,7 @@ import {
   AppHeader,
   AppDesigner,
   applyDefaultTheme,
+  BottomNavigation,
   EmptyState,
   type RegisteredComponent,
   type VariantValues,
@@ -1103,31 +1104,47 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                 <div className="live-preview__phone-bezel" />
                 {/* Layer 4: Screen */}
                 <div className="live-preview__phone-screen">
+                  <div className={`live-preview__status-bar-bg app-scope${activePageId === pages[0]?.id ? ' live-preview__status-bar-bg--header' : ''}`} />
                   <img src={phoneStatusBar} alt="" className="live-preview__status-bar" />
                   <div className="live-preview__content-scaler">
                     <div className="live-preview__content app-scope">
-                      <AppHeader layout="Center" title={appTitle} subtitle={appSubtitle} />
-                      {pages.map((page, pageIndex) => (
-                        <div key={page.id} className={`themes-view__canvas ${pageIndex === 0 ? 'themes-view__canvas--first' : ''}`}>
-                          <div className="themes-view__app">
-                            {page.elements.map((element) => {
-                              const comp = ComponentRegistry.get(element.componentId)
-                              if (!comp) return null
-                              const previewProps = {
-                                ...element.properties,
-                                'Add New Card': false,
-                              }
-                              return (
-                                <section key={element.id} className="themes-view__section">
-                                  {comp.render(element.variants, previewProps, element.states)}
-                                </section>
-                              )
-                            })}
+                      {(() => {
+                        const activePage = pages.find((p) => p.id === activePageId) || pages[0]
+                        const isFirstPage = activePage?.id === pages[0]?.id
+                        return activePage ? (
+                          <>
+                          {isFirstPage && <AppHeader layout="Center" title={appTitle} subtitle={appSubtitle} />}
+                          <div className={`themes-view__canvas${isFirstPage ? ' themes-view__canvas--first' : ''}`}>
+                            <div className="themes-view__app">
+                              {activePage.elements.map((element) => {
+                                const comp = ComponentRegistry.get(element.componentId)
+                                if (!comp) return null
+                                const previewProps = {
+                                  ...element.properties,
+                                  'Add New Card': false,
+                                }
+                                return (
+                                  <section key={element.id} className="themes-view__section">
+                                    {comp.render(element.variants, previewProps, element.states)}
+                                  </section>
+                                )
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                          </>
+                        ) : null
+                      })()}
                     </div>
                   </div>
+                  {pages.length > 1 && (
+                    <div className="live-preview__bottom-nav app-scope">
+                      <BottomNavigation
+                        items={pages.map((p) => ({ icon: 'House', label: p.name }))}
+                        activeIndex={pages.findIndex((p) => p.id === activePageId)}
+                        onItemClick={(index) => setActivePageId(pages[index].id)}
+                      />
+                    </div>
+                  )}
                   <img src={phoneHomeIndicator} alt="" className="live-preview__home-indicator" />
                 </div>
               </div>
