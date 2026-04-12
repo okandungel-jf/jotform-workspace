@@ -45,6 +45,45 @@ interface AppPage {
 let elementCounter = 0
 let pageCounter = 1
 
+// Icon mapping: component id → design-system icon name + category
+const ELEMENT_ICON_MAP: Record<string, { icon: string; iconCategory: string }> = {
+  'form': { icon: 'form-filled', iconCategory: 'forms-files' },
+  'heading': { icon: 'heading-square-filled', iconCategory: 'editor' },
+  'list': { icon: 'list-bullet', iconCategory: 'editor' },
+  'paragraph': { icon: 'text-image', iconCategory: 'general' },
+  'card': { icon: 'grid-2-filled', iconCategory: 'layout' },
+  'sign-document': { icon: 'document-jf-sign-filled', iconCategory: 'documents' },
+  'document': { icon: 'file-filled', iconCategory: 'forms-files' },
+  'button': { icon: 'label-button-filled', iconCategory: 'general' },
+  'social-follow': { icon: 'share-nodes-filled', iconCategory: 'general' },
+  'product-list': { icon: 'cart-shopping-filled', iconCategory: 'finance' },
+  'donation-box': { icon: 'heart-filled', iconCategory: 'general' },
+  'image-gallery': { icon: 'images-filled', iconCategory: 'media' },
+  'table': { icon: 'table', iconCategory: 'general' },
+  'testimonial': { icon: 'message-star-filled', iconCategory: 'communication' },
+  'login-signup': { icon: 'form-filled', iconCategory: 'forms-files' },
+  'chart': { icon: 'form-report-filled', iconCategory: 'forms-files' },
+  'daily-task-manager': { icon: 'table', iconCategory: 'general' },
+}
+
+interface PanelGroup {
+  label?: string
+  elementIds: string[]
+}
+
+const BASIC_GROUPS: PanelGroup[] = [
+  { elementIds: ['form', 'heading', 'list', 'paragraph', 'card', 'sign-document', 'document', 'image-gallery', 'button'] },
+  { label: 'PAYMENT ELEMENTS', elementIds: ['product-list', 'donation-box'] },
+  { label: 'FEATURED WIDGETS', elementIds: ['social-follow', 'testimonial'] },
+  { label: 'DATA ELEMENTS', elementIds: ['table'] },
+]
+
+const WIDGETS_GROUPS: PanelGroup[] = [
+  { elementIds: ['chart', 'daily-task-manager', 'login-signup'] },
+]
+
+const HIDDEN_ELEMENTS = ['empty-state', 'app-header', 'bottom-navigation', 'color-picker']
+
 function createCanvasElement(comp: RegisteredComponent): CanvasElement {
   const variants: VariantValues = {}
   for (const [group, config] of Object.entries(comp.variants)) {
@@ -418,16 +457,14 @@ export function BuildPage() {
     return () => cleanups.forEach((fn) => fn())
   }, [appTitle, appSubtitle])
 
-  const HIDDEN_ELEMENTS = ['empty-state', 'app-header', 'bottom-navigation', 'color-picker']
+  const [activeTab, setActiveTab] = useState<'basic' | 'widgets'>('basic')
 
-  const categories = components
-    .filter((comp) => !HIDDEN_ELEMENTS.includes(comp.id))
-    .reduce<Record<string, RegisteredComponent[]>>((acc, comp) => {
-      const cat = comp.category || 'General'
-      if (!acc[cat]) acc[cat] = []
-      acc[cat].push(comp)
-      return acc
-    }, {})
+  const componentMap = components.reduce<Record<string, RegisteredComponent>>((acc, comp) => {
+    if (!HIDDEN_ELEMENTS.includes(comp.id)) acc[comp.id] = comp
+    return acc
+  }, {})
+
+  const activeGroups = activeTab === 'basic' ? BASIC_GROUPS : WIDGETS_GROUPS
 
   const handleAddElement = useCallback((comp: RegisteredComponent) => {
     const element = createCanvasElement(comp)
@@ -657,26 +694,66 @@ export function BuildPage() {
     <div className="build-page">
       {/* Left Panel - App Elements */}
       <aside className="build-page__left">
-        <div className="build-page__panel-header">
+        <div className="build-page__left-header">
           <h2>App Elements</h2>
+          <button className="build-page__left-close">
+            <Icon name="xmark" size={24} />
+          </button>
+        </div>
+        <div className="build-page__tab-menu">
+          <button
+            className={`build-page__tab${activeTab === 'basic' ? ' build-page__tab--active' : ''}`}
+            onClick={() => setActiveTab('basic')}
+          >
+            BASIC
+          </button>
+          <button
+            className={`build-page__tab${activeTab === 'widgets' ? ' build-page__tab--active' : ''}`}
+            onClick={() => setActiveTab('widgets')}
+          >
+            WIDGETS
+          </button>
         </div>
         <div className="build-page__elements">
-          {Object.entries(categories).map(([category, items]) => (
-            <div key={category} className="build-page__category">
-              <h3 className="build-page__category-title">{category}</h3>
-              <ul className="build-page__element-list">
-                {items.map((comp) => (
-                  <li
-                    key={comp.id}
-                    className="build-page__element-item"
-                    onClick={() => handleAddElement(comp)}
-                  >
-                    <span className="build-page__element-name">{comp.name}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {activeGroups.map((group, groupIndex) => {
+            const validItems = group.elementIds
+              .map((id) => componentMap[id])
+              .filter(Boolean)
+            if (validItems.length === 0) return null
+
+            return (
+              <div key={group.label || groupIndex}>
+                {group.label && (
+                  <div className="build-page__separator">{group.label}</div>
+                )}
+                {validItems.map((comp, itemIndex) => {
+                  const iconInfo = ELEMENT_ICON_MAP[comp.id]
+                  return (
+                    <div key={comp.id}>
+                      <div
+                        className="build-page__element-item"
+                        onClick={() => handleAddElement(comp)}
+                      >
+                        <div className="build-page__element-icon">
+                          {iconInfo ? (
+                            <Icon name={iconInfo.icon} category={iconInfo.iconCategory} size={24} />
+                          ) : (
+                            <Icon name="grid-2-filled" category="layout" size={24} />
+                          )}
+                        </div>
+                        <div className="build-page__element-content">
+                          <span className="build-page__element-name">{comp.name}</span>
+                        </div>
+                      </div>
+                      {itemIndex < validItems.length - 1 && (
+                        <hr className="build-page__element-divider" />
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })}
         </div>
       </aside>
 
