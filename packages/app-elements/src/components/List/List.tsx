@@ -19,6 +19,9 @@ export type CardSize = 'Small' | 'Medium' | 'Large';
 
 export interface ListProps {
   layout?: ListLayout;
+  title?: string;
+  subtitle?: string;
+  showHeader?: boolean;
   // Basic layout props
   imageStyle?: ListImageStyle;
   size?: ListSize;
@@ -178,6 +181,9 @@ const DEFAULT_ITEMS: ListItemData[] = [
 
 export const List: FC<ListProps> = ({
   layout = 'Basic',
+  title = 'List',
+  subtitle = '',
+  showHeader = true,
   imageStyle = 'Square',
   size = 'Regular',
   action = 'None',
@@ -196,6 +202,13 @@ export const List: FC<ListProps> = ({
 }) => {
   const animClass = skeletonAnimation === 'shimmer' ? 'animate-shimmer' : 'animate-pulse';
 
+  const header = showHeader ? (
+    <div className="jf-list__heading">
+      <h3 className="jf-list__title">{title}</h3>
+      <p className={`jf-list__subtitle ${!subtitle ? 'jf-list__subtitle--empty' : ''}`}>{subtitle}</p>
+    </div>
+  ) : null;
+
   if (skeleton && layout === 'Card') {
     const isVertical = cardLayout === 'Vertical';
     const gridClass = isVertical
@@ -204,6 +217,7 @@ export const List: FC<ListProps> = ({
 
     return (
       <div className={`jf-list jf-list--card${selected ? ' jf-list--selected' : ''}`}>
+        {header}
         <div className={`jf-list__card-grid ${gridClass}`}>
           {items.map((_, i) => (
             <SkeletonCardItem key={i} cardImageStyle={cardImageStyle} cardLayout={cardLayout} animClass={animClass} />
@@ -216,6 +230,7 @@ export const List: FC<ListProps> = ({
   if (skeleton) {
     return (
       <div className={`jf-list jf-list--basic${selected ? ' jf-list--selected' : ''}`}>
+        {header}
         {items.map((_, i) => (
           <Fragment key={i}>
             <SkeletonListItem imageStyle={imageStyle} size={size} animClass={animClass} />
@@ -234,6 +249,7 @@ export const List: FC<ListProps> = ({
 
     return (
       <div className={`jf-list jf-list--card${selected ? ' jf-list--selected' : ''}`}>
+        {header}
         <div className={`jf-list__card-grid ${gridClass}`}>
           {items.map((item, i) => (
             <Card
@@ -254,6 +270,7 @@ export const List: FC<ListProps> = ({
 
   return (
     <div className={`jf-list jf-list--basic${selected ? ' jf-list--selected' : ''}`}>
+      {header}
       {items.map((item, i) => (
         <Fragment key={i}>
           <BasicListItem item={item} imageStyle={imageStyle} size={size} action={action} actionIconFilled={actionIconFilled} buttonLabel={buttonLabel} />

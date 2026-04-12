@@ -433,7 +433,8 @@ body {
 
 // Show empty subtitle placeholder when element is selected
 .build-page__canvas-element--selected .jf-heading__subtitle--empty,
-.build-page__canvas-element--selected .jf-product-list__subtitle--empty {
+.build-page__canvas-element--selected .jf-product-list__subtitle--empty,
+.build-page__canvas-element--selected .jf-list__subtitle--empty {
   display: block;
 }
 

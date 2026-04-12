@@ -99,6 +99,10 @@ const INLINE_EDITABLE_MAP: Record<string, { selector: string; property: string }
     { selector: '.jf-sign-doc__title', property: 'Label' },
     { selector: '.jf-sign-doc__desc', property: 'Description' },
   ],
+  list: [
+    { selector: '.jf-list__title', property: 'Title' },
+    { selector: '.jf-list__subtitle', property: 'Subtitle' },
+  ],
   'product-list': [
     { selector: '.jf-product-list__title', property: 'Title' },
     { selector: '.jf-product-list__subtitle', property: 'Subtitle' },
@@ -662,7 +666,14 @@ export function BuildPage() {
             </div>
 
             {/* Variants */}
-            {Object.entries(selectedComponent.variants).map(([group, config]) => (
+            {Object.entries(selectedComponent.variants)
+              .filter(([, config]) => {
+                if (!config.showWhen) return true
+                return Object.entries(config.showWhen).every(
+                  ([key, val]) => selectedElement.variants[key] === val
+                )
+              })
+              .map(([group, config]) => (
               <div key={group} className="build-page__prop-group">
                 <label className="build-page__prop-label">{group}</label>
                 <div className="build-page__prop-options">
@@ -680,7 +691,15 @@ export function BuildPage() {
             ))}
 
             {/* Properties */}
-            {selectedComponent.properties.filter((prop) => prop.name !== 'Selected' && prop.name !== 'Skeleton').map((prop) => (
+            {selectedComponent.properties
+              .filter((prop) => prop.name !== 'Selected' && prop.name !== 'Skeleton')
+              .filter((prop) => {
+                if (!prop.showWhen) return true
+                return Object.entries(prop.showWhen).every(
+                  ([key, val]) => selectedElement.variants[key] === val || selectedElement.properties[key] === val
+                )
+              })
+              .map((prop) => (
               <div key={prop.name} className="build-page__prop-group">
                 <label className="build-page__prop-label">{prop.name}</label>
                 {prop.type === 'boolean' ? (

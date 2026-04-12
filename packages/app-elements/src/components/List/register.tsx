@@ -66,6 +66,9 @@ ComponentRegistry.register({
   },
 
   properties: [
+    { name: 'Title', type: 'text', default: 'List' },
+    { name: 'Subtitle', type: 'text', default: '' },
+    { name: 'Show Header', type: 'boolean', default: true },
     { name: 'Button Label', type: 'text', default: 'Edit' },
     { name: 'Skeleton', type: 'boolean', default: false },
     { name: 'Skeleton Animation', type: 'select', options: ['Pulse', 'Shimmer'], default: 'Pulse' },
@@ -181,6 +184,9 @@ ComponentRegistry.register({
     return (
       <List
         layout={variants['Layout'] as 'Basic' | 'Card'}
+        title={props['Title'] as string}
+        subtitle={props['Subtitle'] as string}
+        showHeader={props['Show Header'] as boolean}
         // Basic layout props
         imageStyle={variants['Image Style'] as ListImageStyle}
         size={variants['Size'] as ListSize}
