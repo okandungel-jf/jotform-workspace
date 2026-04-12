@@ -174,7 +174,6 @@ export function BuildPage() {
   const [activePageId, setActivePageId] = useState('page-1')
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null)
   const [dragActiveId, setDragActiveId] = useState<string | null>(null)
-  const [overPageId, setOverPageId] = useState<string | null>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -300,7 +299,6 @@ export function BuildPage() {
   const handleDragOver = useCallback((event: DragOverEvent) => {
     const { active, over } = event
     if (!over) {
-      setOverPageId(null)
       return
     }
 
@@ -316,7 +314,7 @@ export function BuildPage() {
       if (isPage) targetPageId = overId
     }
 
-    setOverPageId(targetPageId)
+
 
     // Only move if crossing pages
     if (!sourcePageId || !targetPageId || sourcePageId === targetPageId) return
