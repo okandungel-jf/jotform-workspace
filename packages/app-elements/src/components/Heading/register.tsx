@@ -13,7 +13,7 @@ ComponentRegistry.register({
   variants: {
     Size: {
       options: ['Large', 'Medium', 'Small'],
-      default: 'Large',
+      default: 'Medium',
     },
     Alignment: {
       options: ['Left', 'Center', 'Right'],
@@ -23,7 +23,7 @@ ComponentRegistry.register({
 
   properties: [
     { name: 'Heading', type: 'text', default: 'Heading' },
-    { name: 'Subheading', type: 'text', default: 'Subheading' },
+    { name: 'Subheading', type: 'text', default: '' },
     { name: 'Selected', type: 'boolean', default: false },
     { name: 'Shrinked', type: 'boolean', default: false },
     { name: 'Skeleton', type: 'boolean', default: false },

@@ -19,7 +19,7 @@ export const Heading: React.FC<HeadingProps> = ({
   size = 'Large',
   alignment = 'Left',
   heading = 'Heading',
-  subheading = 'Subheading',
+  subheading = '',
   selected = false,
   shrinked = false,
   skeleton = false,
@@ -56,9 +56,7 @@ export const Heading: React.FC<HeadingProps> = ({
       <Tag className={`jf-heading__title jf-heading__title--${size.toLowerCase()}`}>
         {heading}
       </Tag>
-      {subheading && (
-        <p className="jf-heading__subtitle">{subheading}</p>
-      )}
+      <p className={`jf-heading__subtitle ${!subheading ? 'jf-heading__subtitle--empty' : ''}`}>{subheading}</p>
     </div>
   );
 };

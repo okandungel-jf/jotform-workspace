@@ -355,15 +355,9 @@ body {
 .build-page__canvas-element {
   cursor: pointer;
   width: 100%;
-  outline: 2px solid transparent;
-  outline-offset: 4px;
-  border-radius: var(--radius-lg);
-  transition: outline-color 0.15s;
   position: relative;
+  contain: layout style;
 
-  &--selected {
-    outline-color: var(--border-info);
-  }
 
   &--shrinked {
     flex: 1 1 calc(50% - var(--space-4) / 2);
@@ -407,9 +401,29 @@ body {
   pointer-events: auto;
 }
 
-// Hide component-level selected outlines in canvas — builder handles selection
+// Inline edit placeholder
+.build-page__inline-placeholder {
+  &::before {
+    content: attr(data-placeholder);
+    color: var(--fg-disabled);
+    pointer-events: none;
+  }
+}
+
+// Show empty subtitle placeholder when element is selected
+.build-page__canvas-element--selected .jf-heading__subtitle--empty {
+  display: block;
+}
+
+// Hide component-level selected outlines — builder applies its own
 .build-page__canvas-element [class*="--selected"] {
   outline: none;
+}
+
+// Builder selected outline — higher specificity to override the rule above
+.build-page__canvas-element--selected > .build-page__canvas-element-content > * {
+  outline: 2px solid var(--border-info);
+  outline-offset: 4px;
 }
 
 // Hide paragraph toolbar & selected state when builder element is deselected

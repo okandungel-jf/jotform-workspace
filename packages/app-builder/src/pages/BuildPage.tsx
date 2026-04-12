@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef, memo } from 'react'
 import {
   ComponentRegistry,
   AppHeader,
@@ -24,7 +24,7 @@ import {
 import {
   SortableContext,
   useSortable,
-  rectSortingStrategy,
+  verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
@@ -70,19 +70,57 @@ function createCanvasElement(comp: RegisteredComponent): CanvasElement {
   }
 }
 
-function SortableElement({
+// Maps component selectors to property names for inline editing
+const INLINE_EDITABLE_MAP: Record<string, { selector: string; property: string }[]> = {
+  card: [
+    { selector: '.jf-card__title', property: 'Title' },
+    { selector: '.jf-card__description', property: 'Description' },
+  ],
+  button: [
+    { selector: '.jf-btn__label', property: 'Label' },
+  ],
+  heading: [
+    { selector: '.jf-heading__title', property: 'Heading' },
+    { selector: '.jf-heading__subtitle', property: 'Subheading' },
+  ],
+  form: [
+    { selector: '.jf-form__title', property: 'Label' },
+    { selector: '.jf-form__desc', property: 'Description' },
+  ],
+  table: [
+    { selector: '.jf-table__title', property: 'Label' },
+    { selector: '.jf-table__desc', property: 'Description' },
+  ],
+  document: [
+    { selector: '.jf-doc__title', property: 'File Name' },
+    { selector: '.jf-doc__desc', property: 'Description' },
+  ],
+  'sign-document': [
+    { selector: '.jf-sign-doc__title', property: 'Label' },
+    { selector: '.jf-sign-doc__desc', property: 'Description' },
+  ],
+  'donation-box': [
+    { selector: '.jf-donation__title', property: 'Title' },
+    { selector: '.jf-donation__description', property: 'Description' },
+  ],
+}
+
+const SortableElement = memo(function SortableElement({
   element,
   isSelected,
   isDragActive,
   onSelect,
+  onPropertyChange,
 }: {
   element: CanvasElement
   isSelected: boolean
   isDragActive: boolean
   onSelect: (id: string) => void
+  onPropertyChange: (elementId: string, property: string, value: string) => void
 }) {
   const comp = ComponentRegistry.get(element.componentId)
   const isShrinked = element.properties['Shrinked'] === true
+  const contentRef = useRef<HTMLDivElement>(null)
 
   const {
     attributes,
@@ -94,10 +132,94 @@ function SortableElement({
   } = useSortable({ id: element.id })
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Translate.toString(transform),
     transition,
     opacity: isDragging || isDragActive ? 0.4 : 1,
   }
+
+  // Enable inline editing when selected
+  useEffect(() => {
+    const container = contentRef.current
+    if (!container || !comp) return
+
+    const editableFields = INLINE_EDITABLE_MAP[element.componentId] || []
+    const cleanups: (() => void)[] = []
+
+    for (const field of editableFields) {
+      const el = container.querySelector(field.selector) as HTMLElement | null
+      if (!el) continue
+
+      if (isSelected) {
+        el.contentEditable = 'true'
+        el.style.outline = 'none'
+        el.style.cursor = 'text'
+        const propDef = ComponentRegistry.get(element.componentId)?.properties.find((p) => p.name === field.property)
+        const defaultValue = String(propDef?.default || '')
+        const placeholderText = defaultValue || field.property
+        el.dataset.placeholder = placeholderText
+
+        // If content is empty, immediately show placeholder
+        if (!el.textContent) {
+          el.classList.add('build-page__inline-placeholder')
+        }
+
+        const handleFocus = () => {
+          // If text is still the default (and default is not empty), clear it and show placeholder
+          if (defaultValue && el.textContent === defaultValue) {
+            el.textContent = ''
+            el.classList.add('build-page__inline-placeholder')
+          }
+          // If empty (no default), show placeholder
+          if (!el.textContent) {
+            el.classList.add('build-page__inline-placeholder')
+          }
+        }
+
+        const handleInput = () => {
+          if (el.textContent) {
+            el.classList.remove('build-page__inline-placeholder')
+          } else {
+            el.classList.add('build-page__inline-placeholder')
+          }
+        }
+
+        const handleBlur = () => {
+          const newText = el.textContent || ''
+          el.classList.remove('build-page__inline-placeholder')
+          if (newText) {
+            onPropertyChange(element.id, field.property, newText)
+          } else {
+            onPropertyChange(element.id, field.property, defaultValue)
+            el.textContent = defaultValue
+          }
+        }
+
+        const handleMouseDown = (e: MouseEvent) => {
+          if (isSelected) e.stopPropagation()
+        }
+
+        el.addEventListener('focus', handleFocus)
+        el.addEventListener('input', handleInput)
+        el.addEventListener('blur', handleBlur)
+        el.addEventListener('mousedown', handleMouseDown)
+        cleanups.push(() => {
+          el.contentEditable = 'false'
+          el.style.cursor = ''
+          el.classList.remove('build-page__inline-placeholder')
+          delete el.dataset.placeholder
+          el.removeEventListener('focus', handleFocus)
+          el.removeEventListener('input', handleInput)
+          el.removeEventListener('blur', handleBlur)
+          el.removeEventListener('mousedown', handleMouseDown)
+        })
+      } else {
+        el.contentEditable = 'false'
+        el.style.cursor = ''
+      }
+    }
+
+    return () => cleanups.forEach((fn) => fn())
+  }, [isSelected, element.componentId, element.id, comp, onPropertyChange])
 
   if (!comp) return null
 
@@ -118,14 +240,14 @@ function SortableElement({
       >
         <Icon name="grid-dots-vertical" category="general" size={24} />
       </div>
-      <div className="build-page__canvas-element-content">
+      <div ref={contentRef} className="build-page__canvas-element-content">
         {comp.render(element.variants, element.properties, element.states)}
       </div>
     </section>
   )
-}
+})
 
-function DragOverlayContent({ element }: { element: CanvasElement }) {
+const DragOverlayContent = memo(function DragOverlayContent({ element }: { element: CanvasElement }) {
   const comp = ComponentRegistry.get(element.componentId)
   if (!comp) return null
 
@@ -136,7 +258,7 @@ function DragOverlayContent({ element }: { element: CanvasElement }) {
       </div>
     </section>
   )
-}
+})
 
 function DroppablePage({ pageId, children }: { pageId: string; children: React.ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id: pageId })
@@ -480,7 +602,7 @@ export function BuildPage() {
                   >
                     <SortableContext
                       items={page.elements.map((el) => el.id)}
-                      strategy={rectSortingStrategy}
+                      strategy={verticalListSortingStrategy}
                       id={page.id}
                     >
                       <DroppablePage pageId={page.id}>
@@ -496,6 +618,7 @@ export function BuildPage() {
                               isSelected={selectedElementId === element.id}
                               isDragActive={dragActiveId === element.id}
                               onSelect={handleSelectElement}
+                              onPropertyChange={handlePropertyChange}
                             />
                           ))
                         )}
