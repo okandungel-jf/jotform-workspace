@@ -564,13 +564,26 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
 
   const handleAddElement = useCallback((comp: RegisteredComponent) => {
     const element = createCanvasElement(comp)
-    setPages((prev) =>
-      prev.map((page) =>
-        page.id === activePageId
-          ? { ...page, elements: [...page.elements, element] }
-          : page
-      )
-    )
+    setPages((prev) => {
+      // Find the target page: page of selected element, or activePageId
+      let targetPageId = activePageId
+      if (selectedElementId) {
+        const selectedPage = prev.find((p) => p.elements.some((el) => el.id === selectedElementId))
+        if (selectedPage) targetPageId = selectedPage.id
+      }
+      return prev.map((page) => {
+        if (page.id !== targetPageId) return page
+        const selectedIdx = selectedElementId
+          ? page.elements.findIndex((el) => el.id === selectedElementId)
+          : -1
+        if (selectedIdx !== -1) {
+          const newElements = [...page.elements]
+          newElements.splice(selectedIdx + 1, 0, element)
+          return { ...page, elements: newElements }
+        }
+        return { ...page, elements: [...page.elements, element] }
+      })
+    })
     setSelectedElementId(element.id)
     if (!mobileElementsSheet) {
       setRightPanel('properties')
@@ -601,7 +614,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         requestAnimationFrame(step)
       }, 100)
     })
-  }, [activePageId, isMobileView, mobileElementsSheet])
+  }, [activePageId, isMobileView, mobileElementsSheet, selectedElementId])
 
   const handleSelectElement = useCallback((elementId: string) => {
     setSelectedElementId(elementId)
@@ -1063,7 +1076,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                         {page.elements.length === 0 ? (
                           <section
                             className="themes-view__section themes-view__section--center build-page__empty-state"
-                            onClick={(e) => { e.stopPropagation(); if (isMobileView) { setMobileElementsSheet(true); } else { setLeftPanelOpen(true); } }}
+                            onClick={(e) => { e.stopPropagation(); setActivePageId(page.id); if (isMobileView) { setMobileElementsSheet(true); } else { setLeftPanelOpen(true); } }}
                           >
                             <EmptyState mobile={isMobileView} />
                           </section>
