@@ -1271,6 +1271,10 @@ body {
   cursor: grab;
   transition: opacity 0.15s;
 
+  @media (max-width: 768px) {
+    display: none;
+  }
+
   .build-page__canvas-element:hover &,
   .build-page__canvas-element--selected & {
     opacity: 1;
