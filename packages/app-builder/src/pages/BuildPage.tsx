@@ -1194,6 +1194,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         onClose={() => setRightPanel('preview')}
         targetSelector=".app-scope"
         isMobile={isMobileView}
+        visible={rightPanel === 'designer'}
         renderIcon={(name, size) => <Icon name={name} category="editor" size={size} />}
         doneButton={<DSButton variant="filled" colorScheme="primary" shape="rounded" size="md" onClick={() => setRightPanel('preview')}>Done</DSButton>}
       />

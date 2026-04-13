@@ -21,35 +21,35 @@ const DEFAULT_HARMONY = 150;
 type RadiusScale = 'Small' | 'Medium' | 'Large' | 'XLarge';
 
 const FONT_OPTIONS = [
-  'Inter',
-  'Frances',
-  'IBM Plex Mono',
-  'Fredoka',
-  'JetBrains Mono',
-  'Instrument Sans',
-  'Figtree',
-  'Hanken Grotesk',
-  'Geist',
-  'DM Sans',
-  'Public Sans',
-  'Google Sans',
   'Bricolage Grotesque',
+  'DM Sans',
+  'Figtree',
+  'Frances',
+  'Fredoka',
+  'Geist',
+  'Google Sans',
+  'Hanken Grotesk',
+  'IBM Plex Mono',
+  'Instrument Sans',
+  'Inter',
+  'JetBrains Mono',
+  'Public Sans',
   'Varela Round',
 ];
 
 const HEADING_FONT_OPTIONS = [
-  'Playfair Display',
-  'Merriweather',
-  'Lora',
-  'Libre Baskerville',
-  'Fraunces',
-  'DM Serif Display',
   'Bitter',
+  'DM Serif Display',
+  'Fraunces',
+  'Libre Baskerville',
+  'Lora',
+  'Merriweather',
+  'Outfit',
+  'Playfair Display',
   'Sora',
   'Space Grotesk',
-  'Outfit',
   ...FONT_OPTIONS,
-];
+].sort();
 
 interface ColorScheme {
   brand: string;
@@ -369,11 +369,12 @@ interface AppDesignerProps {
   onClose?: () => void;
   targetSelector?: string;
   isMobile?: boolean;
+  visible?: boolean;
   renderIcon?: (name: string, size: number) => React.ReactNode;
   doneButton?: React.ReactNode;
 }
 
-export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, renderIcon, doneButton }: AppDesignerProps) {
+export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, renderIcon, doneButton, visible = true }: AppDesignerProps) {
   const { setLibrary: setIconLibrary, setIconStyle } = useIconLibrary();
 
   // Theme state
@@ -419,6 +420,27 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
 
   const handleTabToggle = useCallback((tab: 'themes' | 'style' | 'font') => {
     setActiveTab((prev) => (prev === tab ? null : tab));
+  }, []);
+
+  // Reset mobile sheets when panel is hidden
+  useEffect(() => {
+    if (!visible && isMobile) {
+      setActiveTab(null);
+      setMobileFontSheet(null);
+      setMobilePickerOpen(false);
+      setMobileEditThemeOpen(false);
+      setMobileTokenPickerOpen(false);
+      setEditingToken(null);
+    }
+  }, [visible, isMobile]);
+
+  const resetMobileState = useCallback(() => {
+    setActiveTab(null);
+    setMobileFontSheet(null);
+    setMobilePickerOpen(false);
+    setMobileEditThemeOpen(false);
+    setMobileTokenPickerOpen(false);
+    setEditingToken(null);
   }, []);
 
   // ── Target element for radius ──
@@ -780,7 +802,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
           <div className="design-top-bar__left">
             <span className="design-top-bar__title">App Designer</span>
           </div>
-          {doneButton}
+          <span onClick={resetMobileState}>{doneButton}</span>
         </div>
 
         {/* Bottom Tab Bar — hidden when a sheet is open */}
@@ -938,7 +960,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
 
         {/* Heading Font List */}
         <BottomSheet open={mobileFontSheet === 'heading'} onClose={() => setMobileFontSheet(null)} title="Heading Font" noOverlay dark renderCloseButton={sheetCloseButton}>
-          <div className="themes-sheet-content themes-sheet-content--font-list v2-sheet">
+          <div className="themes-sheet-content themes-sheet-content--font-list themes-sheet-content--font-grid v2-sheet">
             {HEADING_FONT_OPTIONS.map((f) => {
               const isActive = f === (headingFont || font);
               loadGoogleFont(f);
@@ -960,7 +982,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
 
         {/* Body Font List */}
         <BottomSheet open={mobileFontSheet === 'body'} onClose={() => setMobileFontSheet(null)} title="Body Font" noOverlay dark renderCloseButton={sheetCloseButton}>
-          <div className="themes-sheet-content themes-sheet-content--font-list v2-sheet">
+          <div className="themes-sheet-content themes-sheet-content--font-list themes-sheet-content--font-grid v2-sheet">
             {FONT_OPTIONS.map((f) => {
               const isActive = f === font;
               loadGoogleFont(f);
