@@ -374,6 +374,7 @@ function DroppablePage({ pageId, children }: { pageId: string; children: React.R
   return (
     <div
       ref={setNodeRef}
+      data-page-id={pageId}
       className={`themes-view__app ${isOver ? 'build-page__droppable--over' : ''}`}
     >
       {children}
@@ -632,7 +633,33 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
       return next
     })
     setActivePageId(newPage.id)
-  }, [])
+    // Scroll to new page after render
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const el = document.querySelector(`[data-page-id="${newPage.id}"]`)
+        if (!el) return
+        const rect = el.getBoundingClientRect()
+        const scrollContainer = isMobileView
+          ? document.querySelector('.builder')
+          : document.querySelector('.build-page__canvas')
+        if (!scrollContainer) return
+        const containerRect = scrollContainer.getBoundingClientRect()
+        const targetY = scrollContainer.scrollTop + rect.top - containerRect.top - containerRect.height / 2 + rect.height / 2
+        const start = scrollContainer.scrollTop
+        const distance = targetY - start
+        const duration = 500
+        let startTime: number | null = null
+        const ease = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+        const step = (timestamp: number) => {
+          if (!startTime) startTime = timestamp
+          const progress = Math.min((timestamp - startTime) / duration, 1)
+          scrollContainer.scrollTop = start + distance * ease(progress)
+          if (progress < 1) requestAnimationFrame(step)
+        }
+        requestAnimationFrame(step)
+      }, 100)
+    })
+  }, [isMobileView])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1034,8 +1061,11 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                     >
                       <DroppablePage pageId={page.id}>
                         {page.elements.length === 0 ? (
-                          <section className="themes-view__section themes-view__section--center build-page__empty-state">
-                            <EmptyState />
+                          <section
+                            className="themes-view__section themes-view__section--center build-page__empty-state"
+                            onClick={(e) => { e.stopPropagation(); if (isMobileView) { setMobileElementsSheet(true); } else { setLeftPanelOpen(true); } }}
+                          >
+                            <EmptyState mobile={isMobileView} />
                           </section>
                         ) : (
                           page.elements.map((element) => (
