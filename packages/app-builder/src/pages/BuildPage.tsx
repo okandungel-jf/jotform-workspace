@@ -410,6 +410,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [isPanelDrag, setIsPanelDrag] = useState(false)
   const [leftPanelOpen, setLeftPanelOpen] = useState(false)
   const [mobileElementsSheet, setMobileElementsSheet] = useState(false)
+  const [forceTargetPageId, setForceTargetPageId] = useState<string | null>(null)
   const [isMobileView, setIsMobileView] = useState(() => window.matchMedia('(max-width: 768px)').matches)
 
   useEffect(() => {
@@ -565,15 +566,17 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const handleAddElement = useCallback((comp: RegisteredComponent) => {
     const element = createCanvasElement(comp)
     setPages((prev) => {
-      // Find the target page: page of selected element, or activePageId
+      // Priority: forceTargetPageId (from empty state click) > selected element's page > activePageId
       let targetPageId = activePageId
-      if (selectedElementId) {
+      if (forceTargetPageId) {
+        targetPageId = forceTargetPageId
+      } else if (selectedElementId) {
         const selectedPage = prev.find((p) => p.elements.some((el) => el.id === selectedElementId))
         if (selectedPage) targetPageId = selectedPage.id
       }
       return prev.map((page) => {
         if (page.id !== targetPageId) return page
-        const selectedIdx = selectedElementId
+        const selectedIdx = selectedElementId && !forceTargetPageId
           ? page.elements.findIndex((el) => el.id === selectedElementId)
           : -1
         if (selectedIdx !== -1) {
@@ -584,6 +587,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         return { ...page, elements: [...page.elements, element] }
       })
     })
+    setForceTargetPageId(null)
     setSelectedElementId(element.id)
     if (!mobileElementsSheet) {
       setRightPanel('properties')
@@ -614,7 +618,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         requestAnimationFrame(step)
       }, 100)
     })
-  }, [activePageId, isMobileView, mobileElementsSheet, selectedElementId])
+  }, [activePageId, isMobileView, mobileElementsSheet, selectedElementId, forceTargetPageId])
 
   const handleSelectElement = useCallback((elementId: string) => {
     setSelectedElementId(elementId)
@@ -1076,7 +1080,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                         {page.elements.length === 0 ? (
                           <section
                             className="themes-view__section themes-view__section--center build-page__empty-state"
-                            onClick={(e) => { e.stopPropagation(); setActivePageId(page.id); if (isMobileView) { setMobileElementsSheet(true); } else { setLeftPanelOpen(true); } }}
+                            onClick={(e) => { e.stopPropagation(); setActivePageId(page.id); setForceTargetPageId(page.id); setSelectedElementId(null); if (isMobileView) { setMobileElementsSheet(true); } else { setLeftPanelOpen(true); } }}
                           >
                             <EmptyState mobile={isMobileView} />
                           </section>
