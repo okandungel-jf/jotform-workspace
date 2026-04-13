@@ -778,7 +778,6 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
         {/* Top Bar */}
         <div className="design-top-bar" data-theme="dark">
           <div className="design-top-bar__left">
-            {renderIcon?.('paint-roller-vertical-filled', 24)}
             <span className="design-top-bar__title">App Designer</span>
           </div>
           {doneButton}
