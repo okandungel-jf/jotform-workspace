@@ -780,6 +780,8 @@ body {
 
   @media (max-width: 768px) {
     overflow-y: visible;
+    padding-bottom: var(--bottom-sheet-height, 0px);
+    transition: padding-bottom 0.25s ease;
   }
 
   .themes-view__device {
@@ -1170,6 +1172,11 @@ body {
   margin: var(--space-4) auto;
   width: 100%;
   max-width: 644px;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    padding: 0 var(--space-4);
+  }
 }
 
 .add-page-divider__line {
@@ -1475,7 +1482,7 @@ body {
 .mobile-elements-sheet {
   padding: var(--spacing-md);
   overflow-y: auto;
-  max-height: 40vh;
+  max-height: 30vh;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
@@ -1682,12 +1689,28 @@ body {
   // Canvas adjustments when design mode is active
   .builder--design-mode .build-page__canvas {
     padding-top: 64px;
-    padding-bottom: 72px;
+    padding-bottom: max(var(--bottom-sheet-height, 0px), 72px);
   }
 
   // Hide add-element floating button in design mode
   .builder--design-mode .build-page__add-element-btn {
     display: none;
+  }
+
+  // Elements sheet open — hide floating buttons, slide topbar up
+  .builder--elements-sheet .build-page__floating-buttons {
+    display: none;
+  }
+
+  .builder--elements-sheet > .topbar {
+    transform: translateY(-100%);
+    margin-bottom: -96px; // main bar (56px) + tab bar (40px)
+    transition: transform 0.25s ease, margin-bottom 0.25s ease;
+  }
+
+  // Restore topbar transition when sheet closes
+  .builder:not(.builder--elements-sheet) > .topbar {
+    transition: transform 0.25s ease, margin-bottom 0.25s ease;
   }
 
 }

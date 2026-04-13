@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type FC, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, useRef, type FC, type ReactNode } from 'react';
 
 interface BottomSheetProps {
   open: boolean;
@@ -37,6 +37,8 @@ export const BottomSheet: FC<BottomSheetProps> = ({ open, onClose, title, childr
     }
   }, [open]);
 
+  const sheetRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (visible && !noOverlay) {
       document.body.style.overflow = 'hidden';
@@ -44,6 +46,22 @@ export const BottomSheet: FC<BottomSheetProps> = ({ open, onClose, title, childr
       document.body.style.overflow = '';
     }
     return () => { document.body.style.overflow = ''; };
+  }, [visible, noOverlay]);
+
+  // Set CSS variable with sheet height for canvas padding
+  useEffect(() => {
+    if (visible && noOverlay && sheetRef.current) {
+      const measure = () => {
+        const h = sheetRef.current?.offsetHeight || 0;
+        document.documentElement.style.setProperty('--bottom-sheet-height', `${h}px`);
+      };
+      requestAnimationFrame(measure);
+      return () => {
+        document.documentElement.style.setProperty('--bottom-sheet-height', '0px');
+      };
+    } else if (!visible) {
+      document.documentElement.style.setProperty('--bottom-sheet-height', '0px');
+    }
   }, [visible, noOverlay]);
 
   const handleClose = useCallback(() => {
@@ -57,7 +75,7 @@ export const BottomSheet: FC<BottomSheetProps> = ({ open, onClose, title, childr
 
   if (noOverlay) {
     return (
-      <div className={`bottom-sheet bottom-sheet--no-overlay ${animClass}`} data-theme={dark ? 'dark' : undefined} onClick={(e) => e.stopPropagation()}>
+      <div ref={sheetRef} className={`bottom-sheet bottom-sheet--no-overlay ${animClass}`} data-theme={dark ? 'dark' : undefined} onClick={(e) => e.stopPropagation()}>
         <div className="bottom-sheet__header">
           <div className="bottom-sheet__handle" />
           <span className="bottom-sheet__title">{title}</span>

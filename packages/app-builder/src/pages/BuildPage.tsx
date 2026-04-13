@@ -291,6 +291,7 @@ const SortableElement = memo(function SortableElement({
       ref={setNodeRef}
       style={style}
       className={`themes-view__section build-page__canvas-element ${isSelected ? 'build-page__canvas-element--selected' : ''} ${isShrinked ? 'build-page__canvas-element--shrinked' : ''}`}
+      data-element-id={element.id}
       onClick={(e) => {
         e.stopPropagation()
         onSelect(element.id)
@@ -450,6 +451,17 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
     }
   }, [rightPanel, isMobileView])
 
+  // Toggle elements-sheet class on .builder for CSS targeting
+  useEffect(() => {
+    const builder = document.querySelector('.builder')
+    if (!builder) return
+    if (mobileElementsSheet && isMobileView) {
+      builder.classList.add('builder--elements-sheet')
+    } else {
+      builder.classList.remove('builder--elements-sheet')
+    }
+  }, [mobileElementsSheet, isMobileView])
+
   // AppHeader inline editing
   useEffect(() => {
     const container = appHeaderRef.current
@@ -559,12 +571,41 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
       )
     )
     setSelectedElementId(element.id)
-    setRightPanel('properties')
-  }, [activePageId])
+    if (!mobileElementsSheet) {
+      setRightPanel('properties')
+    }
+    // Scroll to newly added element after render
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const el = document.querySelector(`[data-element-id="${element.id}"]`)
+        if (!el) return
+        const rect = el.getBoundingClientRect()
+        const scrollContainer = isMobileView
+          ? document.querySelector('.builder')
+          : document.querySelector('.build-page__canvas')
+        if (!scrollContainer) return
+        const containerRect = scrollContainer.getBoundingClientRect()
+        const targetY = scrollContainer.scrollTop + rect.top - containerRect.top - containerRect.height / 2 + rect.height / 2
+        const start = scrollContainer.scrollTop
+        const distance = targetY - start
+        const duration = 500
+        let startTime: number | null = null
+        const ease = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+        const step = (timestamp: number) => {
+          if (!startTime) startTime = timestamp
+          const progress = Math.min((timestamp - startTime) / duration, 1)
+          scrollContainer.scrollTop = start + distance * ease(progress)
+          if (progress < 1) requestAnimationFrame(step)
+        }
+        requestAnimationFrame(step)
+      }, 100)
+    })
+  }, [activePageId, isMobileView, mobileElementsSheet])
 
   const handleSelectElement = useCallback((elementId: string) => {
     setSelectedElementId(elementId)
     setRightPanel('properties')
+    setMobileElementsSheet(false)
   }, [])
 
   const handleRemoveElement = useCallback((elementId: string) => {
@@ -1233,7 +1274,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                     <button
                       key={comp.id}
                       className="mobile-elements-grid__item"
-                      onClick={() => { handleAddElement(comp); setMobileElementsSheet(false); }}
+                      onClick={() => { handleAddElement(comp); }}
                     >
                       <div className="mobile-elements-grid__icon">
                         {iconInfo ? (
