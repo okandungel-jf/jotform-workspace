@@ -51,6 +51,7 @@
   --ds-bg-page: var(--background-lightest);
   --ds-text-primary: var(--secondary-text-white);
   --ds-text-secondary: var(--secondary-text-lightest);
+  --ds-text-tertiary: var(--secondary-text-light);
   --ds-text-dark: var(--secondary-text-darkest);
   --ds-accent: var(--product-default);
   --ds-accent-hover: var(--product-dark);
@@ -1465,6 +1466,89 @@ body {
 
 .publish-page__content {
   @extend .settings-page__content;
+}
+
+// ============================================
+// Mobile Elements Bottom Sheet
+// ============================================
+
+.mobile-elements-sheet {
+  padding: var(--spacing-md);
+  overflow-y: auto;
+  max-height: 40vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+
+  > .build-page__tab-menu {
+    margin: calc(-1 * var(--spacing-md)) calc(-1 * var(--spacing-md)) 0;
+  }
+}
+
+.mobile-elements-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.mobile-elements-grid__separator {
+  font-family: var(--ds-font-family);
+  font-size: var(--font-size-paragraph-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ds-text-tertiary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.mobile-elements-grid__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-2xs);
+  background: #434A60;
+  border: 1px solid #2A2D3B;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--ds-text-primary);
+  transition: background 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+  height: 72px;
+
+  &:hover {
+    background: #4d5570;
+  }
+
+  &:active {
+    background: #0066C3;
+  }
+}
+
+.mobile-elements-grid__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ds-text-secondary);
+
+  .mobile-elements-grid__item:active & {
+    color: var(--ds-text-primary);
+  }
+}
+
+.mobile-elements-grid__label {
+  font-family: var(--ds-font-family);
+  font-size: var(--font-size-paragraph-sm);
+  font-weight: var(--ds-font-weight-book);
+  letter-spacing: 0;
+  text-align: center;
+  line-height: 1.2;
+  color: var(--ds-text-secondary);
+
+  .mobile-elements-grid__item:active & {
+    color: var(--ds-text-primary);
+  }
 }
 
 // ============================================

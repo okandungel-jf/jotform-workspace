@@ -5,7 +5,7 @@ import scss from './ProgressIndicator.scss?raw';
 
 ComponentRegistry.register({
   id: 'progress-indicator',
-  name: 'Progress Indicator',
+  name: 'Progress',
   category: 'Widgets',
   icon: 'ListChecks',
 

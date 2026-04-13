@@ -6,6 +6,7 @@ import {
   applyDefaultTheme,
   BottomNavigation,
   EmptyState,
+  BottomSheet,
   type RegisteredComponent,
   type VariantValues,
   type PropertyValues,
@@ -70,7 +71,7 @@ const ELEMENT_ICON_MAP: Record<string, { icon: string; iconCategory: string }> =
   'login-signup': { icon: 'form-filled', iconCategory: 'forms-files' },
   'chart': { icon: 'form-report-filled', iconCategory: 'forms-files' },
   'daily-task-manager': { icon: 'table', iconCategory: 'general' },
-  'progress-indicator': { icon: 'bars-progress-filled', iconCategory: 'general' },
+  'progress-indicator': { icon: 'list-check-square-filled', iconCategory: 'general' },
 }
 
 interface PanelGroup {
@@ -406,6 +407,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [pendingPanelElementId, setPendingPanelElementId] = useState<string | null>(null)
   const [isPanelDrag, setIsPanelDrag] = useState(false)
   const [leftPanelOpen, setLeftPanelOpen] = useState(false)
+  const [mobileElementsSheet, setMobileElementsSheet] = useState(false)
   const [isMobileView, setIsMobileView] = useState(() => window.matchMedia('(max-width: 768px)').matches)
 
   useEffect(() => {
@@ -958,7 +960,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
       }}>
           {/* Floating Buttons */}
           <div className="build-page__floating-buttons">
-            <button className={`build-page__add-element-btn${leftPanelOpen ? ' build-page__add-element-btn--hidden' : ''}`} onClick={(e) => { e.stopPropagation(); setLeftPanelOpen(true); }}>
+            <button className={`build-page__add-element-btn${leftPanelOpen ? ' build-page__add-element-btn--hidden' : ''}`} onClick={(e) => { e.stopPropagation(); if (isMobileView) { setMobileElementsSheet(true); } else { setLeftPanelOpen(true); } }}>
               <Icon name="plus" category="general" size={24} />
             </button>
             <button className={`build-page__design-btn${rightPanel === 'designer' ? ' build-page__design-btn--hidden' : ''}`} onClick={(e) => { e.stopPropagation(); setRightPanel('designer'); setSelectedElementId(null); }}>
@@ -1187,6 +1189,69 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         ) : null}
       </DragOverlay>
     </DndContext>
+
+    {/* Mobile: Add Element Bottom Sheet */}
+    <BottomSheet
+      open={mobileElementsSheet}
+      onClose={() => setMobileElementsSheet(false)}
+      title="App Elements"
+      noOverlay
+      dark
+      renderCloseButton={(onClose) => (
+        <button className="sidebar-panel__close" onClick={onClose}>
+          <Icon name="xmark" category="general" size={20} />
+        </button>
+      )}
+    >
+      <div className="mobile-elements-sheet v2-sheet">
+        <div className="build-page__tab-menu">
+          <button
+            className={`build-page__tab${activeTab === 'basic' ? ' build-page__tab--active' : ''}`}
+            onClick={() => setActiveTab('basic')}
+          >
+            BASIC
+          </button>
+          <button
+            className={`build-page__tab${activeTab === 'widgets' ? ' build-page__tab--active' : ''}`}
+            onClick={() => setActiveTab('widgets')}
+          >
+            WIDGETS
+          </button>
+        </div>
+        {activeGroups.map((group, groupIndex) => {
+          const validItems = group.elementIds.map((id) => componentMap[id]).filter(Boolean)
+          if (validItems.length === 0) return null
+          return (
+            <div key={group.label || groupIndex}>
+              {group.label && (
+                <div className="mobile-elements-grid__separator">{group.label}</div>
+              )}
+              <div className="mobile-elements-grid">
+                {validItems.map((comp) => {
+                  const iconInfo = ELEMENT_ICON_MAP[comp.id]
+                  return (
+                    <button
+                      key={comp.id}
+                      className="mobile-elements-grid__item"
+                      onClick={() => { handleAddElement(comp); setMobileElementsSheet(false); }}
+                    >
+                      <div className="mobile-elements-grid__icon">
+                        {iconInfo ? (
+                          <Icon name={iconInfo.icon} category={iconInfo.iconCategory} size={24} />
+                        ) : (
+                          <Icon name="grid-2-filled" category="layout" size={24} />
+                        )}
+                      </div>
+                      <span className="mobile-elements-grid__label">{comp.name}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </BottomSheet>
 
     {/* Single AppDesigner instance — always mounted, responsive. Desktop: positioned in aside via CSS. Mobile: renders fixed bars + sheets. */}
     <div className="build-page__app-designer" data-theme="dark" style={{ display: rightPanel === 'designer' ? undefined : 'none' }}>

@@ -6,7 +6,7 @@ import loginSignupScss from './LoginSignup.scss?raw';
 
 ComponentRegistry.register({
   id: 'login-signup',
-  name: 'Login / Signup',
+  name: 'Login',
   category: 'Data Display',
   icon: 'LogIn',
 

@@ -5,7 +5,7 @@ import scss from './DailyTaskManager.scss?raw';
 
 ComponentRegistry.register({
   id: 'daily-task-manager',
-  name: 'Daily Task Manager',
+  name: 'Task Manager',
   category: 'Widgets',
   icon: 'SquareCheckBig',
 
