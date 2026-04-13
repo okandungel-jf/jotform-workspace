@@ -126,6 +126,7 @@ body {
   font-family: var(--font-family-circular);
 
   @media (max-width: 768px) {
+    overflow-x: hidden;
     overflow-y: auto;
     scrollbar-width: none;
 
@@ -722,8 +723,14 @@ body {
   color: var(--text-white);
   transition: transform 0.3s ease 0.3s, opacity 0.3s ease 0.3s;
 
+  -webkit-tap-highlight-color: transparent;
+
   &:hover {
     opacity: 0.9;
+  }
+
+  &:focus {
+    outline: none;
   }
 
   &--hidden {
@@ -780,7 +787,7 @@ body {
 
   @media (max-width: 768px) {
     overflow-y: visible;
-    padding-bottom: var(--bottom-sheet-height, 0px);
+    padding-bottom: max(var(--bottom-sheet-height, 0px), var(--space-6));
     transition: padding-bottom 0.25s ease;
   }
 
