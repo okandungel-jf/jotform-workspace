@@ -35,8 +35,6 @@ export function ProgressIndicator({
 }: ProgressIndicatorProps) {
   const [steps, setSteps] = useState<ProgressStep[]>(initialSteps ?? DEFAULT_STEPS);
 
-  const completedCount = steps.filter(s => s.completed).length;
-
   const toggleStep = useCallback((id: string) => {
     setSteps(prev => prev.map(s => s.id === id ? { ...s, completed: !s.completed } : s));
   }, []);
@@ -81,7 +79,7 @@ export function ProgressIndicator({
 
       {/* Segmented Progress Bar */}
       <div className="jf-progress-indicator__segments">
-        {steps.map((step, i) => (
+        {steps.map(step => (
           <div
             key={step.id}
             className={`jf-progress-indicator__segment${step.completed ? ' jf-progress-indicator__segment--completed' : ''}`}
