@@ -70,6 +70,7 @@ const ELEMENT_ICON_MAP: Record<string, { icon: string; iconCategory: string }> =
   'login-signup': { icon: 'form-filled', iconCategory: 'forms-files' },
   'chart': { icon: 'form-report-filled', iconCategory: 'forms-files' },
   'daily-task-manager': { icon: 'table', iconCategory: 'general' },
+  'progress-indicator': { icon: 'bars-progress-filled', iconCategory: 'general' },
 }
 
 interface PanelGroup {
@@ -85,7 +86,7 @@ const BASIC_GROUPS: PanelGroup[] = [
 ]
 
 const WIDGETS_GROUPS: PanelGroup[] = [
-  { elementIds: ['chart', 'daily-task-manager', 'login-signup'] },
+  { elementIds: ['chart', 'daily-task-manager', 'login-signup', 'progress-indicator'] },
 ]
 
 const HIDDEN_ELEMENTS = ['empty-state', 'app-header', 'bottom-navigation', 'color-picker']

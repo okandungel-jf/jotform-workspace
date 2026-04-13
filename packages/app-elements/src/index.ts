@@ -38,6 +38,7 @@ import './components/AppHeader/register';
 import './components/LoginSignup/register';
 import './components/BottomNavigation/register';
 import './components/Paragraph/register';
+import './components/ProgressIndicator/register';
 
 // Individual component exports
 export { Button } from './components/Button';
@@ -60,6 +61,7 @@ export { EmptyState } from './components/EmptyState';
 export { Testimonial } from './components/Testimonial';
 export { SocialFollow } from './components/SocialFollow';
 export { DailyTaskManager } from './components/DailyTaskManager';
+export { ProgressIndicator } from './components/ProgressIndicator';
 
 // Layout
 export { AppDesigner, applyDefaultTheme } from './layout/AppDesigner';
