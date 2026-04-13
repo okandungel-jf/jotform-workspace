@@ -123,11 +123,24 @@ body {
   flex-direction: column;
   height: 100vh;
   font-family: var(--font-family-circular);
+
+  @media (max-width: 768px) {
+    overflow-y: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
 }
 
 .builder__content {
   flex: 1;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    overflow: visible;
+  }
 }
 
 // ============================================
@@ -137,6 +150,12 @@ body {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    position: sticky;
+    top: -56px; // negative main bar height → only nav tab bar stays visible
+    z-index: 50;
+  }
 }
 
 // ---- Main Bar (white) ----
@@ -679,6 +698,10 @@ body {
   > * {
     pointer-events: auto;
   }
+
+  @media (max-width: 768px) {
+    top: 40px; // tab bar height on mobile
+  }
 }
 
 .build-page__add-element-btn {
@@ -754,6 +777,10 @@ body {
     display: none;
   }
 
+  @media (max-width: 768px) {
+    overflow-y: visible;
+  }
+
   .themes-view__device {
     width: 100%;
     max-width: 100%;
@@ -773,6 +800,12 @@ body {
     &--first {
       margin-top: -16px;
     }
+
+    @media (max-width: 768px) {
+      max-width: 100%;
+      border-radius: 0;
+      box-shadow: none;
+    }
   }
 
   .themes-view__app {
@@ -780,6 +813,11 @@ body {
     flex-wrap: wrap;
     gap: var(--space-4);
     padding: var(--space-6);
+
+    @media (max-width: 768px) {
+      padding: var(--space-4);
+      gap: var(--space-3);
+    }
   }
 }
 
@@ -1427,4 +1465,148 @@ body {
 
 .publish-page__content {
   @extend .settings-page__content;
+}
+
+// ============================================
+// Mobile Design Mode
+// ============================================
+
+// Design Top Bar (replaces topbar on mobile when designer is active)
+.design-top-bar {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--ds-bg-surface-dark);
+  box-shadow: 0 2px 8px rgba(19, 22, 32, 0.06);
+}
+
+.design-top-bar__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ds-text-primary);
+
+  > .jf-icon:first-child {
+    transform: rotate(-45deg);
+  }
+}
+
+.design-top-bar__title {
+  font-family: var(--ds-font-family);
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: -0.252px;
+  color: var(--ds-text-primary);
+}
+
+
+// Design Bottom Bar
+.design-bottom-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: var(--ds-bg-surface-dark);
+  border-top: 1px solid var(--ds-bg-primary);
+  z-index: 100;
+  flex-direction: row;
+  align-items: center;
+  justify-content: stretch;
+}
+
+.design-bottom-bar__tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2xs);
+  height: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--ds-text-secondary);
+  font-family: var(--ds-font-family);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  transition: color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+
+  &.active {
+    color: var(--ds-text-primary);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.design-bottom-bar--sheet-open {
+  display: none !important;
+}
+
+// Single AppDesigner wrapper — desktop: right panel, mobile: fixed bars + sheets only
+.build-page__app-designer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--secondary-background-medium);
+
+  // Desktop: position as right panel
+  position: fixed;
+  top: 108px;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  z-index: 2;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+
+  @media (max-width: 768px) {
+    // Mobile: no panel, just transparent container for fixed bars + sheets
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    background: none;
+    box-shadow: none;
+  }
+}
+
+// Mobile media query — show design mode UI
+@media (max-width: 768px) {
+  // Hide topbar when design mode is active
+  .builder--design-mode > .topbar {
+    display: none;
+  }
+
+  .design-top-bar {
+    display: flex;
+  }
+
+  .design-bottom-bar {
+    display: flex;
+  }
+
+  // Canvas adjustments when design mode is active
+  .builder--design-mode .build-page__canvas {
+    padding-top: 64px;
+    padding-bottom: 72px;
+  }
+
+  // Hide add-element floating button in design mode
+  .builder--design-mode .build-page__add-element-btn {
+    display: none;
+  }
+
 }

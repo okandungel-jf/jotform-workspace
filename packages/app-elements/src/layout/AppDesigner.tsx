@@ -7,6 +7,7 @@ import type { PaletteShade } from '../utils/colorPalette';
 import { generateNeutralPalette, applyNeutralToDOM } from '../utils/neutralTint';
 import { ColorPicker } from './components/ColorPicker';
 import { ColorPicker as TokenColorPicker } from '../components/ColorPicker/ColorPicker';
+import { BottomSheet } from './components/BottomSheet';
 
 // ── Constants ──────────────────────────────────────────────────────────
 
@@ -367,9 +368,12 @@ function FontDropdown({ fonts, active, onChange }: { fonts: string[]; active: st
 interface AppDesignerProps {
   onClose?: () => void;
   targetSelector?: string;
+  isMobile?: boolean;
+  renderIcon?: (name: string, size: number) => React.ReactNode;
+  doneButton?: React.ReactNode;
 }
 
-export function AppDesigner({ onClose, targetSelector = '.app-scope' }: AppDesignerProps) {
+export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, renderIcon, doneButton }: AppDesignerProps) {
   const { setLibrary: setIconLibrary, setIconStyle } = useIconLibrary();
 
   // Theme state
@@ -404,6 +408,18 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope' }: AppDesig
   const [gradientStart, setGradientStart] = useState(color);
   const [gradientEnd, setGradientEnd] = useState('#FFFFFF');
   const tokenPickerRef = useRef<HTMLDivElement>(null);
+
+  // Mobile state
+  const [activeTab, setActiveTab] = useState<'themes' | 'style' | 'font' | null>(null);
+  const [mobileFontSheet, setMobileFontSheet] = useState<'heading' | 'body' | null>(null);
+  const [mobilePickerOpen, setMobilePickerOpen] = useState(false);
+  const [mobileEditThemeOpen, setMobileEditThemeOpen] = useState(false);
+  const [mobileTokenPickerOpen, setMobileTokenPickerOpen] = useState(false);
+  const mobileEditThemeScrollRef = useRef(0);
+
+  const handleTabToggle = useCallback((tab: 'themes' | 'style' | 'font') => {
+    setActiveTab((prev) => (prev === tab ? null : tab));
+  }, []);
 
   // ── Target element for radius ──
 
@@ -748,6 +764,304 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope' }: AppDesig
     );
   }
 
+  // ── Mobile Render ──
+
+  const sheetCloseButton = (onSheetClose: () => void) => (
+    <button className="sidebar-panel__close" onClick={onSheetClose}>
+      <Icon name="X" size={20} />
+    </button>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        {/* Top Bar */}
+        <div className="design-top-bar" data-theme="dark">
+          <div className="design-top-bar__left">
+            {renderIcon?.('paint-roller-vertical-filled', 24)}
+            <span className="design-top-bar__title">App Designer</span>
+          </div>
+          {doneButton}
+        </div>
+
+        {/* Bottom Tab Bar — hidden when a sheet is open */}
+        <div className={`design-bottom-bar${activeTab ? ' design-bottom-bar--sheet-open' : ''}`} data-theme="dark">
+          <button
+            className={`design-bottom-bar__tab${activeTab === 'themes' ? ' active' : ''}`}
+            onClick={() => handleTabToggle('themes')}
+          >
+            {renderIcon?.('palette-filled', 20)}
+            <span>Themes</span>
+          </button>
+          <button
+            className={`design-bottom-bar__tab${activeTab === 'style' ? ' active' : ''}`}
+            onClick={() => handleTabToggle('style')}
+          >
+            {renderIcon?.('contrast-filled', 20)}
+            <span>Style</span>
+          </button>
+          <button
+            className={`design-bottom-bar__tab${activeTab === 'font' ? ' active' : ''}`}
+            onClick={() => handleTabToggle('font')}
+          >
+            {renderIcon?.('type', 20)}
+            <span>Font</span>
+          </button>
+        </div>
+
+        {/* Themes BottomSheet */}
+        <BottomSheet open={activeTab === 'themes'} onClose={() => setActiveTab(null)} title="Themes" noOverlay dark renderCloseButton={sheetCloseButton}>
+          <div className="themes-sheet-content v2-sheet">
+            <div className="themes-sheet-content__section">
+              <div className="v2-scroll-wrapper" ref={(el) => {
+                if (!el) return;
+                const scrollEl = el.querySelector('.v2-preset-grid--scroll');
+                if (!scrollEl) return;
+                const check = () => {
+                  const atEnd = scrollEl.scrollLeft + scrollEl.clientWidth >= scrollEl.scrollWidth - 5;
+                  el.classList.toggle('scrolled-end', atEnd);
+                };
+                scrollEl.addEventListener('scroll', check, { passive: true });
+                check();
+              }}>
+              <div className="v2-preset-grid v2-preset-grid--scroll">
+                <div className="v2-preset-grid__item">
+                  <button
+                    className={`color-theme-grid__custom${activePreset === '' ? ' active customized' : ''}`}
+                    style={activePreset === '' ? { background: color } : undefined}
+                    onClick={() => { setActivePreset(''); setMobilePickerOpen(true); }}
+                  >
+                    <div className="color-theme-grid__custom-inner">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </div>
+                  </button>
+                  <span className={`v2-preset-grid__label${activePreset === '' ? ' v2-preset-grid__label--active' : ''}`}>Custom</span>
+                </div>
+                {THEME_PRESETS.map((preset) => {
+                  const isActive = activePreset === preset.name;
+                  return (
+                    <div key={preset.name} className="v2-preset-grid__item">
+                      <button
+                        className={`color-theme-grid__item${isActive ? ' active' : ''}`}
+                        onClick={() => { applyPreset(preset); }}
+                        title={preset.name}
+                      >
+                        <div className="color-theme-grid__outer" style={{ background: `linear-gradient(145deg, color-mix(in srgb, ${preset.color}, #fff 20%) 0%, ${preset.color} 50%, color-mix(in srgb, ${preset.color}, #000 25%) 100%)` }} />
+                      </button>
+                      <span className={`v2-preset-grid__label${isActive ? ' v2-preset-grid__label--active' : ''}`}>{PRESET_SHORT_NAMES[preset.name] || preset.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              </div>
+              <button className="v2-edit-theme-btn" onClick={() => {
+                setActivePreset('');
+                setMobileEditThemeOpen(true);
+                resolveAllTokens();
+              }}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" clipRule="evenodd" d="M3.333 4.167c0-.46.373-.834.834-.834H10c.46 0 .833-.373.833-.833S10.46 1.667 10 1.667H4.167A2.5 2.5 0 001.667 4.167v11.666a2.5 2.5 0 002.5 2.5h11.666a2.5 2.5 0 002.5-2.5V10c0-.46-.373-.833-.833-.833s-.833.373-.833.833v5.833c0 .461-.373.834-.834.834H4.167a.833.833 0 01-.834-.834V4.167zM9.033 7.642a1.667 1.667 0 01.507-1.17l4.536-4.536a2.083 2.083 0 012.926 0l.724.725a2.083 2.083 0 010 2.926l-4.536 4.536c-.232.232-.517.406-.83.506l-1.927.62a1.667 1.667 0 01-2.02-2.02l.62-1.928zm1.685.35a.833.833 0 00-.098.16l-.584 1.815 1.815-.584a.833.833 0 00.161-.098l2.76-2.76-1.294-1.294-2.76 2.76zm5.83-3.243l-.598.597-1.293-1.293.597-.598a.417.417 0 01.57 0l.724.725a.417.417 0 010 .569z"/></svg>
+                <span>Edit Theme</span>
+              </button>
+            </div>
+          </div>
+        </BottomSheet>
+
+        {/* Style BottomSheet */}
+        <BottomSheet open={activeTab === 'style'} onClose={() => setActiveTab(null)} title="Style" noOverlay dark renderCloseButton={sheetCloseButton}>
+          <div className="themes-sheet-content v2-sheet">
+            <div className="themes-sheet-content__section">
+              <h3 className="v2-section__title">Color Mode</h3>
+              <div className="v2-segmented">
+                <button
+                  className={`v2-segmented__btn${colorMode === 'light' ? ' v2-segmented__btn--active' : ''}`}
+                  onClick={() => handleColorModeChange('light')}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                  </svg>
+                  <span>Light</span>
+                </button>
+                <button
+                  className={`v2-segmented__btn${colorMode === 'dark' ? ' v2-segmented__btn--active' : ''}`}
+                  onClick={() => handleColorModeChange('dark')}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                  </svg>
+                  <span>Dark</span>
+                </button>
+              </div>
+            </div>
+            <div className="themes-sheet-content__section">
+              <h3 className="v2-section__title">Corner Style</h3>
+              <div className="v2-segmented">
+                {([
+                  { scale: 'Small' as RadiusScale, r: 6 },
+                  { scale: 'Medium' as RadiusScale, r: 12 },
+                  { scale: 'Large' as RadiusScale, r: 16 },
+                  { scale: 'XLarge' as RadiusScale, r: 24 },
+                ]).map(({ scale, r }) => (
+                  <button
+                    key={scale}
+                    className={`v2-segmented__btn${radius === scale ? ' v2-segmented__btn--active' : ''}`}
+                    onClick={() => handleRadiusChange(scale)}
+                    title={scale}
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d={`M4 24 V${r} Q4 4 ${r} 4 H24`} strokeLinecap="round" />
+                    </svg>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </BottomSheet>
+
+        {/* Font BottomSheet */}
+        <BottomSheet open={activeTab === 'font'} onClose={() => setActiveTab(null)} title="Font" noOverlay dark renderCloseButton={sheetCloseButton}>
+          <div className="themes-sheet-content v2-sheet">
+            <div className="themes-sheet-content__section">
+              <h3 className="v2-section__title">Heading Font</h3>
+              <button className="themes-sheet-content__font-trigger" onClick={() => setMobileFontSheet('heading')}>
+                <span className="font-preview" style={{ fontFamily: `'${headingFont || font}', sans-serif` }}>{headingFont || font}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            </div>
+            <div className="themes-sheet-content__section">
+              <h3 className="v2-section__title">Body Font</h3>
+              <button className="themes-sheet-content__font-trigger" onClick={() => setMobileFontSheet('body')}>
+                <span className="font-preview" style={{ fontFamily: `'${font}', sans-serif` }}>{font}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            </div>
+          </div>
+        </BottomSheet>
+
+        {/* Heading Font List */}
+        <BottomSheet open={mobileFontSheet === 'heading'} onClose={() => setMobileFontSheet(null)} title="Heading Font" noOverlay dark renderCloseButton={sheetCloseButton}>
+          <div className="themes-sheet-content themes-sheet-content--font-list v2-sheet">
+            {HEADING_FONT_OPTIONS.map((f) => {
+              const isActive = f === (headingFont || font);
+              loadGoogleFont(f);
+              return (
+                <button
+                  key={f}
+                  className={`themes-sheet-content__font-item${isActive ? ' active' : ''}`}
+                  onClick={() => handleHeadingFontChange(f)}
+                >
+                  <span className="font-preview" style={{ fontFamily: `'${f}', sans-serif`, color: '#e8e9ed' }}>{f}</span>
+                  {isActive && (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#0066C3', flexShrink: 0 }}><path d="M20 6 9 17l-5-5"/></svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </BottomSheet>
+
+        {/* Body Font List */}
+        <BottomSheet open={mobileFontSheet === 'body'} onClose={() => setMobileFontSheet(null)} title="Body Font" noOverlay dark renderCloseButton={sheetCloseButton}>
+          <div className="themes-sheet-content themes-sheet-content--font-list v2-sheet">
+            {FONT_OPTIONS.map((f) => {
+              const isActive = f === font;
+              loadGoogleFont(f);
+              return (
+                <button
+                  key={f}
+                  className={`themes-sheet-content__font-item${isActive ? ' active' : ''}`}
+                  onClick={() => handleFontChange(f)}
+                >
+                  <span className="font-preview" style={{ fontFamily: `'${f}', sans-serif`, color: '#e8e9ed' }}>{f}</span>
+                  {isActive && (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#0066C3', flexShrink: 0 }}><path d="M20 6 9 17l-5-5"/></svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </BottomSheet>
+
+        {/* Custom Color Picker */}
+        <BottomSheet open={mobilePickerOpen} onClose={() => setMobilePickerOpen(false)} title="Custom Color" noOverlay dark renderCloseButton={sheetCloseButton}>
+          <div className="themes-sheet-content themes-sheet-content--picker v2-sheet">
+            <ColorPicker color={color} onChange={handleColorChange} tint={tint} onTintChange={handleTintChange} />
+          </div>
+        </BottomSheet>
+
+        {/* Edit Theme */}
+        <BottomSheet open={mobileEditThemeOpen} onClose={() => { setMobileEditThemeOpen(false); setEditingToken(null); }} title="Edit Theme" noOverlay dark renderCloseButton={sheetCloseButton}>
+          <div className="themes-sheet-content v2-sheet v2-sheet--edit-theme" style={{ padding: 0 }} ref={(el) => {
+            if (el && mobileEditThemeScrollRef.current) {
+              const body = el.closest('.bottom-sheet')?.querySelector('.bottom-sheet__body');
+              if (body) requestAnimationFrame(() => { body.scrollTop = mobileEditThemeScrollRef.current; });
+            }
+          }}>
+            <div className="edit-theme-panel__body" style={{ padding: 0 }}>
+              {TOKEN_CATEGORIES.map((category) => (
+                <div key={category.name} className="edit-theme-panel__category">
+                  <h4 className="edit-theme-panel__category-title">{category.name}</h4>
+                  <div className="edit-theme-panel__tokens">
+                    {category.tokens.map((token) => {
+                      const currentColor = tokenOverrides[token.variable] || resolvedTokenColors[token.variable] || '#000000';
+                      return (
+                        <TokenSwatch
+                          key={token.variable}
+                          variable={token.variable}
+                          label={token.label}
+                          color={currentColor}
+                          isEditing={editingToken === token.variable}
+                          onEdit={(v) => {
+                            setEditingToken(editingToken === v ? null : v);
+                            if (editingToken !== v) {
+                              const body = document.querySelector('.v2-sheet--edit-theme')?.closest('.bottom-sheet')?.querySelector('.bottom-sheet__body');
+                              if (body) mobileEditThemeScrollRef.current = body.scrollTop;
+                              setMobileEditThemeOpen(false);
+                              setMobileTokenPickerOpen(true);
+                            }
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              {Object.keys(tokenOverrides).length > 0 && (
+                <div className="edit-theme-panel__reset-wrapper">
+                  <button className="edit-theme-panel__reset-btn" onClick={handleResetTokenOverrides}>
+                    <Icon name="RotateCcw" size={14} />
+                    <span>Reset All Overrides</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </BottomSheet>
+
+        {/* Token Color Picker */}
+        <BottomSheet
+          open={mobileTokenPickerOpen && !!editingToken}
+          onClose={() => { setMobileTokenPickerOpen(false); setEditingToken(null); setMobileEditThemeOpen(true); }}
+          title={TOKEN_CATEGORIES.flatMap((c) => c.tokens).find((t) => t.variable === editingToken)?.label || 'Color'}
+          noOverlay
+          dark
+        >
+          <div className="themes-sheet-content themes-sheet-content--picker v2-sheet">
+            {editingToken && (
+              <ColorPicker
+                color={tokenOverrides[editingToken] || resolvedTokenColors[editingToken] || '#000000'}
+                onChange={(newColor) => handleTokenColorChange(editingToken, newColor)}
+                tint={tint}
+                onTintChange={handleTintChange}
+              />
+            )}
+          </div>
+        </BottomSheet>
+      </>
+    );
+  }
+
+  // ── Desktop Render ──
+
   return (
     <>
       {/* Header */}
@@ -836,7 +1150,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope' }: AppDesig
       </div>
 
       {/* Color Mode */}
-      <div className="v2-section">
+      <div className="v2-section v2-section--color-mode">
         <h3 className="v2-section__title">Color Mode</h3>
         <div className="v2-segmented">
           <button
@@ -861,7 +1175,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope' }: AppDesig
       </div>
 
       {/* Corners */}
-      <div className="v2-section">
+      <div className="v2-section v2-section--corners">
         <h3 className="v2-section__title">Corner Style</h3>
         <div className="v2-segmented">
           {([
@@ -885,13 +1199,13 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope' }: AppDesig
       </div>
 
       {/* Heading Font */}
-      <div className="v2-section">
+      <div className="v2-section v2-section--heading-font">
         <h3 className="v2-section__title">Heading Font</h3>
         <FontDropdown fonts={HEADING_FONT_OPTIONS} active={headingFont || font} onChange={handleHeadingFontChange} />
       </div>
 
       {/* Body Font */}
-      <div className="v2-section">
+      <div className="v2-section v2-section--body-font">
         <h3 className="v2-section__title">Body Font</h3>
         <FontDropdown fonts={FONT_OPTIONS} active={font} onChange={handleFontChange} />
       </div>

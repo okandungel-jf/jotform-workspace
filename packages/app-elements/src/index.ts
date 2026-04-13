@@ -65,3 +65,4 @@ export { ProgressIndicator } from './components/ProgressIndicator';
 
 // Layout
 export { AppDesigner, applyDefaultTheme } from './layout/AppDesigner';
+export { BottomSheet } from './layout/components/BottomSheet';

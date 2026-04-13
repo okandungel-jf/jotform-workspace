@@ -51,7 +51,7 @@ export function TopBar({ activePage, onPageChange, appName = 'App', previewMode,
           </button>
           <div className="topbar__avatar-wrapper">
             <div className="topbar__avatar">
-              <span>U</span>
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=88&h=88&fit=crop&crop=face" alt="User avatar" width="44" height="44" />
             </div>
           </div>
         </div>

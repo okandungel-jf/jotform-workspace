@@ -11,7 +11,7 @@ import {
   type PropertyValues,
   type StateValues,
 } from '@jf/app-elements'
-import { Icon } from '@jf/design-system'
+import { Icon, Button as DSButton } from '@jf/design-system'
 import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import {
@@ -406,6 +406,15 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [pendingPanelElementId, setPendingPanelElementId] = useState<string | null>(null)
   const [isPanelDrag, setIsPanelDrag] = useState(false)
   const [leftPanelOpen, setLeftPanelOpen] = useState(false)
+  const [isMobileView, setIsMobileView] = useState(() => window.matchMedia('(max-width: 768px)').matches)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const handler = (e: MediaQueryListEvent) => setIsMobileView(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
   const appTitle = appTitleProp
   const setAppTitle = (title: string) => onAppTitleChange?.(title)
   const [appSubtitle, setAppSubtitle] = useState('')
@@ -427,6 +436,17 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   useEffect(() => {
     applyDefaultTheme()
   }, [])
+
+  // Toggle design-mode class on .builder for CSS targeting
+  useEffect(() => {
+    const builder = document.querySelector('.builder')
+    if (!builder) return
+    if (rightPanel === 'designer' && isMobileView) {
+      builder.classList.add('builder--design-mode')
+    } else {
+      builder.classList.remove('builder--design-mode')
+    }
+  }, [rightPanel, isMobileView])
 
   // AppHeader inline editing
   useEffect(() => {
@@ -855,6 +875,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   }
 
   return (
+    <>
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
@@ -1001,10 +1022,6 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
 
       {/* Right Panel - Designer/Properties or Live Preview */}
       <aside className={`build-page__right ${previewMode || rightPanel === 'designer' ? '' : 'build-page__right--hidden'}`}>
-        {/* App Designer — always mounted, toggled via display */}
-        <div className="build-page__designer" data-theme="dark" style={{ display: rightPanel === 'designer' ? undefined : 'none' }}>
-          <AppDesigner onClose={() => setRightPanel('preview')} targetSelector=".app-scope" />
-        </div>
 
         {/* Properties Panel */}
         {rightPanel === 'properties' && selectedElement && selectedComponent && (
@@ -1170,5 +1187,17 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         ) : null}
       </DragOverlay>
     </DndContext>
+
+    {/* Single AppDesigner instance — always mounted, responsive. Desktop: positioned in aside via CSS. Mobile: renders fixed bars + sheets. */}
+    <div className="build-page__app-designer" data-theme="dark" style={{ display: rightPanel === 'designer' ? undefined : 'none' }}>
+      <AppDesigner
+        onClose={() => setRightPanel('preview')}
+        targetSelector=".app-scope"
+        isMobile={isMobileView}
+        renderIcon={(name, size) => <Icon name={name} category="editor" size={size} />}
+        doneButton={<DSButton variant="filled" colorScheme="primary" shape="rounded" size="md" onClick={() => setRightPanel('preview')}>Done</DSButton>}
+      />
+    </div>
+    </>
   )
 }
