@@ -1756,8 +1756,9 @@ body {
 
 // Single AppDesigner wrapper — desktop: right panel, mobile: fixed bars + sheets only
 .build-page__right-slide--designer {
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 // Mobile media query — show design mode UI

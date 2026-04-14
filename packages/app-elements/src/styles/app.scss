@@ -4304,6 +4304,29 @@ body {
   z-index: 2;
 }
 
+.sidebar-panel__header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-panel__back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 40px;
+  border: none;
+  background: transparent;
+  color: #FFFFFF;
+  cursor: pointer;
+
+  &:hover {
+    background: #434A60;
+  }
+}
+
 .sidebar-panel__title {
   font-size: 18px;
   font-weight: 500;
@@ -4328,11 +4351,30 @@ body {
   }
 }
 
+.sidebar-panel__slider {
+  display: flex;
+  width: 200%;
+  flex: 1;
+  min-height: 0;
+  transition: transform 0.3s ease;
+
+  &--editor {
+    transform: translateX(-50%);
+  }
+}
+
+.sidebar-panel__slide {
+  width: 50%;
+  flex-shrink: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 .sidebar-panel__tabs {
   display: flex;
   background: #292D3C;
   position: sticky;
-  top: 56px;
+  top: 0;
   z-index: 2;
 }
 

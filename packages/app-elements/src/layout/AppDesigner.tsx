@@ -719,94 +719,80 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
 
   // ── Render ──
 
-  if (tokenEditorOpen) {
-    return (
-      <div className="edit-theme-panel">
-        <div className="edit-theme-panel__header">
-          <button
-            className="edit-theme-panel__back"
-            onClick={() => {
-              setTokenEditorOpen(false);
-              setEditingToken(null);
-            }}
-          >
-            <Icon name="ArrowLeft" size={18} />
-          </button>
-          <span className="edit-theme-panel__title">Edit Theme</span>
-        </div>
-        <div className="edit-theme-panel__body">
-          {TOKEN_CATEGORIES.map((category) => (
-            <div key={category.name} className="edit-theme-panel__category">
-              <h4 className="edit-theme-panel__category-title">{category.name}</h4>
-              <div className="edit-theme-panel__tokens">
-                {category.tokens.map((token) => {
-                  const currentColor = tokenOverrides[token.variable] || resolvedTokenColors[token.variable] || '#000000';
-                  return (
-                    <TokenSwatch
-                      key={token.variable}
-                      variable={token.variable}
-                      label={token.label}
-                      color={currentColor}
-                      gradient={token.variable === '--bg-page' && colorPickerMode === 'gradient' ? `linear-gradient(to bottom, ${gradientStart}, ${gradientEnd})` : undefined}
-                      isEditing={editingToken === token.variable}
-                      onEdit={(v, rect) => {
-                        const opening = editingToken !== v;
-                        setEditingToken(opening ? v : null);
-                        if (opening) {
-                          setPickerOpen(false);
-                          setTokenPickerPos({ top: rect.bottom + 8, left: rect.left });
-                        }
-                      }}
-                    />
-                  );
-                })}
-              </div>
+  const editThemePanel = (
+    <div className="edit-theme-panel">
+      <div className="edit-theme-panel__body">
+        {TOKEN_CATEGORIES.map((category) => (
+          <div key={category.name} className="edit-theme-panel__category">
+            <h4 className="edit-theme-panel__category-title">{category.name}</h4>
+            <div className="edit-theme-panel__tokens">
+              {category.tokens.map((token) => {
+                const currentColor = tokenOverrides[token.variable] || resolvedTokenColors[token.variable] || '#000000';
+                return (
+                  <TokenSwatch
+                    key={token.variable}
+                    variable={token.variable}
+                    label={token.label}
+                    color={currentColor}
+                    gradient={token.variable === '--bg-page' && colorPickerMode === 'gradient' ? `linear-gradient(to bottom, ${gradientStart}, ${gradientEnd})` : undefined}
+                    isEditing={editingToken === token.variable}
+                    onEdit={(v, rect) => {
+                      const opening = editingToken !== v;
+                      setEditingToken(opening ? v : null);
+                      if (opening) {
+                        setPickerOpen(false);
+                        setTokenPickerPos({ top: rect.bottom + 8, left: rect.left });
+                      }
+                    }}
+                  />
+                );
+              })}
             </div>
-          ))}
-          {Object.keys(tokenOverrides).length > 0 && (
-            <div className="edit-theme-panel__reset-wrapper">
-              <button className="edit-theme-panel__reset-btn" onClick={handleResetTokenOverrides}>
-                <Icon name="RotateCcw" size={14} />
-                <span>Reset All Overrides</span>
-              </button>
-            </div>
-          )}
-        </div>
-        {editingToken && createPortal(
-          <div className="color-theme-grid__picker-popup" ref={tokenPickerRef} data-theme="dark" style={{ top: tokenPickerPos.top, left: tokenPickerPos.left }}>
-            {editingToken === '--bg-page' ? (
-              <ColorPicker
-                color={tokenOverrides[editingToken] || resolvedTokenColors[editingToken] || '#000000'}
-                onChange={(newColor) => handleTokenColorChange(editingToken, newColor)}
-                tint={tint}
-                onTintChange={handleTintChange}
-                hideTint
-                opacity={tokenOpacity}
-                onOpacityChange={setTokenOpacity}
-                showTabs
-                mode={colorPickerMode}
-                onModeChange={setColorPickerMode}
-                gradientStart={gradientStart}
-                gradientEnd={gradientEnd}
-                onGradientChange={handleGradientChange}
-              />
-            ) : (
-              <TokenColorPicker
-                color={tokenOverrides[editingToken] || resolvedTokenColors[editingToken] || '#000000'}
-                onChange={(newColor) => handleTokenColorChange(editingToken, newColor)}
-                tint={tint}
-                onTintChange={handleTintChange}
-                mode="Opacity"
-                opacity={tokenOpacity}
-                onOpacityChange={setTokenOpacity}
-              />
-            )}
-          </div>,
-          document.body
+          </div>
+        ))}
+        {Object.keys(tokenOverrides).length > 0 && (
+          <div className="edit-theme-panel__reset-wrapper">
+            <button className="edit-theme-panel__reset-btn" onClick={handleResetTokenOverrides}>
+              <Icon name="RotateCcw" size={14} />
+              <span>Reset All Overrides</span>
+            </button>
+          </div>
         )}
       </div>
-    );
-  }
+      {editingToken && createPortal(
+        <div className="color-theme-grid__picker-popup" ref={tokenPickerRef} data-theme="dark" style={{ top: tokenPickerPos.top, left: tokenPickerPos.left }}>
+          {editingToken === '--bg-page' ? (
+            <ColorPicker
+              color={tokenOverrides[editingToken] || resolvedTokenColors[editingToken] || '#000000'}
+              onChange={(newColor) => handleTokenColorChange(editingToken, newColor)}
+              tint={tint}
+              onTintChange={handleTintChange}
+              hideTint
+              opacity={tokenOpacity}
+              onOpacityChange={setTokenOpacity}
+              showTabs
+              mode={colorPickerMode}
+              onModeChange={setColorPickerMode}
+              gradientStart={gradientStart}
+              gradientEnd={gradientEnd}
+              onGradientChange={handleGradientChange}
+            />
+          ) : (
+            <TokenColorPicker
+              color={tokenOverrides[editingToken] || resolvedTokenColors[editingToken] || '#000000'}
+              onChange={(newColor) => handleTokenColorChange(editingToken, newColor)}
+              tint={tint}
+              onTintChange={handleTintChange}
+              mode="Opacity"
+              opacity={tokenOpacity}
+              onOpacityChange={setTokenOpacity}
+            />
+          )}
+        </div>,
+        document.body
+      )}
+    </div>
+  );
 
   // ── Mobile Render ──
 
@@ -1109,13 +1095,26 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
     <>
       {/* Header */}
       <div className="sidebar-panel__header">
-        <span className="sidebar-panel__title">App Designer</span>
+        <div className="sidebar-panel__header-left">
+          {tokenEditorOpen && (
+            <button className="sidebar-panel__back" onClick={() => { setTokenEditorOpen(false); setEditingToken(null); }}>
+              <Icon name="ArrowLeft" size={18} />
+            </button>
+          )}
+          <span className="sidebar-panel__title">{tokenEditorOpen ? 'Edit Theme' : 'App Designer'}</span>
+        </div>
         {onClose && (
           <button className="sidebar-panel__close" onClick={onClose}>
             <Icon name="X" size={20} />
           </button>
         )}
       </div>
+
+      {/* Sliding content wrapper */}
+      <div className={`sidebar-panel__slider${tokenEditorOpen ? ' sidebar-panel__slider--editor' : ''}`}>
+
+      {/* Slide 1: Designer */}
+      <div className="sidebar-panel__slide">
       {/* Tab Bar */}
       <div className="sidebar-panel__tabs">
         <button
@@ -1254,6 +1253,14 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
         <FontDropdown fonts={FONT_OPTIONS} active={font} onChange={handleFontChange} />
       </div>
 
+      </div>{/* end Slide 1 */}
+
+      {/* Slide 2: Edit Theme */}
+      <div className="sidebar-panel__slide sidebar-panel__slide--editor">
+        {editThemePanel}
+      </div>
+
+      </div>{/* end slider */}
     </>
   );
 }
