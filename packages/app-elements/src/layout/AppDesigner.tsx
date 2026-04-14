@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Icon } from '../components/Icon/Icon';
 import { useIconLibrary, type IconLibrary } from '../context/IconLibraryContext';
 import { loadLibrary } from '../utils/iconRegistry';
@@ -11,11 +12,11 @@ import { BottomSheet } from './components/BottomSheet';
 
 // ── Constants ──────────────────────────────────────────────────────────
 
-const DEFAULT_COLOR = '#7D38EF';
-const DEFAULT_FONT = 'Inter';
-const DEFAULT_HEADING_FONT = '';
-const DEFAULT_RADIUS = 'Medium';
-const DEFAULT_TINT = 50;
+const DEFAULT_COLOR = '#0385C8';
+const DEFAULT_FONT = 'DM Sans';
+const DEFAULT_HEADING_FONT = 'Playfair Display';
+const DEFAULT_RADIUS = 'Large';
+const DEFAULT_TINT = 30;
 const DEFAULT_HARMONY = 150;
 
 type RadiusScale = 'Small' | 'Medium' | 'Large' | 'XLarge';
@@ -71,8 +72,8 @@ interface ThemePreset {
 }
 
 const LIGHT_PRESETS: ThemePreset[] = [
-  { name: 'Default', color: '#7D38EF', font: 'Inter', headingFont: '', iconLibrary: 'lucide', radius: 'Medium', tint: 50, mode: 'light', harmonyOffset: 150, scheme: { brand: '#7D38EF', surface: '#EDE8FE', text: '#7D38EF' } },
-  { name: 'Ocean Breeze', color: '#0385C8', font: 'DM Sans', headingFont: 'Playfair Display', iconLibrary: 'lucide', radius: 'Large', tint: 30, mode: 'light', harmonyOffset: 150, scheme: { brand: '#0385C8', surface: '#D3E9FF', text: '#0385C8' } },
+  { name: 'Default', color: '#0385C8', font: 'DM Sans', headingFont: 'Playfair Display', iconLibrary: 'lucide', radius: 'Large', tint: 30, mode: 'light', harmonyOffset: 150, scheme: { brand: '#0385C8', surface: '#D3E9FF', text: '#0385C8' } },
+  { name: 'Amethyst', color: '#7D38EF', font: 'Inter', headingFont: '', iconLibrary: 'lucide', radius: 'Medium', tint: 50, mode: 'light', harmonyOffset: 150, scheme: { brand: '#7D38EF', surface: '#EDE8FE', text: '#7D38EF' } },
   { name: 'Sunset', color: '#F97101', font: 'Bricolage Grotesque', headingFont: '', iconLibrary: 'lucide', radius: 'Large', tint: 60, mode: 'light', harmonyOffset: 180, scheme: { brand: '#F97101', surface: '#FEF3C5', text: '#F97101' } },
   { name: 'Forest', color: '#19A44B', font: 'Public Sans', headingFont: 'Lora', iconLibrary: 'tabler', radius: 'Small', tint: 40, mode: 'light', harmonyOffset: 120, scheme: { brand: '#19A44B', surface: '#DDFBE8', text: '#19A44B' } },
 ];
@@ -88,8 +89,8 @@ const DARK_PRESETS: ThemePreset[] = [
 const THEME_PRESETS: ThemePreset[] = [...LIGHT_PRESETS, ...DARK_PRESETS];
 
 const PRESET_SHORT_NAMES: Record<string, string> = {
-  'Default': 'Default',
-  'Ocean Breeze': 'Sky',
+  'Default': 'Sky',
+  'Amethyst': 'Amethyst',
   'Sunset': 'Sunset',
   'Forest': 'Mint',
   'Dark Elegance': 'Elegance',
@@ -191,7 +192,7 @@ function getContrastColor(hex: string, brandHex: string): string {
   return '#FFFFFF';
 }
 
-function applyPaletteToDOM(palette: PaletteShade[]) {
+function applyPaletteToDOM(palette: PaletteShade[], lightPalette?: PaletteShade[]) {
   const root = document.documentElement;
   const map: Record<string, string> = {};
   for (const shade of palette) {
@@ -211,6 +212,17 @@ function applyPaletteToDOM(palette: PaletteShade[]) {
   const dark = document.documentElement.getAttribute('data-theme') === 'dark';
   const btnBgShade = dark ? map['400'] : map['600'];
   root.style.setProperty('--fg-inverse', getContrastColor(btnBgShade, map['600']));
+
+  // Light-mode-locked tokens for floating buttons (never inverted)
+  if (lightPalette) {
+    const lightMap: Record<string, string> = {};
+    for (const shade of lightPalette) {
+      lightMap[shade.key] = shade.hex;
+    }
+    root.style.setProperty('--btn-primary-bg', lightMap['950']);
+    root.style.setProperty('--btn-primary-fg', lightMap['50']);
+    root.style.setProperty('--btn-brand', lightMap['600']);
+  }
 }
 
 function hexToHslHue(hex: string): number {
@@ -270,11 +282,14 @@ function applyRadius(scale: RadiusScale, target: HTMLElement | null) {
 export function applyDefaultTheme() {
   const dark = isDarkMode();
   const palette = generatePalette(DEFAULT_COLOR, dark);
-  applyPaletteToDOM(palette);
-  applyNeutralToDOM(generateNeutralPalette(DEFAULT_COLOR, DEFAULT_TINT, dark));
+  const lightPalette = generatePalette(DEFAULT_COLOR, false);
+  applyPaletteToDOM(palette, lightPalette);
+  applyNeutralToDOM(generateNeutralPalette(DEFAULT_COLOR, DEFAULT_TINT, dark), DEFAULT_COLOR, DEFAULT_TINT);
   loadGoogleFont(DEFAULT_FONT);
+  const headingFamily = DEFAULT_HEADING_FONT || DEFAULT_FONT;
+  if (DEFAULT_HEADING_FONT) loadGoogleFont(DEFAULT_HEADING_FONT);
   document.documentElement.style.setProperty('--font-family', `'${DEFAULT_FONT}', -apple-system, BlinkMacSystemFont, sans-serif`);
-  document.documentElement.style.setProperty('--font-family-heading', `'${DEFAULT_FONT}', -apple-system, BlinkMacSystemFont, sans-serif`);
+  document.documentElement.style.setProperty('--font-family-heading', `'${headingFamily}', -apple-system, BlinkMacSystemFont, sans-serif`);
 }
 
 const _tokenCanvas = document.createElement('canvas');
@@ -396,6 +411,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 });
   const pickerRef = useRef<HTMLDivElement>(null);
+  const pickerPopupRef = useRef<HTMLDivElement>(null);
   const customBtnRef = useRef<HTMLButtonElement>(null);
 
   // Token editor state
@@ -482,13 +498,13 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
     setColor(preset.color);
     const newPalette = generatePalette(preset.color, preset.mode === 'dark');
     setPalette(newPalette);
-    applyPaletteToDOM(newPalette);
+    applyPaletteToDOM(newPalette, generatePalette(preset.color, false));
     setHarmonyOffset(preset.harmonyOffset);
     if (secondaryEnabled) {
       applySecondary(preset.color, preset.harmonyOffset, preset.mode === 'dark');
     }
     setTint(preset.tint);
-    applyNeutralToDOM(generateNeutralPalette(preset.color, preset.tint, preset.mode === 'dark'));
+    applyNeutralToDOM(generateNeutralPalette(preset.color, preset.tint, preset.mode === 'dark'), preset.color, preset.tint);
     setFont(preset.font);
     loadGoogleFont(preset.font);
     document.documentElement.style.setProperty('--font-family', `'${preset.font}', -apple-system, BlinkMacSystemFont, sans-serif`);
@@ -513,11 +529,11 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
     setColor(newColor);
     const newPalette = generatePalette(newColor, isDarkMode());
     setPalette(newPalette);
-    applyPaletteToDOM(newPalette);
+    applyPaletteToDOM(newPalette, generatePalette(newColor, false));
     if (secondaryEnabled) {
       applySecondary(newColor, harmonyOffset, isDarkMode());
     }
-    applyNeutralToDOM(generateNeutralPalette(newColor, tint, isDarkMode()));
+    applyNeutralToDOM(generateNeutralPalette(newColor, tint, isDarkMode()), newColor, tint);
   }, [tint, harmonyOffset, secondaryEnabled, applySecondary]);
 
   const handleGradientChange = useCallback((start: string, end: string) => {
@@ -529,7 +545,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
   const handleTintChange = useCallback((newTint: number) => {
     setTint(newTint);
     const neutralPalette = generateNeutralPalette(color, newTint, isDarkMode());
-    applyNeutralToDOM(neutralPalette);
+    applyNeutralToDOM(neutralPalette, color, newTint);
   }, [color]);
 
   const handleFontChange = useCallback((newFont: string) => {
@@ -592,7 +608,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
     if (variable === '--bg-fill-brand') {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       const newPalette = generatePalette(newColor, isDark);
-      applyPaletteToDOM(newPalette);
+      applyPaletteToDOM(newPalette, generatePalette(newColor, false));
       document.documentElement.style.setProperty('--fg-inverse', getContrastColor(newColor, newColor));
       setTokenOverrides((prev) => {
         for (const [v, c] of Object.entries(prev)) {
@@ -619,21 +635,22 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
 
   // Apply palette + neutrals + secondary on changes and theme toggle
   useEffect(() => {
+    const lightPalette = generatePalette(color, false);
     const palette = generatePalette(color, isDarkMode());
-    applyPaletteToDOM(palette);
+    applyPaletteToDOM(palette, lightPalette);
     if (secondaryEnabled) {
       applySecondary(color, harmonyOffset, isDarkMode());
     } else {
       resetSecondaryPalette();
     }
-    applyNeutralToDOM(generateNeutralPalette(color, tint, isDarkMode()));
+    applyNeutralToDOM(generateNeutralPalette(color, tint, isDarkMode()), color, tint);
 
     const observer = new MutationObserver(() => {
-      applyPaletteToDOM(generatePalette(color, isDarkMode()));
+      applyPaletteToDOM(generatePalette(color, isDarkMode()), lightPalette);
       if (secondaryEnabled) {
         applySecondary(color, harmonyOffset, isDarkMode());
       }
-      applyNeutralToDOM(generateNeutralPalette(color, tint, isDarkMode()));
+      applyNeutralToDOM(generateNeutralPalette(color, tint, isDarkMode()), color, tint);
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     return () => observer.disconnect();
@@ -688,7 +705,11 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
   useEffect(() => {
     if (!pickerOpen) return;
     const handleClick = (e: MouseEvent) => {
-      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        pickerRef.current && !pickerRef.current.contains(target) &&
+        pickerPopupRef.current && !pickerPopupRef.current.contains(target)
+      ) {
         setPickerOpen(false);
       }
     };
@@ -751,8 +772,8 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
             </div>
           )}
         </div>
-        {editingToken && (
-          <div className="color-theme-grid__picker-popup" ref={tokenPickerRef} style={{ top: tokenPickerPos.top, left: tokenPickerPos.left }}>
+        {editingToken && createPortal(
+          <div className="color-theme-grid__picker-popup" ref={tokenPickerRef} data-theme="dark" style={{ top: tokenPickerPos.top, left: tokenPickerPos.left }}>
             {editingToken === '--bg-page' ? (
               <ColorPicker
                 color={tokenOverrides[editingToken] || resolvedTokenColors[editingToken] || '#000000'}
@@ -780,7 +801,8 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
                 onOpacityChange={setTokenOpacity}
               />
             )}
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     );
@@ -1140,7 +1162,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
                   if (activePreset !== '') setActivePreset('');
                   if (!pickerOpen && customBtnRef.current) {
                     const rect = customBtnRef.current.getBoundingClientRect();
-                    setPickerPos({ top: rect.bottom + 8, left: rect.right - 268 });
+                    setPickerPos({ top: rect.bottom + 8, left: rect.right - 272 });
                   }
                   setPickerOpen(!pickerOpen);
                 }}
@@ -1150,10 +1172,11 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                 </div>
               </button>
-              {pickerOpen && (
-                <div className="color-theme-grid__picker-popup" style={{ top: pickerPos.top, left: pickerPos.left }}>
+              {pickerOpen && createPortal(
+                <div className="color-theme-grid__picker-popup" ref={pickerPopupRef} data-theme="dark" style={{ top: pickerPos.top, left: pickerPos.left }}>
                   <ColorPicker color={color} onChange={handleColorChange} tint={tint} onTintChange={handleTintChange} />
-                </div>
+                </div>,
+                document.body
               )}
             </div>
             <span className={`v2-preset-grid__label${activePreset === '' ? ' v2-preset-grid__label--active' : ''}`}>Custom</span>

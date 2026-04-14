@@ -100,10 +100,18 @@ function generateNeutralPalette(brandHex: string, tintAmount: number, darkMode =
 /**
  * Apply neutral palette to CSS custom properties
  */
-function applyNeutralToDOM(palette: NeutralShade[]) {
+function applyNeutralToDOM(palette: NeutralShade[], brandHex?: string, tintAmount?: number) {
   const root = document.documentElement;
   for (const shade of palette) {
     root.style.setProperty(`--neutral-${shade.key}`, shade.css);
+  }
+  // Tooltip tokens always use light-mode neutrals (theme-tinted but never inverted)
+  if (brandHex !== undefined && tintAmount !== undefined) {
+    const lightPalette = generateNeutralPalette(brandHex, tintAmount, false);
+    const bg = lightPalette.find(s => s.key === '900');
+    const fg = lightPalette.find(s => s.key === '0');
+    if (bg) root.style.setProperty('--tooltip-bg', bg.css);
+    if (fg) root.style.setProperty('--tooltip-fg', fg.css);
   }
 }
 

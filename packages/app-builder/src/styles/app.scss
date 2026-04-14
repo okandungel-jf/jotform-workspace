@@ -713,20 +713,24 @@ body {
   width: 56px;
   height: 56px;
   border-radius: var(--radius-rounded);
-  background: var(--secondary-background-medium);
+  background: var(--btn-primary-bg);
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  color: var(--text-white);
+  box-shadow: var(--shadow-sm);
+  color: var(--btn-primary-fg);
   transition: transform 0.3s ease 0.3s, opacity 0.3s ease 0.3s;
 
   -webkit-tap-highlight-color: transparent;
 
-  &:hover {
-    opacity: 0.9;
+  .jf-icon {
+    transition: transform 0.3s ease;
+  }
+
+  &:hover .jf-icon {
+    transform: rotate(90deg);
   }
 
   &:focus {
@@ -741,6 +745,40 @@ body {
   }
 }
 
+
+.build-page__add-element-btn-tooltip {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-fg);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-medium);
+  padding: var(--ds-space-xs) var(--ds-space-sm);
+  border-radius: var(--ds-radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+
+  // Arrow pointing left
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-right-color: var(--tooltip-bg);
+  }
+
+  .build-page__add-element-btn:hover & {
+    opacity: 1;
+  }
+}
+
 .build-page__design-btn {
   position: absolute;
   top: 24px;
@@ -748,22 +786,31 @@ body {
   width: 56px;
   height: 56px;
   border-radius: var(--radius-rounded);
-  background: var(--accent-default);
+  background: var(--tooltip-fg);
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-sm);
-  color: var(--text-white);
+  color: var(--btn-brand);
   transition: transform 0.3s ease 0.3s, opacity 0.3s ease 0.3s, background 0.15s;
 
   .jf-icon {
-    transform: translate(2px, 0) rotate(-45deg);
+    transform: rotate(-45deg);
+  }
+
+  &:hover .jf-icon {
+    animation: paint-roll 1s ease-in-out infinite;
+  }
+
+  @keyframes paint-roll {
+    0%, 100% { transform: rotate(-45deg) translateY(0); }
+    50% { transform: rotate(-45deg) translateY(4px); }
   }
 
   &:hover {
-    background: var(--accent-dark);
+    background: var(--btn-primary-fg);
   }
 
   &--hidden {
@@ -771,6 +818,39 @@ body {
     opacity: 0;
     pointer-events: none;
     transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+}
+
+.build-page__design-btn-tooltip {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-fg);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-medium);
+  padding: var(--ds-space-xs) var(--ds-space-sm);
+  border-radius: var(--ds-radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+
+  // Arrow pointing right
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-left-color: var(--tooltip-bg);
+  }
+
+  .build-page__design-btn:hover & {
+    opacity: 1;
   }
 }
 
@@ -861,6 +941,27 @@ body {
   @media (max-width: 768px) {
     display: none;
   }
+}
+
+.build-page__right-slider {
+  display: flex;
+  width: 200%;
+  height: 100%;
+  transition: transform 0.3s ease;
+
+  &--designer {
+    transform: translateX(-50%);
+  }
+
+}
+
+.build-page__right-slide {
+  width: 50%;
+  flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 // ============================================
@@ -1437,8 +1538,8 @@ body {
 
 .settings-page__nav {
   width: 260px;
-  background: var(--ds-bg-primary);
-  color: var(--ds-text-primary);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-fg);
   flex-shrink: 0;
   padding: var(--ds-space-md);
 
@@ -1654,32 +1755,9 @@ body {
 }
 
 // Single AppDesigner wrapper — desktop: right panel, mobile: fixed bars + sheets only
-.build-page__app-designer {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+.build-page__right-slide--designer {
   overflow-y: auto;
   overflow-x: hidden;
-  background: var(--secondary-background-medium);
-
-  // Desktop: position as right panel
-  position: fixed;
-  top: 108px;
-  right: 0;
-  bottom: 0;
-  width: 420px;
-  z-index: 2;
-  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
-
-  @media (max-width: 768px) {
-    // Mobile: no panel, just transparent container for fixed bars + sheets
-    position: static;
-    width: auto;
-    height: auto;
-    overflow: visible;
-    background: none;
-    box-shadow: none;
-  }
 }
 
 // Mobile media query — show design mode UI

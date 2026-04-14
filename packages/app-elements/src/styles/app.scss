@@ -320,6 +320,13 @@
   --header-height: 56px;
   --transition: 150ms ease;
 
+  // ---- Light-mode-locked tokens (set at runtime, never inverted in dark mode) ----
+  --tooltip-bg: var(--neutral-900);
+  --tooltip-fg: var(--neutral-0);
+  --btn-primary-bg: var(--primary-950);
+  --btn-primary-fg: var(--primary-50);
+  --btn-brand: var(--primary-600);
+
   // App shell aliases (maps to design tokens)
   --color-primary: var(--primary-600);
   --color-primary-hover: var(--primary-700);
@@ -609,8 +616,8 @@ body {
     transform: translateX(-50%);
     padding: 4px 10px;
     border-radius: 6px;
-    background: oklch(0.20 0 0);
-    color: #fff;
+    background: var(--tooltip-bg);
+    color: var(--tooltip-fg);
     font-size: 12px;
     font-weight: 500;
     white-space: nowrap;
@@ -4124,10 +4131,11 @@ body {
 .color-theme-grid__picker-popup {
   position: fixed;
   z-index: 9999;
-  width: 268px;
+  width: 272px;
 
   .color-picker {
     position: relative;
+    width: 100%;
     background: #434A60;
     box-shadow: var(--shadow-lg);
 

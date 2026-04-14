@@ -437,6 +437,10 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
     })
   }, [])
 
+  const handleCloseDesigner = useCallback(() => {
+    setRightPanel('preview')
+  }, [])
+
   // Apply default theme on mount so components are styled before AppDesigner opens
   useEffect(() => {
     applyDefaultTheme()
@@ -1047,9 +1051,15 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
           <div className="build-page__floating-buttons">
             <button className={`build-page__add-element-btn${leftPanelOpen ? ' build-page__add-element-btn--hidden' : ''}`} onClick={(e) => { e.stopPropagation(); if (isMobileView) { setMobileElementsSheet(true); } else { setLeftPanelOpen(true); } }}>
               <Icon name="plus" category="general" size={24} />
+              <span className="build-page__add-element-btn-tooltip">Add Element</span>
             </button>
-            <button className={`build-page__design-btn${rightPanel === 'designer' ? ' build-page__design-btn--hidden' : ''}`} onClick={(e) => { e.stopPropagation(); setRightPanel('designer'); setSelectedElementId(null); }}>
+            <button className={`build-page__design-btn${rightPanel === 'designer' ? ' build-page__design-btn--hidden' : ''}`} onClick={(e) => {
+              e.stopPropagation()
+              setSelectedElementId(null)
+              setRightPanel('designer')
+            }}>
               <Icon name="paint-roller-vertical-filled" category="editor" size={32} />
+              <span className="build-page__design-btn-tooltip">App Designer</span>
             </button>
           </div>
           <div className="app-scope">
@@ -1113,159 +1123,176 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
       {/* Right Panel - Designer/Properties or Live Preview */}
       <aside className={`build-page__right ${previewMode || rightPanel === 'designer' ? '' : 'build-page__right--hidden'}`}>
 
-        {/* Properties Panel */}
-        {rightPanel === 'properties' && selectedElement && selectedComponent && (
-          <div className="build-page__properties">
-            <div className="build-page__panel-header">
-              <h2>{selectedComponent.name}</h2>
-              <button
-                className="build-page__panel-close"
-                onClick={() => {
-                  setRightPanel('preview')
-                  setSelectedElementId(null)
-                }}
-              >
-                &times;
-              </button>
-            </div>
+        {/* Sliding content wrapper */}
+        <div className={`build-page__right-slider${rightPanel === 'designer' || !previewMode ? ' build-page__right-slider--designer' : ''}`}>
 
-            {/* Variants */}
-            {Object.entries(selectedComponent.variants)
-              .filter(([, config]) => {
-                if (!config.showWhen) return true
-                return Object.entries(config.showWhen).every(
-                  ([key, val]) => selectedElement.variants[key] === val
-                )
-              })
-              .map(([group, config]) => (
-              <div key={group} className="build-page__prop-group">
-                <label className="build-page__prop-label">{group}</label>
-                <div className="build-page__prop-options">
-                  {config.options.map((opt) => (
-                    <button
-                      key={opt}
-                      className={`build-page__prop-option ${selectedElement.variants[group] === opt ? 'build-page__prop-option--active' : ''}`}
-                      onClick={() => handleVariantChange(selectedElement.id, group, opt)}
-                    >
-                      {opt}
-                    </button>
-                  ))}
+          {/* Slide 1: Live Preview / Properties */}
+          <div className="build-page__right-slide">
+            {/* Properties Panel */}
+            {rightPanel === 'properties' && selectedElement && selectedComponent ? (
+              <div className="build-page__properties">
+                <div className="build-page__panel-header">
+                  <h2>{selectedComponent.name}</h2>
+                  <button
+                    className="build-page__panel-close"
+                    onClick={() => {
+                      setRightPanel('preview')
+                      setSelectedElementId(null)
+                    }}
+                  >
+                    &times;
+                  </button>
                 </div>
-              </div>
-            ))}
 
-            {/* Properties */}
-            {selectedComponent.properties
-              .filter((prop) => prop.name !== 'Selected' && prop.name !== 'Skeleton')
-              .filter((prop) => {
-                if (!prop.showWhen) return true
-                return Object.entries(prop.showWhen).every(
-                  ([key, val]) => selectedElement.variants[key] === val || selectedElement.properties[key] === val
-                )
-              })
-              .map((prop) => (
-              <div key={prop.name} className="build-page__prop-group">
-                <label className="build-page__prop-label">{prop.name}</label>
-                {prop.type === 'boolean' ? (
-                  <label className="build-page__prop-toggle">
-                    <input
-                      type="checkbox"
-                      checked={selectedElement.properties[prop.name] as boolean}
-                      onChange={(e) =>
-                        handlePropertyChange(selectedElement.id, prop.name, e.target.checked)
-                      }
-                    />
-                    <span>{selectedElement.properties[prop.name] ? 'On' : 'Off'}</span>
-                  </label>
-                ) : (
-                  <input
-                    type="text"
-                    className="build-page__prop-input"
-                    value={String(selectedElement.properties[prop.name] || '')}
-                    onChange={(e) =>
-                      handlePropertyChange(selectedElement.id, prop.name, e.target.value)
-                    }
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Live Preview */}
-        {rightPanel !== 'designer' && !(rightPanel === 'properties' && selectedElement && selectedComponent) && (
-          <div className="live-preview">
-            <div className="live-preview__header">
-              <span className="live-preview__title">Live Preview</span>
-              <div className="live-preview__toolbar">
-                <button className="live-preview__dropdown">
-                  <Icon name="mobile" category="technology" size={16} />
-                  <span>Phone</span>
-                  <Icon name="angle-down" category="arrows" size={16} />
-                </button>
-                <button className="live-preview__tool-btn">
-                  <Icon name="magnifying-glass-plus" size={16} />
-                </button>
-                <button className="live-preview__tool-btn">
-                  <Icon name="qr" category="media" size={16} />
-                </button>
-              </div>
-            </div>
-            <div className="live-preview__body">
-              <div className="live-preview__phone">
-                {/* Layer 1: Gray shell */}
-                <div className="live-preview__phone-shell app-scope" />
-                {/* Layer 3: Black bezel */}
-                <div className="live-preview__phone-bezel" />
-                {/* Layer 4: Screen */}
-                <div className="live-preview__phone-screen">
-                  <div className={`live-preview__status-bar-bg app-scope${activePageId === pages[0]?.id ? ' live-preview__status-bar-bg--header' : ''}`} />
-                  <PhoneStatusBar className={`live-preview__status-bar app-scope${activePageId === pages[0]?.id ? ' live-preview__status-bar--header' : ''}`} style={{ color: activePageId === pages[0]?.id ? 'var(--fg-inverse)' : 'var(--fg-primary, #000)' }} />
-                  <div className="live-preview__content-scaler app-scope">
-                    <div className="live-preview__content app-scope">
-                      {(() => {
-                        const activePage = pages.find((p) => p.id === activePageId) || pages[0]
-                        const isFirstPage = activePage?.id === pages[0]?.id
-                        return activePage ? (
-                          <>
-                          {isFirstPage && <AppHeader layout="Center" title={appTitle} subtitle={appSubtitle} />}
-                          <div className={`themes-view__canvas${isFirstPage ? ' themes-view__canvas--first' : ''}`}>
-                            <div className="themes-view__app">
-                              {activePage.elements.map((element) => {
-                                const comp = ComponentRegistry.get(element.componentId)
-                                if (!comp) return null
-                                const previewProps = {
-                                  ...element.properties,
-                                  'Add New Card': false,
-                                }
-                                return (
-                                  <section key={element.id} className="themes-view__section">
-                                    {comp.render(element.variants, previewProps, element.states)}
-                                  </section>
-                                )
-                              })}
-                            </div>
-                          </div>
-                          </>
-                        ) : null
-                      })()}
+                {/* Variants */}
+                {Object.entries(selectedComponent.variants)
+                  .filter(([, config]) => {
+                    if (!config.showWhen) return true
+                    return Object.entries(config.showWhen).every(
+                      ([key, val]) => selectedElement.variants[key] === val
+                    )
+                  })
+                  .map(([group, config]) => (
+                  <div key={group} className="build-page__prop-group">
+                    <label className="build-page__prop-label">{group}</label>
+                    <div className="build-page__prop-options">
+                      {config.options.map((opt) => (
+                        <button
+                          key={opt}
+                          className={`build-page__prop-option ${selectedElement.variants[group] === opt ? 'build-page__prop-option--active' : ''}`}
+                          onClick={() => handleVariantChange(selectedElement.id, group, opt)}
+                        >
+                          {opt}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                  {pages.length > 1 && (
-                    <div className="live-preview__bottom-nav app-scope">
-                      <BottomNavigation
-                        items={pages.map((p) => ({ icon: 'House', label: p.name }))}
-                        activeIndex={pages.findIndex((p) => p.id === activePageId)}
-                        onItemClick={(index) => setActivePageId(pages[index].id)}
+                ))}
+
+                {/* Properties */}
+                {selectedComponent.properties
+                  .filter((prop) => prop.name !== 'Selected' && prop.name !== 'Skeleton')
+                  .filter((prop) => {
+                    if (!prop.showWhen) return true
+                    return Object.entries(prop.showWhen).every(
+                      ([key, val]) => selectedElement.variants[key] === val || selectedElement.properties[key] === val
+                    )
+                  })
+                  .map((prop) => (
+                  <div key={prop.name} className="build-page__prop-group">
+                    <label className="build-page__prop-label">{prop.name}</label>
+                    {prop.type === 'boolean' ? (
+                      <label className="build-page__prop-toggle">
+                        <input
+                          type="checkbox"
+                          checked={selectedElement.properties[prop.name] as boolean}
+                          onChange={(e) =>
+                            handlePropertyChange(selectedElement.id, prop.name, e.target.checked)
+                          }
+                        />
+                        <span>{selectedElement.properties[prop.name] ? 'On' : 'Off'}</span>
+                      </label>
+                    ) : (
+                      <input
+                        type="text"
+                        className="build-page__prop-input"
+                        value={String(selectedElement.properties[prop.name] || '')}
+                        onChange={(e) =>
+                          handlePropertyChange(selectedElement.id, prop.name, e.target.value)
+                        }
                       />
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="live-preview">
+                <div className="live-preview__header">
+                  <span className="live-preview__title">Live Preview</span>
+                  <div className="live-preview__toolbar">
+                    <button className="live-preview__dropdown">
+                      <Icon name="mobile" category="technology" size={16} />
+                      <span>Phone</span>
+                      <Icon name="angle-down" category="arrows" size={16} />
+                    </button>
+                    <button className="live-preview__tool-btn">
+                      <Icon name="magnifying-glass-plus" size={16} />
+                    </button>
+                    <button className="live-preview__tool-btn">
+                      <Icon name="qr" category="media" size={16} />
+                    </button>
+                  </div>
+                </div>
+                <div className="live-preview__body">
+                  <div className="live-preview__phone">
+                    {/* Layer 1: Gray shell */}
+                    <div className="live-preview__phone-shell app-scope" />
+                    {/* Layer 3: Black bezel */}
+                    <div className="live-preview__phone-bezel" />
+                    {/* Layer 4: Screen */}
+                    <div className="live-preview__phone-screen">
+                      <div className={`live-preview__status-bar-bg app-scope${activePageId === pages[0]?.id ? ' live-preview__status-bar-bg--header' : ''}`} />
+                      <PhoneStatusBar className={`live-preview__status-bar app-scope${activePageId === pages[0]?.id ? ' live-preview__status-bar--header' : ''}`} style={{ color: activePageId === pages[0]?.id ? 'var(--fg-inverse)' : 'var(--fg-primary, #000)' }} />
+                      <div className="live-preview__content-scaler app-scope">
+                        <div className="live-preview__content app-scope">
+                          {(() => {
+                            const activePage = pages.find((p) => p.id === activePageId) || pages[0]
+                            const isFirstPage = activePage?.id === pages[0]?.id
+                            return activePage ? (
+                              <>
+                              {isFirstPage && <AppHeader layout="Center" title={appTitle} subtitle={appSubtitle} />}
+                              <div className={`themes-view__canvas${isFirstPage ? ' themes-view__canvas--first' : ''}`}>
+                                <div className="themes-view__app">
+                                  {activePage.elements.map((element) => {
+                                    const comp = ComponentRegistry.get(element.componentId)
+                                    if (!comp) return null
+                                    const previewProps = {
+                                      ...element.properties,
+                                      'Add New Card': false,
+                                    }
+                                    return (
+                                      <section key={element.id} className="themes-view__section">
+                                        {comp.render(element.variants, previewProps, element.states)}
+                                      </section>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+                              </>
+                            ) : null
+                          })()}
+                        </div>
+                      </div>
+                      {pages.length > 1 && (
+                        <div className="live-preview__bottom-nav app-scope">
+                          <BottomNavigation
+                            items={pages.map((p) => ({ icon: 'House', label: p.name }))}
+                            activeIndex={pages.findIndex((p) => p.id === activePageId)}
+                            onItemClick={(index) => setActivePageId(pages[index].id)}
+                          />
+                        </div>
+                      )}
+                      <img src={phoneHomeIndicator} alt="" className="live-preview__home-indicator" />
                     </div>
-                  )}
-                  <img src={phoneHomeIndicator} alt="" className="live-preview__home-indicator" />
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
-        )}
+
+          {/* Slide 2: App Designer */}
+          <div className="build-page__right-slide build-page__right-slide--designer" data-theme="dark">
+            <AppDesigner
+              onClose={handleCloseDesigner}
+              targetSelector=".app-scope"
+              isMobile={isMobileView}
+              visible={rightPanel === 'designer'}
+              renderIcon={(name, size) => <Icon name={name} category="editor" size={size} />}
+              doneButton={<DSButton variant="filled" colorScheme="primary" shape="rounded" size="md" onClick={handleCloseDesigner}>Done</DSButton>}
+            />
+          </div>
+
+        </div>
       </aside>
     </div>
 
@@ -1341,17 +1368,6 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
       </div>
     </BottomSheet>
 
-    {/* Single AppDesigner instance — always mounted, responsive. Desktop: positioned in aside via CSS. Mobile: renders fixed bars + sheets. */}
-    <div className="build-page__app-designer" data-theme="dark" style={{ display: rightPanel === 'designer' ? undefined : 'none' }}>
-      <AppDesigner
-        onClose={() => setRightPanel('preview')}
-        targetSelector=".app-scope"
-        isMobile={isMobileView}
-        visible={rightPanel === 'designer'}
-        renderIcon={(name, size) => <Icon name={name} category="editor" size={size} />}
-        doneButton={<DSButton variant="filled" colorScheme="primary" shape="rounded" size="md" onClick={() => setRightPanel('preview')}>Done</DSButton>}
-      />
-    </div>
     </>
   )
 }
