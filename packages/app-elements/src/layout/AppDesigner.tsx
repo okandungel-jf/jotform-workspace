@@ -14,7 +14,7 @@ import { BottomSheet } from './components/BottomSheet';
 
 const DEFAULT_COLOR = '#0385C8';
 const DEFAULT_FONT = 'DM Sans';
-const DEFAULT_HEADING_FONT = 'Playfair Display';
+const DEFAULT_HEADING_FONT = 'DM Sans';
 const DEFAULT_RADIUS = 'Large';
 const DEFAULT_TINT = 30;
 const DEFAULT_HARMONY = 150;
@@ -72,7 +72,7 @@ interface ThemePreset {
 }
 
 const LIGHT_PRESETS: ThemePreset[] = [
-  { name: 'Default', color: '#0385C8', font: 'DM Sans', headingFont: 'Playfair Display', iconLibrary: 'lucide', radius: 'Large', tint: 30, mode: 'light', harmonyOffset: 150, scheme: { brand: '#0385C8', surface: '#D3E9FF', text: '#0385C8' } },
+  { name: 'Default', color: '#0385C8', font: 'DM Sans', headingFont: 'DM Sans', iconLibrary: 'lucide', radius: 'Large', tint: 30, mode: 'light', harmonyOffset: 150, scheme: { brand: '#0385C8', surface: '#D3E9FF', text: '#0385C8' } },
   { name: 'Amethyst', color: '#7D38EF', font: 'Inter', headingFont: '', iconLibrary: 'lucide', radius: 'Medium', tint: 50, mode: 'light', harmonyOffset: 150, scheme: { brand: '#7D38EF', surface: '#EDE8FE', text: '#7D38EF' } },
   { name: 'Sunset', color: '#F97101', font: 'Bricolage Grotesque', headingFont: '', iconLibrary: 'lucide', radius: 'Large', tint: 60, mode: 'light', harmonyOffset: 180, scheme: { brand: '#F97101', surface: '#FEF3C5', text: '#F97101' } },
   { name: 'Forest', color: '#19A44B', font: 'Public Sans', headingFont: 'Lora', iconLibrary: 'tabler', radius: 'Small', tint: 40, mode: 'light', harmonyOffset: 120, scheme: { brand: '#19A44B', surface: '#DDFBE8', text: '#19A44B' } },
