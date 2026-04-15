@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect, type FC } from 'react'
+import { createPortal } from 'react-dom'
 import { Icon, Button } from '@jf/design-system'
 import { icons as lucideIcons } from 'lucide-react'
 import {
@@ -32,6 +33,7 @@ interface PageNavigationBarProps {
   onPageSelect: (pageId: string) => void
   onPageReorder: (pages: PageTab[]) => void
   onPageRename: (pageId: string, name: string) => void
+  onDeletePage: (pageId: string) => void
   onAddPage: () => void
 }
 
@@ -47,18 +49,63 @@ function LucideIcon({ name, size = 18 }: { name: string; size?: number }) {
   return <IconComp size={size} />
 }
 
+function PageContextMenu({
+  isFirstPage,
+  onChangeIcon,
+  onHidePage,
+  onRequireLogin,
+  onRename,
+  onDelete,
+}: {
+  isFirstPage: boolean
+  onChangeIcon: () => void
+  onHidePage: () => void
+  onRequireLogin: () => void
+  onRename: () => void
+  onDelete: () => void
+}) {
+  return (
+    <>
+      <button className="page-nav__context-item" onClick={onChangeIcon}>
+        <Icon name="arrows-rotate" category="arrows" size={20} />
+        <span>Change Icon</span>
+      </button>
+      <button className="page-nav__context-item" onClick={onHidePage}>
+        <Icon name="eye-slash-filled" category="general" size={20} />
+        <span>Hide Page</span>
+      </button>
+      <button className="page-nav__context-item" onClick={onRequireLogin}>
+        <Icon name="lock-filled" category="security" size={20} />
+        <span>Require Login</span>
+      </button>
+      <button className="page-nav__context-item" onClick={onRename}>
+        <Icon name="pencil-line-filled" category="editor" size={20} />
+        <span>Rename</span>
+      </button>
+      <button className={`page-nav__context-item${isFirstPage ? ' page-nav__context-item--disabled' : ' page-nav__context-item--danger'}`} onClick={isFirstPage ? undefined : onDelete} disabled={isFirstPage}>
+        <Icon name="trash-filled" category="general" size={20} />
+        <span>Delete</span>
+      </button>
+    </>
+  )
+}
+
 function SortablePageTab({
   page,
   index,
   isActive,
+  isFirstPage,
   onSelect,
   onRename,
+  onDelete,
 }: {
   page: PageTab
   index: number
   isActive: boolean
+  isFirstPage: boolean
   onSelect: () => void
   onRename: (name: string) => void
+  onDelete: () => void
 }) {
   const {
     attributes,
@@ -69,7 +116,11 @@ function SortablePageTab({
     isDragging,
   } = useSortable({ id: page.id })
   const [editing, setEditing] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 })
   const nameRef = useRef<HTMLSpanElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const menuTriggerRef = useRef<HTMLSpanElement>(null)
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -80,6 +131,7 @@ function SortablePageTab({
   const iconName = getPageIconName(page, index)
 
   const startEditing = () => {
+    setMenuOpen(false)
     setEditing(true)
     requestAnimationFrame(() => {
       if (!nameRef.current) return
@@ -101,6 +153,22 @@ function SortablePageTab({
       nameRef.current.textContent = page.name
     }
   }
+
+  // Close context menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (
+        menuRef.current && !menuRef.current.contains(target) &&
+        menuTriggerRef.current && !menuTriggerRef.current.contains(target)
+      ) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [menuOpen])
 
   return (
     <div
@@ -132,9 +200,33 @@ function SortablePageTab({
       >
         {page.name}
       </span>
-      <span className="page-nav__tab-menu" onClick={(e) => e.stopPropagation()}>
+      <span
+        className="page-nav__tab-menu"
+        ref={menuTriggerRef}
+        onClick={(e) => {
+          e.stopPropagation()
+          if (!menuOpen && menuTriggerRef.current) {
+            const rect = menuTriggerRef.current.getBoundingClientRect()
+            setMenuPos({ top: rect.top, left: rect.left + rect.width / 2 })
+          }
+          setMenuOpen(!menuOpen)
+        }}
+      >
         <Icon name="ellipsis-vertical" category="general" size={18} />
       </span>
+      {menuOpen && createPortal(
+        <div ref={menuRef} className="page-nav__context-menu" style={{ top: menuPos.top, left: menuPos.left }}>
+          <PageContextMenu
+            isFirstPage={isFirstPage}
+            onChangeIcon={() => setMenuOpen(false)}
+            onHidePage={() => setMenuOpen(false)}
+            onRequireLogin={() => setMenuOpen(false)}
+            onRename={startEditing}
+            onDelete={() => { setMenuOpen(false); onDelete() }}
+          />
+        </div>,
+        document.body
+      )}
     </div>
   )
 }
@@ -157,6 +249,7 @@ export function PageNavigationBar({
   onPageSelect,
   onPageReorder,
   onPageRename,
+  onDeletePage,
   onAddPage,
 }: PageNavigationBarProps) {
   const [dragActiveId, setDragActiveId] = useState<string | null>(null)
@@ -235,8 +328,10 @@ export function PageNavigationBar({
                 page={page}
                 index={index}
                 isActive={page.id === activePageId}
+                isFirstPage={index === 0}
                 onSelect={() => onPageSelect(page.id)}
                 onRename={(name) => onPageRename(page.id, name)}
+                onDelete={() => onDeletePage(page.id)}
               />
             ))}
           </SortableContext>

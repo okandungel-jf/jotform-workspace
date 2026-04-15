@@ -1159,6 +1159,18 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
           }}
           onPageReorder={(reordered) => setPages(reordered as AppPage[])}
           onPageRename={(pageId, name) => setPages((prev) => prev.map((p) => p.id === pageId ? { ...p, name } : p))}
+          onDeletePage={(pageId) => {
+            setPages((prev) => {
+              const filtered = prev.filter((p) => p.id !== pageId)
+              if (filtered.length === 0) return prev
+              return filtered
+            })
+            if (activePageId === pageId) {
+              const idx = pages.findIndex((p) => p.id === pageId)
+              const next = pages[idx - 1] || pages[idx + 1]
+              if (next) setActivePageId(next.id)
+            }
+          }}
           onAddPage={() => handleAddPage(pages[pages.length - 1].id)}
         />
       )}
