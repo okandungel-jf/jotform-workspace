@@ -54,14 +54,6 @@ const ALL_ICON_NAMES = Object.keys(lucideIcons).filter(
   (name) => name !== 'createLucideIcon' && name !== 'icons' && name !== 'default' && /^[A-Z]/.test(name)
 )
 
-const ARROW_NAV_KEYWORDS = ['arrow', 'chevron', 'move', 'compass', 'navigation', 'corner', 'route', 'redo', 'undo', 'repeat', 'rotate', 'refresh', 'forward', 'rewind', 'skip']
-const MEDIA_COMM_KEYWORDS = ['phone', 'mail', 'message', 'video', 'mic', 'camera', 'speaker', 'volume', 'music', 'radio', 'podcast', 'headphone', 'bell', 'megaphone', 'rss', 'wifi', 'bluetooth', 'satellite', 'signal', 'antenna', 'cast', 'airplay', 'monitor', 'tv', 'screen', 'projector']
-const FILE_DOC_KEYWORDS = ['file', 'folder', 'book', 'clipboard', 'document', 'notebook', 'newspaper', 'archive', 'library', 'receipt', 'scroll', 'sticky', 'note', 'page', 'text', 'type', 'quote', 'pilcrow', 'heading', 'list', 'align']
-const UI_LAYOUT_KEYWORDS = ['layout', 'grid', 'panel', 'sidebar', 'menu', 'table', 'column', 'row', 'separator', 'split', 'resize', 'maximize', 'minimize', 'expand', 'shrink', 'dock', 'window', 'tab', 'kanban', 'gantt', 'calendar', 'app', 'blocks']
-const PEOPLE_SOCIAL_KEYWORDS = ['user', 'users', 'heart', 'star', 'thumbs', 'hand', 'smile', 'frown', 'laugh', 'meh', 'angry', 'person', 'baby', 'contact', 'group', 'share', 'send', 'gift', 'trophy', 'medal', 'crown', 'gem', 'diamond', 'flame', 'zap', 'sparkle', 'party']
-
-type IconCategory = 'popular' | 'all' | 'media' | 'files' | 'ui' | 'people'
-
 const POPULAR_ICONS = [
   // Core nav
   'Home', 'Search', 'Settings', 'User', 'Heart', 'Star', 'Bell', 'ShoppingCart',
@@ -98,33 +90,6 @@ const POPULAR_ICONS = [
   'PawPrint', 'Cat', 'Dog', 'Fish', 'Bird',
   'Shirt', 'Watch', 'Glasses', 'Umbrella',
 ]
-
-const CATEGORY_TABS: { id: IconCategory; icon: string; label: string }[] = [
-  { id: 'popular', icon: 'Star', label: 'Popular' },
-  { id: 'all', icon: 'LayoutGrid', label: 'All' },
-  { id: 'media', icon: 'Video', label: 'Media & Communication' },
-  { id: 'files', icon: 'FileText', label: 'Files & Documents' },
-  { id: 'ui', icon: 'LayoutDashboard', label: 'UI & Layout' },
-  { id: 'people', icon: 'Users', label: 'People & Social' },
-]
-
-function matchesCategory(name: string, keywords: string[]): boolean {
-  const lower = name.toLowerCase()
-  return keywords.some((kw) => lower.includes(kw))
-}
-
-function getIconCategory(name: string): IconCategory {
-  if (matchesCategory(name, MEDIA_COMM_KEYWORDS)) return 'media'
-  if (matchesCategory(name, FILE_DOC_KEYWORDS)) return 'files'
-  if (matchesCategory(name, UI_LAYOUT_KEYWORDS)) return 'ui'
-  if (matchesCategory(name, PEOPLE_SOCIAL_KEYWORDS)) return 'people'
-  if (matchesCategory(name, ARROW_NAV_KEYWORDS)) return 'ui'
-  return 'ui'
-}
-
-// Pre-compute categories for all icons
-const ICON_CATEGORY_MAP = new Map<string, IconCategory>()
-ALL_ICON_NAMES.forEach((name) => ICON_CATEGORY_MAP.set(name, getIconCategory(name)))
 
 const ITEM_SIZE = 42 // 40px + 2px gap
 const GRID_PADDING = 8 // --ds-space-sm
