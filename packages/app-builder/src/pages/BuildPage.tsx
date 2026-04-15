@@ -1110,7 +1110,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                         {page.elements.length === 0 ? (
                           <section
                             className="themes-view__section themes-view__section--center build-page__empty-state"
-                            onClick={(e) => { e.stopPropagation(); setActivePageId(page.id); setForceTargetPageId(page.id); setSelectedElementId(null); if (isMobileView) { setMobileElementsSheet(true); } else { setLeftPanelOpen(true); } }}
+                            onClick={(e) => { e.stopPropagation(); setActivePageId(page.id); setForceTargetPageId(page.id); setSelectedElementId(null); if (isMobileView) { if (rightPanel === 'designer') setRightPanel('preview'); setMobileElementsSheet(true); } else { setLeftPanelOpen(true); } }}
                           >
                             <EmptyState mobile={isMobileView} />
                           </section>

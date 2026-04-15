@@ -904,6 +904,7 @@ body {
     margin: 0 auto;
     box-shadow: var(--shadow-sm);
     border-radius: var(--radius-xl);
+    cursor: pointer;
 
     &--first {
       margin-top: -16px;
