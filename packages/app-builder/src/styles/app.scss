@@ -2052,3 +2052,114 @@ body {
   background: var(--ds-border);
   flex-shrink: 0;
 }
+
+// ============================================
+// Icon Picker Popover
+// ============================================
+.icon-picker-popover {
+  position: fixed;
+  transform: translate(-50%, -100%) translateY(-8px);
+  width: 320px;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  background: var(--gray-700);
+  border-radius: 8px;
+  box-shadow: var(--shadow-xl);
+  z-index: 10000;
+  overflow: hidden;
+
+  &__search {
+    padding: var(--ds-space-sm);
+  }
+
+  &__tabs {
+    display: flex;
+    border-bottom: 1px solid var(--gray-500);
+  }
+
+  &__tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--gray-200);
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+
+    &:hover:not(&--active) {
+      color: var(--gray-100);
+      border-bottom-color: var(--gray-400);
+    }
+
+    &--active {
+      color: var(--core-white);
+      border-bottom-color: var(--purple-400);
+    }
+  }
+
+  &__grid {
+    flex: 1;
+    min-height: 0;
+    padding: 0 var(--ds-space-sm) var(--ds-space-sm);
+    overflow-y: auto;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+    color: var(--gray-100);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+
+    &:hover {
+      background: var(--gray-500);
+      color: var(--core-white);
+    }
+
+    &--active {
+      background: var(--purple-400);
+      color: var(--core-white);
+
+      &:hover {
+        background: var(--purple-400);
+      }
+    }
+
+  }
+
+  &__tooltip {
+    position: fixed;
+    transform: translate(-50%, calc(-100% - 6px));
+    background: var(--gray-800);
+    color: var(--core-white);
+    font-family: var(--ds-font-family);
+    font-size: var(--ds-font-size-xs);
+    font-weight: var(--ds-font-weight-medium);
+    line-height: 1;
+    white-space: nowrap;
+    padding: 6px 8px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 10001;
+  }
+
+  &__empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: var(--ds-space-lg) 0;
+    color: var(--gray-200);
+    font-family: var(--ds-font-family);
+    font-size: var(--label-sm-size);
+  }
+}

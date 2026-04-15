@@ -1,6 +1,6 @@
-import { useState, useRef, useCallback, useEffect, type FC } from 'react'
+import { useState, useRef, useCallback, useEffect, useMemo, type FC } from 'react'
 import { createPortal } from 'react-dom'
-import { Icon, Button } from '@jf/design-system'
+import { Icon, Button, SearchInput } from '@jf/design-system'
 import { icons as lucideIcons } from 'lucide-react'
 import {
   DndContext,
@@ -33,6 +33,7 @@ interface PageNavigationBarProps {
   onPageSelect: (pageId: string) => void
   onPageReorder: (pages: PageTab[]) => void
   onPageRename: (pageId: string, name: string) => void
+  onChangeIcon: (pageId: string, icon: string) => void
   onDeletePage: (pageId: string) => void
   onAddPage: () => void
 }
@@ -47,6 +48,215 @@ function LucideIcon({ name, size = 18 }: { name: string; size?: number }) {
   const IconComp = lucideIcons[name as keyof typeof lucideIcons] as FC<{ size?: number }> | undefined
   if (!IconComp) return null
   return <IconComp size={size} />
+}
+
+const ALL_ICON_NAMES = Object.keys(lucideIcons).filter(
+  (name) => name !== 'createLucideIcon' && name !== 'icons' && name !== 'default' && /^[A-Z]/.test(name)
+)
+
+const ARROW_NAV_KEYWORDS = ['arrow', 'chevron', 'move', 'compass', 'navigation', 'corner', 'route', 'redo', 'undo', 'repeat', 'rotate', 'refresh', 'forward', 'rewind', 'skip']
+const MEDIA_COMM_KEYWORDS = ['phone', 'mail', 'message', 'video', 'mic', 'camera', 'speaker', 'volume', 'music', 'radio', 'podcast', 'headphone', 'bell', 'megaphone', 'rss', 'wifi', 'bluetooth', 'satellite', 'signal', 'antenna', 'cast', 'airplay', 'monitor', 'tv', 'screen', 'projector']
+const FILE_DOC_KEYWORDS = ['file', 'folder', 'book', 'clipboard', 'document', 'notebook', 'newspaper', 'archive', 'library', 'receipt', 'scroll', 'sticky', 'note', 'page', 'text', 'type', 'quote', 'pilcrow', 'heading', 'list', 'align']
+const UI_LAYOUT_KEYWORDS = ['layout', 'grid', 'panel', 'sidebar', 'menu', 'table', 'column', 'row', 'separator', 'split', 'resize', 'maximize', 'minimize', 'expand', 'shrink', 'dock', 'window', 'tab', 'kanban', 'gantt', 'calendar', 'app', 'blocks']
+const PEOPLE_SOCIAL_KEYWORDS = ['user', 'users', 'heart', 'star', 'thumbs', 'hand', 'smile', 'frown', 'laugh', 'meh', 'angry', 'person', 'baby', 'contact', 'group', 'share', 'send', 'gift', 'trophy', 'medal', 'crown', 'gem', 'diamond', 'flame', 'zap', 'sparkle', 'party']
+
+type IconCategory = 'all' | 'arrows' | 'media' | 'files' | 'ui' | 'people' | 'general'
+
+const CATEGORY_TABS: { id: IconCategory; icon: string; label: string }[] = [
+  { id: 'all', icon: 'LayoutGrid', label: 'All' },
+  { id: 'arrows', icon: 'ArrowRight', label: 'Arrows & Navigation' },
+  { id: 'media', icon: 'Video', label: 'Media & Communication' },
+  { id: 'files', icon: 'FileText', label: 'Files & Documents' },
+  { id: 'ui', icon: 'LayoutDashboard', label: 'UI & Layout' },
+  { id: 'people', icon: 'Users', label: 'People & Social' },
+  { id: 'general', icon: 'Box', label: 'General' },
+]
+
+function matchesCategory(name: string, keywords: string[]): boolean {
+  const lower = name.toLowerCase()
+  return keywords.some((kw) => lower.includes(kw))
+}
+
+function getIconCategory(name: string): IconCategory {
+  if (matchesCategory(name, ARROW_NAV_KEYWORDS)) return 'arrows'
+  if (matchesCategory(name, MEDIA_COMM_KEYWORDS)) return 'media'
+  if (matchesCategory(name, FILE_DOC_KEYWORDS)) return 'files'
+  if (matchesCategory(name, UI_LAYOUT_KEYWORDS)) return 'ui'
+  if (matchesCategory(name, PEOPLE_SOCIAL_KEYWORDS)) return 'people'
+  return 'general'
+}
+
+// Pre-compute categories for all icons
+const ICON_CATEGORY_MAP = new Map<string, IconCategory>()
+ALL_ICON_NAMES.forEach((name) => ICON_CATEGORY_MAP.set(name, getIconCategory(name)))
+
+const ITEM_SIZE = 42 // 40px + 2px gap
+const GRID_PADDING = 8 // --ds-space-sm
+const OVERSCAN = 2 // extra rows above/below viewport
+
+function IconPickerPopover({
+  value,
+  anchorPos,
+  onSelect,
+  onClose,
+}: {
+  value: string
+  anchorPos: { top: number; left: number }
+  onSelect: (icon: string) => void
+  onClose: () => void
+}) {
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState<IconCategory>('all')
+  const [tooltip, setTooltip] = useState<{ name: string; top: number; left: number } | null>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
+  const [scrollTop, setScrollTop] = useState(0)
+  const [cols, setCols] = useState(7)
+
+  const filtered = useMemo(() => {
+    let icons = ALL_ICON_NAMES
+    if (category !== 'all') {
+      icons = icons.filter((name) => ICON_CATEGORY_MAP.get(name) === category)
+    }
+    if (search) {
+      const q = search.toLowerCase()
+      icons = icons.filter((name) => name.toLowerCase().includes(q))
+    }
+    return icons
+  }, [search, category])
+
+  // Measure columns from grid width
+  useEffect(() => {
+    const el = gridRef.current
+    if (!el) return
+    const measure = () => {
+      const width = el.clientWidth - GRID_PADDING * 2
+      setCols(Math.max(1, Math.floor(width / ITEM_SIZE)))
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  const totalRows = Math.ceil(filtered.length / cols)
+  const totalHeight = totalRows * ITEM_SIZE
+  const gridViewHeight = gridRef.current?.clientHeight ?? 300
+
+  const startRow = Math.max(0, Math.floor(scrollTop / ITEM_SIZE) - OVERSCAN)
+  const endRow = Math.min(totalRows, Math.ceil((scrollTop + gridViewHeight) / ITEM_SIZE) + OVERSCAN)
+
+  const visibleItems = useMemo(() => {
+    const items: { name: string; row: number; col: number }[] = []
+    for (let row = startRow; row < endRow; row++) {
+      for (let col = 0; col < cols; col++) {
+        const idx = row * cols + col
+        if (idx < filtered.length) {
+          items.push({ name: filtered[idx], row, col })
+        }
+      }
+    }
+    return items
+  }, [filtered, startRow, endRow, cols])
+
+  // Close on outside click
+  useEffect(() => {
+    const handle = (e: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        onClose()
+      }
+    }
+    document.addEventListener('mousedown', handle)
+    return () => document.removeEventListener('mousedown', handle)
+  }, [onClose])
+
+  // Reset scroll on search/category change
+  useEffect(() => {
+    if (gridRef.current) gridRef.current.scrollTop = 0
+    setScrollTop(0)
+  }, [search, category])
+
+  return (<>
+    {createPortal(
+    <div
+      ref={popoverRef}
+      className="icon-picker-popover"
+      data-theme="dark"
+      style={{ top: anchorPos.top, left: anchorPos.left }}
+    >
+      <div className="icon-picker-popover__tabs">
+        {CATEGORY_TABS.map((tab) => (
+          <button
+            key={tab.id}
+            className={`icon-picker-popover__tab${category === tab.id ? ' icon-picker-popover__tab--active' : ''}`}
+            title={tab.label}
+            onClick={() => setCategory(tab.id)}
+          >
+            <LucideIcon name={tab.icon} size={18} />
+          </button>
+        ))}
+      </div>
+      <div className="icon-picker-popover__search">
+        <SearchInput
+          size="sm"
+          placeholder={`Search ${filtered.length} icons...`}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onClear={() => setSearch('')}
+          autoFocus
+        />
+      </div>
+      <div
+        ref={gridRef}
+        className="icon-picker-popover__grid"
+        onScroll={(e) => setScrollTop((e.target as HTMLDivElement).scrollTop)}
+      >
+        {filtered.length === 0 && (
+          <span className="icon-picker-popover__empty">No icons found</span>
+        )}
+        {filtered.length > 0 && (
+          <div style={{ height: totalHeight, position: 'relative' }}>
+            {visibleItems.map(({ name, row, col }) => (
+              <button
+                key={name}
+                className={`icon-picker-popover__item${name === value ? ' icon-picker-popover__item--active' : ''}`}
+                style={{
+                  position: 'absolute',
+                  top: row * ITEM_SIZE,
+                  left: col * ITEM_SIZE,
+                  width: ITEM_SIZE - 2,
+                  height: ITEM_SIZE - 2,
+                }}
+                onClick={() => onSelect(name)}
+                onMouseEnter={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  setTooltip({
+                    name,
+                    top: rect.top,
+                    left: rect.left + rect.width / 2,
+                  })
+                }}
+                onMouseLeave={() => setTooltip(null)}
+              >
+                <LucideIcon name={name} size={20} />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body
+  )}
+  {tooltip && createPortal(
+    <div
+      className="icon-picker-popover__tooltip"
+      style={{ top: tooltip.top, left: tooltip.left }}
+    >
+      {tooltip.name}
+    </div>,
+    document.body
+  )}
+  </>)
 }
 
 function PageContextMenu({
@@ -97,6 +307,7 @@ function SortablePageTab({
   isFirstPage,
   onSelect,
   onRename,
+  onChangeIcon,
   onDelete,
 }: {
   page: PageTab
@@ -105,6 +316,7 @@ function SortablePageTab({
   isFirstPage: boolean
   onSelect: () => void
   onRename: (name: string) => void
+  onChangeIcon: (icon: string) => void
   onDelete: () => void
 }) {
   const {
@@ -118,6 +330,8 @@ function SortablePageTab({
   const [editing, setEditing] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 })
+  const [iconPickerOpen, setIconPickerOpen] = useState(false)
+  const [iconPickerPos, setIconPickerPos] = useState({ top: 0, left: 0 })
   const nameRef = useRef<HTMLSpanElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const menuTriggerRef = useRef<HTMLSpanElement>(null)
@@ -218,7 +432,14 @@ function SortablePageTab({
         <div ref={menuRef} className="page-nav__context-menu" style={{ top: menuPos.top, left: menuPos.left }}>
           <PageContextMenu
             isFirstPage={isFirstPage}
-            onChangeIcon={() => setMenuOpen(false)}
+            onChangeIcon={() => {
+              setMenuOpen(false)
+              if (menuTriggerRef.current) {
+                const rect = menuTriggerRef.current.getBoundingClientRect()
+                setIconPickerPos({ top: rect.top, left: rect.left + rect.width / 2 })
+              }
+              setIconPickerOpen(true)
+            }}
             onHidePage={() => setMenuOpen(false)}
             onRequireLogin={() => setMenuOpen(false)}
             onRename={startEditing}
@@ -226,6 +447,17 @@ function SortablePageTab({
           />
         </div>,
         document.body
+      )}
+      {iconPickerOpen && (
+        <IconPickerPopover
+          value={iconName}
+          anchorPos={iconPickerPos}
+          onSelect={(icon) => {
+            onChangeIcon(icon)
+            setIconPickerOpen(false)
+          }}
+          onClose={() => setIconPickerOpen(false)}
+        />
       )}
     </div>
   )
@@ -249,6 +481,7 @@ export function PageNavigationBar({
   onPageSelect,
   onPageReorder,
   onPageRename,
+  onChangeIcon,
   onDeletePage,
   onAddPage,
 }: PageNavigationBarProps) {
@@ -331,6 +564,7 @@ export function PageNavigationBar({
                 isFirstPage={index === 0}
                 onSelect={() => onPageSelect(page.id)}
                 onRename={(name) => onPageRename(page.id, name)}
+                onChangeIcon={(icon) => onChangeIcon(page.id, icon)}
                 onDelete={() => onDeletePage(page.id)}
               />
             ))}

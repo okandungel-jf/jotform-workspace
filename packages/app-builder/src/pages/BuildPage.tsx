@@ -1159,6 +1159,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
           }}
           onPageReorder={(reordered) => setPages(reordered as AppPage[])}
           onPageRename={(pageId, name) => setPages((prev) => prev.map((p) => p.id === pageId ? { ...p, name } : p))}
+          onChangeIcon={(pageId, icon) => setPages((prev) => prev.map((p) => p.id === pageId ? { ...p, icon } : p))}
           onDeletePage={(pageId) => {
             setPages((prev) => {
               const filtered = prev.filter((p) => p.id !== pageId)
