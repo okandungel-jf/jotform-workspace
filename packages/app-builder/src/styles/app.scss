@@ -53,6 +53,7 @@
   --ds-text-secondary: var(--secondary-text-lightest);
   --ds-text-tertiary: var(--secondary-text-light);
   --ds-text-dark: var(--secondary-text-darkest);
+  --ds-text-medium: var(--secondary-text-medium);
   --ds-accent: var(--product-default);
   --ds-accent-hover: var(--product-dark);
   --ds-border: var(--border-light);
@@ -751,7 +752,7 @@ body {
   left: calc(100% + 10px);
   top: 50%;
   transform: translateY(-50%);
-  background: var(--tooltip-bg);
+  background: var(--btn-primary-bg);
   color: var(--tooltip-fg);
   font-size: var(--ds-font-size-sm);
   font-weight: var(--ds-font-weight-medium);
@@ -771,7 +772,7 @@ body {
     right: 100%;
     transform: translateY(-50%);
     border: 5px solid transparent;
-    border-right-color: var(--tooltip-bg);
+    border-right-color: var(--btn-primary-bg);
   }
 
   .build-page__add-element-btn:hover & {
@@ -794,7 +795,7 @@ body {
   justify-content: center;
   box-shadow: var(--shadow-sm);
   color: var(--btn-brand);
-  transition: transform 0.3s ease 0.3s, opacity 0.3s ease 0.3s, background 0.15s;
+  transition: transform 0.3s ease 0.3s, opacity 0.3s ease 0.3s, background 0.15s, color 0.15s;
 
   .jf-icon {
     transform: rotate(-45deg);
@@ -813,6 +814,15 @@ body {
     background: var(--btn-primary-fg);
   }
 
+  &--brand {
+    background: var(--bg-fill-brand);
+    color: var(--fg-inverse);
+
+    &:hover {
+      background: var(--bg-fill-brand-hover);
+    }
+  }
+
   &--hidden {
     transform: translateX(calc(100% + 16px));
     opacity: 0;
@@ -826,7 +836,7 @@ body {
   right: calc(100% + 10px);
   top: 50%;
   transform: translateY(-50%);
-  background: var(--tooltip-bg);
+  background: var(--btn-primary-bg);
   color: var(--tooltip-fg);
   font-size: var(--ds-font-size-sm);
   font-weight: var(--ds-font-weight-medium);
@@ -846,12 +856,20 @@ body {
     left: 100%;
     transform: translateY(-50%);
     border: 5px solid transparent;
-    border-left-color: var(--tooltip-bg);
+    border-left-color: var(--btn-primary-bg);
   }
 
   .build-page__design-btn:hover & {
     opacity: 1;
   }
+}
+
+.build-page__canvas-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .build-page__canvas {
@@ -1538,7 +1556,7 @@ body {
 
 .settings-page__nav {
   width: 260px;
-  background: var(--tooltip-bg);
+  background: var(--btn-primary-bg);
   color: var(--tooltip-fg);
   flex-shrink: 0;
   padding: var(--ds-space-md);
@@ -1803,4 +1821,182 @@ body {
     transition: transform 0.25s ease, margin-bottom 0.25s ease;
   }
 
+}
+
+// ============================================
+// Page Navigation Bar
+// ============================================
+.page-nav {
+  flex-shrink: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-xs);
+  padding: var(--ds-space-xs);
+  background: var(--ds-bg-surface);
+  border-top: 1px solid var(--ds-border);
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.page-nav__pages-wrapper {
+  position: relative;
+  min-width: 0;
+}
+
+.page-nav__pages {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-xs);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.page-nav__fade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 32px;
+  background: linear-gradient(to right, transparent, var(--ds-bg-surface));
+  pointer-events: none;
+  z-index: 1;
+}
+
+.page-nav__tab {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-xs);
+  height: 40px;
+  min-width: 148px;
+  width: 148px;
+  padding: 0 var(--ds-space-xs);
+  background: var(--ds-bg-page);
+  border: none;
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  transition: background 0.15s ease;
+  font-family: var(--ds-font-family);
+
+  &:hover,
+  &--active {
+    background: var(--ds-border);
+  }
+
+  // Show drag handle on hover, hide page icon
+  &:hover .page-nav__tab-icon,
+  &--active:hover .page-nav__tab-icon {
+    opacity: 0;
+  }
+
+  &:hover .page-nav__tab-drag {
+    opacity: 1;
+  }
+
+  // Show context menu on hover
+  &:hover .page-nav__tab-menu {
+    opacity: 1;
+  }
+}
+
+.page-nav__tab--dragging {
+  background: var(--ds-border);
+  box-shadow: var(--ds-shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.15));
+  cursor: grabbing;
+}
+
+.page-nav__tab-icon-wrapper {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.page-nav__tab-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ds-text-medium);
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
+.page-nav__tab-drag {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ds-text-tertiary);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.page-nav__tab-name {
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-book);
+  line-height: var(--ds-line-height-xs);
+  letter-spacing: var(--ds-letter-spacing-sm, -0.084px);
+  color: var(--ds-text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  outline: none;
+  border-radius: var(--ds-radius-xs, 2px);
+
+  &[contenteditable="true"] {
+    cursor: text;
+    text-overflow: clip;
+  }
+}
+
+.page-nav__tab-menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--ds-text-tertiary);
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--ds-text-dark);
+  }
+}
+
+.page-nav__add-page {
+  flex-shrink: 0;
+}
+
+.page-nav__end {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-xs);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.page-nav__divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--ds-border);
+  flex-shrink: 0;
 }

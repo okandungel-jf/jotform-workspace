@@ -15,6 +15,7 @@ import {
 import { Icon, Button as DSButton } from '@jf/design-system'
 import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
+import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
 import {
   DndContext,
   DragOverlay,
@@ -46,6 +47,7 @@ interface CanvasElement {
 interface AppPage {
   id: string
   name: string
+  icon?: string
   elements: CanvasElement[]
 }
 
@@ -401,7 +403,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
   const [components, setComponents] = useState<RegisteredComponent[]>(ComponentRegistry.getAll())
   const [pages, setPages] = useState<AppPage[]>([
-    { id: 'page-1', name: 'Home', elements: [] },
+    { id: 'page-1', name: 'Home', icon: 'House', elements: [] },
   ])
   const [activePageId, setActivePageId] = useState('page-1')
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null)
@@ -424,6 +426,8 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const setAppTitle = (title: string) => onAppTitleChange?.(title)
   const [appSubtitle, setAppSubtitle] = useState('')
   const appHeaderRef = useRef<HTMLDivElement>(null)
+  const designBtnRef = useRef<HTMLButtonElement>(null)
+  const [designBtnOnHeader, setDesignBtnOnHeader] = useState(true)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -456,6 +460,20 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
       builder.classList.remove('builder--design-mode')
     }
   }, [rightPanel, isMobileView])
+
+  // Track whether design button overlaps app header
+  useEffect(() => {
+    const canvas = document.querySelector('.build-page__canvas')
+    if (!canvas || !appHeaderRef.current || !designBtnRef.current) return
+    const check = () => {
+      const headerRect = appHeaderRef.current!.getBoundingClientRect()
+      const btnRect = designBtnRef.current!.getBoundingClientRect()
+      setDesignBtnOnHeader(btnRect.top + btnRect.height / 2 < headerRect.bottom)
+    }
+    check()
+    canvas.addEventListener('scroll', check, { passive: true })
+    return () => canvas.removeEventListener('scroll', check)
+  }, [])
 
   // Toggle elements-sheet class on .builder for CSS targeting
   useEffect(() => {
@@ -678,7 +696,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
           if (progress < 1) requestAnimationFrame(step)
         }
         requestAnimationFrame(step)
-      }, 100)
+      }, 200)
     })
   }, [isMobileView])
 
@@ -968,6 +986,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   return (
     <>
     <DndContext
+      id="build-page-dnd"
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
@@ -1043,6 +1062,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
       </aside>
 
       {/* Canvas - App Preview */}
+      <div className="build-page__canvas-wrapper">
       <main className="build-page__canvas" onClick={() => {
         setSelectedElementId(null)
         setRightPanel('preview')
@@ -1053,7 +1073,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
               <Icon name="plus" category="general" size={24} />
               <span className="build-page__add-element-btn-tooltip">Add Element</span>
             </button>
-            <button className={`build-page__design-btn${rightPanel === 'designer' ? ' build-page__design-btn--hidden' : ''}`} onClick={(e) => {
+            <button ref={designBtnRef} className={`build-page__design-btn${rightPanel === 'designer' ? ' build-page__design-btn--hidden' : ''}${!designBtnOnHeader ? ' build-page__design-btn--brand' : ''}`} onClick={(e) => {
               e.stopPropagation()
               setSelectedElementId(null)
               setRightPanel('designer')
@@ -1119,6 +1139,30 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
           </div>
 
       </main>
+
+      {/* Page Navigation Bar */}
+      {!isMobileView && pages.length > 1 && (
+        <PageNavigationBar
+          pages={pages}
+          activePageId={activePageId}
+          onPageSelect={(pageId) => {
+            setActivePageId(pageId)
+            requestAnimationFrame(() => {
+              const el = document.querySelector(`[data-page-id="${pageId}"]`)
+              const scrollContainer = document.querySelector('.build-page__canvas')
+              if (!el || !scrollContainer) return
+              const containerRect = scrollContainer.getBoundingClientRect()
+              const elRect = el.getBoundingClientRect()
+              const targetY = scrollContainer.scrollTop + elRect.top - containerRect.top - containerRect.height / 2 + elRect.height / 2
+              scrollContainer.scrollTo({ top: targetY, behavior: 'smooth' })
+            })
+          }}
+          onPageReorder={(reordered) => setPages(reordered as AppPage[])}
+          onPageRename={(pageId, name) => setPages((prev) => prev.map((p) => p.id === pageId ? { ...p, name } : p))}
+          onAddPage={() => handleAddPage(pages[pages.length - 1].id)}
+        />
+      )}
+      </div>
 
       {/* Right Panel - Designer/Properties or Live Preview */}
       <aside className={`build-page__right ${previewMode || rightPanel === 'designer' ? '' : 'build-page__right--hidden'}`}>
@@ -1266,8 +1310,8 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                       {pages.length > 1 && (
                         <div className="live-preview__bottom-nav app-scope">
                           <BottomNavigation
-                            items={pages.map((p) => ({ icon: 'House', label: p.name }))}
-                            activeIndex={pages.findIndex((p) => p.id === activePageId)}
+                            items={pages.slice(0, 5).map((p, i) => ({ icon: getPageIconName(p, i), label: p.name }))}
+                            activeIndex={pages.slice(0, 5).findIndex((p) => p.id === activePageId)}
                             onItemClick={(index) => setActivePageId(pages[index].id)}
                           />
                         </div>
