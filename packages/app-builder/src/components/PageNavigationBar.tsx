@@ -142,7 +142,6 @@ function IconPickerPopover({
   onClose: () => void
 }) {
   const [search, setSearch] = useState('')
-  const [category, setCategory] = useState<IconCategory>('popular')
   const [tooltip, setTooltip] = useState<{ name: string; top: number; left: number } | null>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
@@ -151,18 +150,20 @@ function IconPickerPopover({
   const [cols, setCols] = useState(7)
 
   const filtered = useMemo(() => {
-    let icons = ALL_ICON_NAMES
-    if (category === 'popular') {
-      icons = POPULAR_ICONS.filter((name) => ALL_ICON_NAMES.includes(name))
-    } else if (category !== 'all') {
-      icons = icons.filter((name) => ICON_CATEGORY_MAP.get(name) === category)
+    const popularSet = new Set(POPULAR_ICONS)
+    const popular = POPULAR_ICONS.filter((name) => ALL_ICON_NAMES.includes(name))
+    const rest = ALL_ICON_NAMES.filter((name) => !popularSet.has(name))
+    let icons = [...popular, ...rest]
+    // Move current icon to the front
+    if (value && icons.includes(value)) {
+      icons = [value, ...icons.filter((name) => name !== value)]
     }
     if (search) {
       const q = search.toLowerCase()
       icons = icons.filter((name) => name.toLowerCase().includes(q))
     }
     return icons
-  }, [search, category])
+  }, [search, value])
 
   // Measure columns from grid width
   useEffect(() => {
@@ -213,7 +214,7 @@ function IconPickerPopover({
   useEffect(() => {
     if (gridRef.current) gridRef.current.scrollTop = 0
     setScrollTop(0)
-  }, [search, category])
+  }, [search])
 
   return (<>
     {createPortal(
@@ -223,21 +224,15 @@ function IconPickerPopover({
       data-theme="dark"
       style={{ top: anchorPos.top, left: anchorPos.left }}
     >
-      <div className="icon-picker-popover__tabs">
-        {CATEGORY_TABS.map((tab) => (
-          <button
-            key={tab.id}
-            className={`icon-picker-popover__tab${category === tab.id ? ' icon-picker-popover__tab--active' : ''}`}
-            title={tab.label}
-            onClick={() => setCategory(tab.id)}
-          >
-            <LucideIcon name={tab.icon} size={18} />
-          </button>
-        ))}
+      <div className="icon-picker-popover__header">
+        <h2>Select Icon</h2>
+        <button className="icon-picker-popover__close" onClick={onClose}>
+          <LucideIcon name="X" size={18} />
+        </button>
       </div>
       <div className="icon-picker-popover__search">
         <SearchInput
-          size="sm"
+          size="md"
           placeholder={`Search ${filtered.length} icons...`}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
