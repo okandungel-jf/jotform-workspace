@@ -703,7 +703,7 @@ body {
   }
 
   @media (max-width: 768px) {
-    top: 40px; // tab bar height on mobile
+    top: 0;
   }
 }
 
@@ -957,7 +957,17 @@ body {
   }
 
   @media (max-width: 768px) {
-    display: none;
+    // Always rendered but zero-size so fixed children (bars, sheets) can animate
+    position: fixed;
+    width: 0;
+    height: 0;
+    overflow: visible;
+    box-shadow: none;
+    pointer-events: none;
+
+    .builder--design-mode & {
+      pointer-events: auto;
+    }
   }
 }
 
@@ -1705,6 +1715,8 @@ body {
   padding: var(--spacing-sm) var(--spacing-md);
   background: var(--ds-bg-surface-dark);
   box-shadow: 0 2px 8px rgba(19, 22, 32, 0.06);
+  transform: translateY(-100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .design-top-bar__left {
@@ -1739,6 +1751,8 @@ body {
   flex-direction: row;
   align-items: center;
   justify-content: stretch;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .design-bottom-bar__tab {
@@ -1769,7 +1783,8 @@ body {
 }
 
 .design-bottom-bar--sheet-open {
-  display: none !important;
+  transform: translateY(100%) !important;
+  transition: transform 0.2s ease !important;
 }
 
 // Single AppDesigner wrapper — desktop: right panel, mobile: fixed bars + sheets only
@@ -1779,13 +1794,37 @@ body {
   flex-direction: column;
 }
 
-// Mobile media query — show design mode UI
+// Mobile: always collapse wrappers so fixed children can animate freely
 @media (max-width: 768px) {
-  // Hide topbar when design mode is active
-  .builder--design-mode > .topbar {
+  .build-page__right-slider {
+    display: contents;
+  }
+
+  // Hide live preview / properties slide
+  .build-page__right-slide:not(.build-page__right-slide--designer) {
     display: none;
   }
 
+  // Collapse designer slide wrapper
+  .build-page__right-slide--designer {
+    display: contents;
+  }
+}
+
+// Mobile media query — show design mode UI
+@media (max-width: 768px) {
+  // Topbar — slide up when design mode is active
+  .builder > .topbar {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), margin-bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .builder--design-mode > .topbar {
+    transform: translateY(-100%);
+    margin-bottom: -96px; // main bar (56px) + tab bar (40px)
+    z-index: 0;
+  }
+
+  // Design bars — always rendered on mobile, slide in/out via transform
   .design-top-bar {
     display: flex;
   }
@@ -1794,15 +1833,34 @@ body {
     display: flex;
   }
 
-  // Canvas adjustments when design mode is active
+  // Slide bars into view when design mode is active
+  .builder--design-mode .design-top-bar {
+    transform: translateY(0);
+  }
+
+  .builder--design-mode .design-bottom-bar {
+    transform: translateY(0);
+  }
+
+  // Canvas padding — smooth transition
+  .build-page__canvas {
+    transition: padding-top 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding-bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
   .builder--design-mode .build-page__canvas {
     padding-top: 64px;
     padding-bottom: max(var(--bottom-sheet-height, 0px), 72px);
   }
 
-  // Hide add-element floating button in design mode
-  .builder--design-mode .build-page__add-element-btn {
-    display: none;
+  // Floating buttons — fade out in design mode
+  .builder--design-mode .build-page__floating-buttons {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .build-page__floating-buttons {
+    transition: opacity 0.2s ease;
   }
 
   // Elements sheet open — hide floating buttons, slide topbar up
@@ -1813,12 +1871,6 @@ body {
   .builder--elements-sheet > .topbar {
     transform: translateY(-100%);
     margin-bottom: -96px; // main bar (56px) + tab bar (40px)
-    transition: transform 0.25s ease, margin-bottom 0.25s ease;
-  }
-
-  // Restore topbar transition when sheet closes
-  .builder:not(.builder--elements-sheet) > .topbar {
-    transition: transform 0.25s ease, margin-bottom 0.25s ease;
   }
 
 }
