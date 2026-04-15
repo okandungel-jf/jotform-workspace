@@ -241,7 +241,7 @@ function IconPickerPopover({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onClear={() => setSearch('')}
-          autoFocus
+          autoFocus={false}
         />
       </div>
       <div
