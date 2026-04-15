@@ -2039,12 +2039,13 @@ body {
   transform: translate(-50%, -100%) translateY(calc(var(--ds-space-md) * -1));
   display: flex;
   flex-direction: column;
-  background: var(--ds-bg-secondary);
-  border-radius: var(--ds-radius-sm);
+  background: var(--gray-700);
+  border-radius: var(--ds-radius-md);
   overflow: hidden;
   z-index: 9999;
   box-shadow: var(--shadow-lg);
   width: 232px;
+  padding: var(--ds-space-2xs);
 }
 
 .page-nav__context-item {
@@ -2055,6 +2056,7 @@ body {
   padding: 0 var(--ds-space-sm);
   background: none;
   border: none;
+  border-radius: var(--ds-radius-sm);
   color: var(--ds-text-primary);
   font-family: var(--ds-font-family);
   font-size: var(--label-sm-size);
@@ -2065,14 +2067,14 @@ body {
   white-space: nowrap;
 
   &:hover {
-    background: var(--ds-bg-surface-dark);
+    background: var(--gray-500);
   }
 
   &--danger {
     color: var(--ds-text-primary);
 
     &:hover {
-      background: var(--ds-bg-surface-dark);
+      background: var(--gray-500);
     }
   }
 
