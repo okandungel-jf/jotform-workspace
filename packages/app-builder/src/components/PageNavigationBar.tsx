@@ -60,16 +60,54 @@ const FILE_DOC_KEYWORDS = ['file', 'folder', 'book', 'clipboard', 'document', 'n
 const UI_LAYOUT_KEYWORDS = ['layout', 'grid', 'panel', 'sidebar', 'menu', 'table', 'column', 'row', 'separator', 'split', 'resize', 'maximize', 'minimize', 'expand', 'shrink', 'dock', 'window', 'tab', 'kanban', 'gantt', 'calendar', 'app', 'blocks']
 const PEOPLE_SOCIAL_KEYWORDS = ['user', 'users', 'heart', 'star', 'thumbs', 'hand', 'smile', 'frown', 'laugh', 'meh', 'angry', 'person', 'baby', 'contact', 'group', 'share', 'send', 'gift', 'trophy', 'medal', 'crown', 'gem', 'diamond', 'flame', 'zap', 'sparkle', 'party']
 
-type IconCategory = 'all' | 'arrows' | 'media' | 'files' | 'ui' | 'people' | 'general'
+type IconCategory = 'popular' | 'all' | 'media' | 'files' | 'ui' | 'people'
+
+const POPULAR_ICONS = [
+  // Core nav
+  'Home', 'Search', 'Settings', 'User', 'Heart', 'Star', 'Bell', 'ShoppingCart',
+  'MessageCircle', 'Mail', 'Phone', 'MapPin', 'Navigation', 'Calendar', 'Clock',
+  // Media & content
+  'Camera', 'Image', 'Play', 'Music', 'Bookmark', 'Tag', 'Gift',
+  'CreditCard', 'Wallet', 'QrCode', 'ScanLine', 'Barcode',
+  // Data & progress
+  'BarChart3', 'TrendingUp', 'PieChart', 'Activity', 'Target', 'Gauge',
+  // Files & actions
+  'FileText', 'Folder', 'Download', 'Upload', 'Share2', 'Send',
+  // Status & info
+  'CheckCircle2', 'AlertCircle', 'Info', 'HelpCircle', 'ShieldCheck',
+  // Interaction
+  'Plus', 'Menu', 'Filter', 'SlidersHorizontal', 'ListFilter',
+  'Eye', 'Lock', 'Unlock', 'LogIn', 'LogOut',
+  // Environment
+  'Sun', 'Moon', 'Cloud', 'Flame', 'Zap', 'Sparkles',
+  // Lifestyle
+  'Coffee', 'Utensils', 'Dumbbell', 'Bike', 'Car', 'Plane', 'Train', 'Ship',
+  // Work & education
+  'Briefcase', 'GraduationCap', 'Stethoscope', 'Palette', 'Wrench', 'Hammer',
+  // Tech
+  'Code', 'Terminal', 'Database', 'Cpu', 'Smartphone', 'Laptop', 'Globe', 'Wifi',
+  // People & social
+  'Users', 'UserPlus', 'CircleUser', 'HandHeart', 'ThumbsUp', 'PartyPopper',
+  // Shapes & layout
+  'Layers', 'Grid3X3', 'LayoutDashboard', 'Compass', 'Map',
+  // Rewards
+  'Trophy', 'Medal', 'Crown', 'Gem', 'Rocket',
+  // Objects
+  'Key', 'Lightbulb', 'Megaphone', 'Newspaper', 'Package', 'Truck',
+  'Store', 'Building2', 'Landmark', 'Trees', 'Flower2', 'Leaf',
+  'PawPrint', 'Cat', 'Dog', 'Fish', 'Bird',
+  'Shirt', 'Watch', 'Glasses', 'Umbrella',
+]
+
+const POPULAR_SET = new Set(POPULAR_ICONS)
 
 const CATEGORY_TABS: { id: IconCategory; icon: string; label: string }[] = [
+  { id: 'popular', icon: 'Star', label: 'Popular' },
   { id: 'all', icon: 'LayoutGrid', label: 'All' },
-  { id: 'arrows', icon: 'ArrowRight', label: 'Arrows & Navigation' },
   { id: 'media', icon: 'Video', label: 'Media & Communication' },
   { id: 'files', icon: 'FileText', label: 'Files & Documents' },
   { id: 'ui', icon: 'LayoutDashboard', label: 'UI & Layout' },
   { id: 'people', icon: 'Users', label: 'People & Social' },
-  { id: 'general', icon: 'Box', label: 'General' },
 ]
 
 function matchesCategory(name: string, keywords: string[]): boolean {
@@ -78,12 +116,12 @@ function matchesCategory(name: string, keywords: string[]): boolean {
 }
 
 function getIconCategory(name: string): IconCategory {
-  if (matchesCategory(name, ARROW_NAV_KEYWORDS)) return 'arrows'
   if (matchesCategory(name, MEDIA_COMM_KEYWORDS)) return 'media'
   if (matchesCategory(name, FILE_DOC_KEYWORDS)) return 'files'
   if (matchesCategory(name, UI_LAYOUT_KEYWORDS)) return 'ui'
   if (matchesCategory(name, PEOPLE_SOCIAL_KEYWORDS)) return 'people'
-  return 'general'
+  if (matchesCategory(name, ARROW_NAV_KEYWORDS)) return 'ui'
+  return 'ui'
 }
 
 // Pre-compute categories for all icons
@@ -106,7 +144,7 @@ function IconPickerPopover({
   onClose: () => void
 }) {
   const [search, setSearch] = useState('')
-  const [category, setCategory] = useState<IconCategory>('all')
+  const [category, setCategory] = useState<IconCategory>('popular')
   const [tooltip, setTooltip] = useState<{ name: string; top: number; left: number } | null>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
@@ -115,7 +153,9 @@ function IconPickerPopover({
 
   const filtered = useMemo(() => {
     let icons = ALL_ICON_NAMES
-    if (category !== 'all') {
+    if (category === 'popular') {
+      icons = POPULAR_ICONS.filter((name) => ALL_ICON_NAMES.includes(name))
+    } else if (category !== 'all') {
       icons = icons.filter((name) => ICON_CATEGORY_MAP.get(name) === category)
     }
     if (search) {
@@ -212,7 +252,7 @@ function IconPickerPopover({
         onScroll={(e) => setScrollTop((e.target as HTMLDivElement).scrollTop)}
       >
         {filtered.length === 0 && (
-          <span className="icon-picker-popover__empty">No icons found</span>
+          <span className="icon-picker-popover__empty"><LucideIcon name="Frown" size={32} />No icons found</span>
         )}
         {filtered.length > 0 && (
           <div style={{ height: totalHeight, position: 'relative' }}>

@@ -2112,7 +2112,7 @@ body {
   position: fixed;
   transform: translate(-50%, -100%) translateY(-8px);
   width: 320px;
-  max-height: 400px;
+  height: 400px;
   display: flex;
   flex-direction: column;
   background: var(--gray-700);
@@ -2159,6 +2159,7 @@ body {
     min-height: 0;
     padding: 0 var(--ds-space-sm) var(--ds-space-sm);
     overflow-y: auto;
+    position: relative;
   }
 
   &__item {
@@ -2207,10 +2208,14 @@ body {
   }
 
   &__empty {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: var(--ds-space-lg) 0;
-    color: var(--gray-200);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ds-space-sm);
+    color: var(--gray-300);
     font-family: var(--ds-font-family);
     font-size: var(--label-sm-size);
   }
