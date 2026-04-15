@@ -2110,7 +2110,7 @@ body {
 // ============================================
 .icon-picker-popover {
   position: fixed;
-  transform: translate(-50%, -100%) translateY(-8px);
+  transform: translate(-50%, -100%) translateY(calc(var(--ds-space-md) * -1));
   width: 320px;
   height: 400px;
   display: flex;

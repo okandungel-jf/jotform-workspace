@@ -146,6 +146,7 @@ function IconPickerPopover({
   const [tooltip, setTooltip] = useState<{ name: string; top: number; left: number } | null>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
+  const tooltipTimer = useRef<ReturnType<typeof setTimeout>>(null)
   const [scrollTop, setScrollTop] = useState(0)
   const [cols, setCols] = useState(7)
 
@@ -267,14 +268,21 @@ function IconPickerPopover({
                 }}
                 onClick={() => onSelect(name)}
                 onMouseEnter={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect()
-                  setTooltip({
-                    name,
-                    top: rect.top,
-                    left: rect.left + rect.width / 2,
-                  })
+                  const target = e.currentTarget
+                  if (tooltipTimer.current) clearTimeout(tooltipTimer.current)
+                  tooltipTimer.current = setTimeout(() => {
+                    const rect = target.getBoundingClientRect()
+                    setTooltip({
+                      name,
+                      top: rect.top,
+                      left: rect.left + rect.width / 2,
+                    })
+                  }, 400)
                 }}
-                onMouseLeave={() => setTooltip(null)}
+                onMouseLeave={() => {
+                  if (tooltipTimer.current) clearTimeout(tooltipTimer.current)
+                  setTooltip(null)
+                }}
               >
                 <LucideIcon name={name} size={20} />
               </button>
