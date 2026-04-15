@@ -99,8 +99,6 @@ const POPULAR_ICONS = [
   'Shirt', 'Watch', 'Glasses', 'Umbrella',
 ]
 
-const POPULAR_SET = new Set(POPULAR_ICONS)
-
 const CATEGORY_TABS: { id: IconCategory; icon: string; label: string }[] = [
   { id: 'popular', icon: 'Star', label: 'Popular' },
   { id: 'all', icon: 'LayoutGrid', label: 'All' },
