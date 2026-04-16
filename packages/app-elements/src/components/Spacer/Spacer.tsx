@@ -69,9 +69,7 @@ export const Spacer: React.FC<SpacerProps> = ({
       onPointerMove={onHeightChange ? handlePointerMove : undefined}
       onPointerUp={onHeightChange ? handlePointerUp : undefined}
     >
-      {dragging && (
-        <span className="jf-spacer__readout">{Math.round(displayHeight)}px</span>
-      )}
+      <span className={`jf-spacer__label${dragging ? ' jf-spacer__label--visible' : ''}`}>{Math.round(displayHeight)}px</span>
       {onHeightChange && (
         <div
           className="jf-spacer__handle"

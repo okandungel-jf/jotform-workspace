@@ -6,7 +6,7 @@
   width: 100%;
   height: var(--spacer-height, 48px);
   position: relative;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-lg);
 
   &--selected {
     border: 1px dashed var(--border-info);
@@ -46,8 +46,8 @@
 
 }
 
-// Live px readout during drag
-.jf-spacer__readout {
+// Height label — hidden by default, shown during resize drag and d&d overlay
+.jf-spacer__label {
   position: absolute;
   left: 50%;
   bottom: 100%;
@@ -59,11 +59,15 @@
   color: var(--tooltip-fg, #fff);
   background: var(--btn-primary-bg, #000);
   height: 24px;
-  display: flex;
+  display: none;
   align-items: center;
   padding: 0 var(--ds-space-sm, 8px);
   border-radius: var(--radius-rounded);
   pointer-events: none;
   white-space: nowrap;
   user-select: none;
+
+  &--visible {
+    display: flex;
+  }
 }

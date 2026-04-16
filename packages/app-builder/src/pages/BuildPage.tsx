@@ -1063,7 +1063,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
       </aside>
 
       {/* Canvas - App Preview */}
-      <div className="build-page__canvas-wrapper">
+      <div className={`build-page__canvas-wrapper${dragActiveId ? ' build-page__canvas--dragging' : ''}`}>
       <main className="build-page__canvas" onClick={() => {
         setSelectedElementId(null)
         setRightPanel('preview')

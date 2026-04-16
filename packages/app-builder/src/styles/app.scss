@@ -1387,6 +1387,14 @@ body {
   box-shadow: var(--shadow-lg);
   border-radius: var(--radius-lg);
   background: var(--bg-fill);
+
+  .jf-spacer {
+    background: var(--bg-surface-brand);
+
+    .jf-spacer__label {
+      display: flex;
+    }
+  }
 }
 
 .build-page__drag-handle {
@@ -1408,6 +1416,10 @@ body {
   .build-page__canvas-element:hover &,
   .build-page__canvas-element--selected & {
     opacity: 1;
+  }
+
+  .build-page__canvas--dragging .build-page__canvas-element:hover & {
+    opacity: 0;
   }
 }
 
@@ -1509,6 +1521,11 @@ body {
 .build-page__canvas-element--selected > .build-page__canvas-element-content > * {
   outline: 2px solid var(--border-info);
   outline-offset: 4px;
+}
+
+// Hide selected outline during drag & drop
+.build-page__canvas--dragging .build-page__canvas-element--selected > .build-page__canvas-element-content > * {
+  outline: none;
 }
 
 // Hide paragraph toolbar & selected state when builder element is deselected
