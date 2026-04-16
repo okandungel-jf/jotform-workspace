@@ -1382,6 +1382,7 @@ body {
   }
 }
 
+// Drag overlay styling (panel-style compact card)
 .build-page__canvas-element--dragging {
   opacity: 1;
   box-shadow: var(--shadow-lg);
@@ -1396,6 +1397,7 @@ body {
     }
   }
 }
+
 
 .build-page__drag-handle {
   position: absolute;
@@ -1418,7 +1420,8 @@ body {
     opacity: 1;
   }
 
-  .build-page__canvas--dragging .build-page__canvas-element:hover & {
+  .build-page__canvas--dragging .build-page__canvas-element:hover &,
+  .build-page__canvas--dragging .build-page__canvas-element--selected & {
     opacity: 0;
   }
 }
@@ -1491,6 +1494,11 @@ body {
 // Spacer: hide handle by default
 .build-page__canvas-element .jf-spacer__handle {
   display: none;
+}
+
+// Spacer: show fill during drag & drop so spacers are visible as drop zones
+.build-page__canvas--dragging .jf-spacer {
+  background: var(--bg-surface-brand);
 }
 
 // Spacer hover: subtle fill
