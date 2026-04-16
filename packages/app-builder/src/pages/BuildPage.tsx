@@ -74,6 +74,7 @@ const ELEMENT_ICON_MAP: Record<string, { icon: string; iconCategory: string }> =
   'chart': { icon: 'form-report-filled', iconCategory: 'forms-files' },
   'daily-task-manager': { icon: 'table', iconCategory: 'general' },
   'progress-indicator': { icon: 'list-check-square-filled', iconCategory: 'general' },
+  'spacer': { icon: 'spacer-vertical-filled', iconCategory: 'layout' },
 }
 
 interface PanelGroup {
@@ -82,7 +83,7 @@ interface PanelGroup {
 }
 
 const BASIC_GROUPS: PanelGroup[] = [
-  { elementIds: ['form', 'heading', 'list', 'paragraph', 'card', 'sign-document', 'document', 'image-gallery', 'button'] },
+  { elementIds: ['form', 'heading', 'list', 'paragraph', 'card', 'sign-document', 'document', 'image-gallery', 'button', 'spacer'] },
   { label: 'PAYMENT ELEMENTS', elementIds: ['product-list', 'donation-box'] },
   { label: 'FEATURED WIDGETS', elementIds: ['social-follow', 'testimonial'] },
   { label: 'DATA ELEMENTS', elementIds: ['table'] },
@@ -1249,6 +1250,20 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                         />
                         <span>{selectedElement.properties[prop.name] ? 'On' : 'Off'}</span>
                       </label>
+                    ) : prop.type === 'number' ? (
+                      <div className="build-page__prop-number-wrap">
+                        <input
+                          type="number"
+                          className="build-page__prop-number"
+                          min={prop.min ?? 0}
+                          max={prop.max ?? 200}
+                          value={Number(selectedElement.properties[prop.name]) || 0}
+                          onChange={(e) =>
+                            handlePropertyChange(selectedElement.id, prop.name, Number(e.target.value))
+                          }
+                        />
+                        <span className="build-page__prop-unit">px</span>
+                      </div>
                     ) : (
                       <input
                         type="text"

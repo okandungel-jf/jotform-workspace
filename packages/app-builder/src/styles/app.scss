@@ -1462,6 +1462,40 @@ body {
   display: block;
 }
 
+// Spacer: keep visual height but expand click area
+.build-page__canvas-element .jf-spacer {
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    min-height: 24px;
+    height: 100%;
+  }
+}
+
+// Spacer: hide handle by default
+.build-page__canvas-element .jf-spacer__handle {
+  display: none;
+}
+
+// Spacer hover: show dashed border when not selected
+.build-page__canvas-element:not(.build-page__canvas-element--selected):hover .jf-spacer {
+  border: 1px dashed var(--border-hover);
+}
+
+// Spacer selected: dashed border + drag resize
+.build-page__canvas-element--selected > .build-page__canvas-element-content > .jf-spacer {
+  border: 1px dashed var(--border-hover);
+  cursor: ns-resize;
+
+  .jf-spacer__handle {
+    display: flex;
+  }
+}
+
 // Hide component-level selected outlines — builder applies its own
 .build-page__canvas-element [class*="--selected"] {
   outline: none;
@@ -1547,6 +1581,68 @@ body {
     outline: none;
     border-color: var(--ds-accent);
   }
+}
+
+.build-page__prop-slider {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-sm);
+}
+
+.build-page__prop-range {
+  flex: 1;
+  height: 4px;
+  appearance: none;
+  background: var(--ds-border);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--ds-accent);
+    cursor: pointer;
+  }
+}
+
+.build-page__prop-number-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-xs);
+}
+
+.build-page__prop-number {
+  width: 100%;
+  padding: var(--ds-space-sm);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-sm);
+  font-size: var(--ds-font-size-md);
+  font-family: var(--ds-font-family);
+  -moz-appearance: textfield;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--ds-accent);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--ds-accent);
+  }
+}
+
+.build-page__prop-unit {
+  font-size: var(--ds-font-size-xs);
+  color: var(--ds-text-secondary);
 }
 
 .build-page__prop-toggle {

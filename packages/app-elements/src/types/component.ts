@@ -10,6 +10,9 @@ export interface ComponentProperty {
   default: string | boolean | number;
   options?: string[];
   showWhen?: Record<string, string | boolean>;
+  min?: number;
+  max?: number;
+  step?: number;
 }
 
 export interface ComponentState {
