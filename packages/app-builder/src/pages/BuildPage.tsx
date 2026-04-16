@@ -166,13 +166,11 @@ const INLINE_EDITABLE_MAP: Record<string, { selector: string; property: string }
 const SortableElement = memo(function SortableElement({
   element,
   isSelected,
-  isDragActive,
   onSelect,
   onPropertyChange,
 }: {
   element: CanvasElement
   isSelected: boolean
-  isDragActive: boolean
   onSelect: (id: string) => void
   onPropertyChange: (elementId: string, property: string, value: string | boolean | number) => void
 }) {
@@ -191,7 +189,7 @@ const SortableElement = memo(function SortableElement({
 
   const style = {
     transform: CSS.Translate.toString(transform),
-    transition: transition ?? 'transform 200ms ease',
+    transition: 'transform 200ms ease',
     opacity: isDragging ? 0.4 : 1,
   }
 
@@ -309,19 +307,6 @@ const SortableElement = memo(function SortableElement({
       </div>
       <div ref={contentRef} className="build-page__canvas-element-content">
         {comp.render(element.variants, element.properties, element.states, (name, value) => onPropertyChange(element.id, name, value))}
-      </div>
-    </section>
-  )
-})
-
-const DragOverlayContent = memo(function DragOverlayContent({ element }: { element: CanvasElement }) {
-  const comp = ComponentRegistry.get(element.componentId)
-  if (!comp) return null
-
-  return (
-    <section className="themes-view__section build-page__canvas-element build-page__canvas-element--dragging">
-      <div className="build-page__canvas-element-content">
-        {comp.render(element.variants, element.properties, element.states)}
       </div>
     </section>
   )
@@ -1139,7 +1124,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                               key={element.id}
                               element={element}
                               isSelected={selectedElementId === element.id}
-                              isDragActive={dragSession?.activeId === element.id || dragSession?.pendingElementId === element.id}
+
                               onSelect={handleSelectElement}
                               onPropertyChange={handlePropertyChange}
                             />
