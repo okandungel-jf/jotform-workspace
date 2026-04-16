@@ -1,5 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { resolvePrimitive, resolvePrimitiveDark } from '../utils/semanticToPrimitive';
+import { generatePalette } from '../utils/colorPalette';
+import type { PaletteShade as GeneratedShade } from '../utils/colorPalette';
+import { generateNeutralPalette, applyNeutralToDOM } from '../utils/neutralTint';
+import { ColorPicker } from './components/ColorPicker';
 
 interface PaletteShade {
   name: string;
@@ -83,6 +87,16 @@ const semanticCategories: TokenCategory[] = [
     ],
   },
 ];
+
+const DEFAULT_COLOR = '#7D38EF';
+const DEFAULT_TINT = 50;
+
+function applyPaletteToDOM(palette: GeneratedShade[]) {
+  const root = document.documentElement;
+  for (const shade of palette) {
+    root.style.setProperty(`--primary-${shade.key}`, shade.hex);
+  }
+}
 
 const colorCanvas = document.createElement('canvas');
 colorCanvas.width = 1;
@@ -220,44 +234,67 @@ function SemanticTable({ title, tokens, resolved }: { title: string; tokens: Tok
   );
 }
 
+function resolveAllColors(): Map<string, ResolvedColor> {
+  const root = document.documentElement;
+  const allSemantic: TokenDef[] = semanticCategories.flatMap((c) => c.tokens);
+  const allVars = [
+    ...neutralShades,
+    ...primaryShades,
+    ...allSemantic,
+  ];
+
+  const map = new Map<string, ResolvedColor>();
+  const currentTheme = root.getAttribute('data-theme');
+
+  // Resolve light mode
+  root.removeAttribute('data-theme');
+  for (const v of allVars) {
+    const light = resolveColor(v.variable, root);
+    map.set(v.variable, { name: v.name, variable: v.variable, light, dark: '' });
+  }
+
+  // Resolve dark mode
+  root.setAttribute('data-theme', 'dark');
+  for (const v of allVars) {
+    map.get(v.variable)!.dark = resolveColor(v.variable, root);
+  }
+
+  // Restore theme
+  if (currentTheme) {
+    root.setAttribute('data-theme', currentTheme);
+  } else {
+    root.removeAttribute('data-theme');
+  }
+
+  return map;
+}
+
 export function FoundationColors() {
   const [resolved, setResolved] = useState<Map<string, ResolvedColor>>(new Map());
+  const [color, setColor] = useState(DEFAULT_COLOR);
+  const [tint, setTint] = useState(DEFAULT_TINT);
 
-  useEffect(() => {
-    const root = document.documentElement;
-
-    const allSemantic: TokenDef[] = semanticCategories.flatMap((c) => c.tokens);
-    const allVars = [
-      ...neutralShades,
-      ...primaryShades,
-      ...allSemantic,
-    ];
-
-    const map = new Map<string, ResolvedColor>();
-    const currentTheme = root.getAttribute('data-theme');
-
-    // Resolve light mode
-    root.removeAttribute('data-theme');
-    for (const v of allVars) {
-      const light = resolveColor(v.variable, root);
-      map.set(v.variable, { name: v.name, variable: v.variable, light, dark: '' });
-    }
-
-    // Resolve dark mode
-    root.setAttribute('data-theme', 'dark');
-    for (const v of allVars) {
-      map.get(v.variable)!.dark = resolveColor(v.variable, root);
-    }
-
-    // Restore theme
-    if (currentTheme) {
-      root.setAttribute('data-theme', currentTheme);
-    } else {
-      root.removeAttribute('data-theme');
-    }
-
-    setResolved(map);
+  const refreshColors = useCallback(() => {
+    requestAnimationFrame(() => setResolved(resolveAllColors()));
   }, []);
+
+  // Initial resolve
+  useEffect(() => {
+    setResolved(resolveAllColors());
+  }, []);
+
+  const handleColorChange = useCallback((newColor: string) => {
+    setColor(newColor);
+    applyPaletteToDOM(generatePalette(newColor, false));
+    applyNeutralToDOM(generateNeutralPalette(newColor, tint, false));
+    refreshColors();
+  }, [tint, refreshColors]);
+
+  const handleTintChange = useCallback((newTint: number) => {
+    setTint(newTint);
+    applyNeutralToDOM(generateNeutralPalette(color, newTint, false));
+    refreshColors();
+  }, [color, refreshColors]);
 
   return (
     <main className="main-content">
@@ -269,6 +306,14 @@ export function FoundationColors() {
           </div>
         </div>
         <div className="foundation-colors">
+          <div className="foundation-colors__picker">
+            <ColorPicker
+              color={color}
+              onChange={handleColorChange}
+              tint={tint}
+              onTintChange={handleTintChange}
+            />
+          </div>
           <PaletteTable title="Neutral" shades={neutralShades} resolved={resolved} />
           <PaletteTable title="Primary" shades={primaryShades} resolved={resolved} />
           {semanticCategories.map((cat) => (

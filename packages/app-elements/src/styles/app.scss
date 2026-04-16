@@ -3713,6 +3713,11 @@ body {
   flex: 1;
 }
 
+.foundation-colors__picker {
+  margin-bottom: var(--space-8);
+  max-width: 320px;
+}
+
 .foundation-colors__section {
   margin-bottom: var(--space-8);
 }
