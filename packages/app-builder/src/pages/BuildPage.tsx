@@ -183,7 +183,6 @@ const SortableElement = memo(function SortableElement({
     listeners,
     setNodeRef,
     transform,
-    transition,
     isDragging,
   } = useSortable({ id: element.id })
 
