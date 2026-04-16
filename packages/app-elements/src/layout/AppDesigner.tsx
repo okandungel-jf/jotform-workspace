@@ -266,13 +266,15 @@ function isDarkMode(): boolean {
   return document.documentElement.getAttribute('data-theme') === 'dark';
 }
 
-function applyRadius(scale: RadiusScale, target: HTMLElement | null) {
-  if (!target) return;
-  if (scale === 'Medium') {
-    target.removeAttribute('data-radius');
-  } else {
-    target.setAttribute('data-radius', scale.toLowerCase());
-  }
+function applyRadius(scale: RadiusScale, targets: NodeListOf<HTMLElement> | null) {
+  if (!targets || targets.length === 0) return;
+  targets.forEach((target) => {
+    if (scale === 'Medium') {
+      target.removeAttribute('data-radius');
+    } else {
+      target.setAttribute('data-radius', scale.toLowerCase());
+    }
+  });
 }
 
 /**
@@ -461,8 +463,8 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
 
   // ── Target element for radius ──
 
-  const getTarget = useCallback(() => {
-    return document.querySelector<HTMLElement>(targetSelector);
+  const getTargets = useCallback(() => {
+    return document.querySelectorAll<HTMLElement>(targetSelector);
   }, [targetSelector]);
 
   // ── Callbacks ──
@@ -511,7 +513,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
     setHeadingFont(preset.headingFont);
     applyHeadingFontToDOM(preset.headingFont, preset.font);
     setRadius(preset.radius);
-    applyRadius(preset.radius, getTarget());
+    applyRadius(preset.radius, getTargets());
     loadLibrary(preset.iconLibrary, 'outline').then(() => {
       setIconLibrary(preset.iconLibrary);
       setIconStyle('outline');
@@ -523,7 +525,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
       document.documentElement.removeAttribute('data-theme');
     }
     localStorage.setItem('jf-lib-theme', preset.mode);
-  }, [secondaryEnabled, applySecondary, applyHeadingFontToDOM, setIconLibrary, setIconStyle, getTarget]);
+  }, [secondaryEnabled, applySecondary, applyHeadingFontToDOM, setIconLibrary, setIconStyle, getTargets]);
 
   const handleColorChange = useCallback((newColor: string) => {
     setColor(newColor);
@@ -570,8 +572,8 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
 
   const handleRadiusChange = useCallback((scale: RadiusScale) => {
     setRadius(scale);
-    applyRadius(scale, getTarget());
-  }, [getTarget]);
+    applyRadius(scale, getTargets());
+  }, [getTargets]);
 
   const handleColorModeChange = useCallback((mode: 'light' | 'dark') => {
     setColorMode(mode);
