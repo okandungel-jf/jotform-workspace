@@ -13,7 +13,8 @@
   }
 
   &--dragging {
-    background: var(--bg-fill-secondary);
+    background: var(--bg-surface-brand);
+    border-color: transparent;
   }
 
   &--shrinked {

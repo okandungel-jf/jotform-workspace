@@ -1481,15 +1481,19 @@ body {
   display: none;
 }
 
-// Spacer hover: show dashed border when not selected
+// Spacer hover: subtle fill
 .build-page__canvas-element:not(.build-page__canvas-element--selected):hover .jf-spacer {
-  border: 1px dashed var(--border-hover);
+  background: var(--bg-surface-brand);
 }
 
 // Spacer selected: dashed border + drag resize
 .build-page__canvas-element--selected > .build-page__canvas-element-content > .jf-spacer {
-  border: 1px dashed var(--border-hover);
+  background: var(--bg-surface-brand);
   cursor: ns-resize;
+
+  &.jf-spacer--dragging {
+    border-color: transparent;
+  }
 
   .jf-spacer__handle {
     display: flex;
