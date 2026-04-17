@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, memo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
 import {
   ComponentRegistry,
   AppHeader,
@@ -35,6 +35,7 @@ import {
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
+  arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
@@ -168,11 +169,13 @@ const INLINE_EDITABLE_MAP: Record<string, { selector: string; property: string }
 const SortableElement = memo(function SortableElement({
   element,
   isSelected,
+  isPending,
   onSelect,
   onPropertyChange,
 }: {
   element: CanvasElement
   isSelected: boolean
+  isPending: boolean
   onSelect: (id: string) => void
   onPropertyChange: (elementId: string, property: string, value: string | boolean | number) => void
 }) {
@@ -287,18 +290,20 @@ const SortableElement = memo(function SortableElement({
 
   if (!comp) return null
 
+  const showLine = isDragging || isPending
+
   return (
     <section
       ref={setNodeRef}
       style={style}
-      className={`themes-view__section build-page__canvas-element ${isDragging ? 'build-page__canvas-element--dragging-line' : ''} ${isSelected ? 'build-page__canvas-element--selected' : ''} ${isShrinked ? 'build-page__canvas-element--shrinked' : ''}`}
+      className={`themes-view__section build-page__canvas-element ${showLine ? 'build-page__canvas-element--dragging-line' : ''} ${isSelected ? 'build-page__canvas-element--selected' : ''} ${isShrinked ? 'build-page__canvas-element--shrinked' : ''}`}
       data-element-id={element.id}
       onClick={(e) => {
         e.stopPropagation()
         onSelect(element.id)
       }}
     >
-      {isDragging ? (
+      {showLine ? (
         <div className="build-page__drag-line" aria-hidden />
       ) : (
         <>
@@ -360,6 +365,14 @@ function DraggablePanelItem({
     >
       {children}
     </div>
+  )
+}
+
+function DropLinePlaceholder() {
+  return (
+    <section className="themes-view__section build-page__canvas-element build-page__canvas-element--dragging-line">
+      <div className="build-page__drag-line" aria-hidden />
+    </section>
   )
 }
 
@@ -452,6 +465,42 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [mobileElementsSheet, setMobileElementsSheet] = useState(false)
   const [forceTargetPageId, setForceTargetPageId] = useState<string | null>(null)
   const [isMobileView, setIsMobileView] = useState(() => window.matchMedia('(max-width: 768px)').matches)
+  // Mirror of pages for stable access in drag handlers without re-binding on pages change.
+  const pagesRef = useRef<AppPage[]>([])
+  useEffect(() => { pagesRef.current = pages }, [pages])
+  const dragSessionRef = useRef<{ type: 'panel' | 'canvas'; activeId: string; pendingElementId?: string } | null>(null)
+  // Real pointer Y for before/after decisions in handleDragOver (active.rect
+  // may not match cursor when DragOverlay uses snapCenterToCursor).
+  const cursorYRef = useRef(0)
+  useEffect(() => {
+    const handle = (e: PointerEvent) => { cursorYRef.current = e.clientY }
+    window.addEventListener('pointermove', handle)
+    return () => window.removeEventListener('pointermove', handle)
+  }, [])
+
+  // Stable items arrays per page for SortableContext. Exclude the pending
+  // element (panel drag) from sortable items so dnd-kit doesn't manage a phantom
+  // sortable item that isn't registered as a useSortable hook. We also cache by
+  // content so an array reference is only replaced when its ids actually change;
+  // this prevents sortable's effects from firing on every pages mutation.
+  const pendingElementId = dragSession?.type === 'panel' ? dragSession.pendingElementId : undefined
+  const itemsByPageCacheRef = useRef<Map<string, string[]>>(new Map())
+  const itemsByPage = useMemo(() => {
+    const m: Record<string, string[]> = {}
+    for (const p of pages) {
+      const newIds = pendingElementId
+        ? p.elements.filter((el) => el.id !== pendingElementId).map((el) => el.id)
+        : p.elements.map((el) => el.id)
+      const cached = itemsByPageCacheRef.current.get(p.id)
+      if (cached && cached.length === newIds.length && cached.every((id, i) => id === newIds[i])) {
+        m[p.id] = cached
+      } else {
+        itemsByPageCacheRef.current.set(p.id, newIds)
+        m[p.id] = newIds
+      }
+    }
+    return m
+  }, [pages, pendingElementId])
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)')
@@ -778,37 +827,30 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
     )
   }, [])
 
-  // Find which page an element belongs to
-  const findPageForElement = useCallback((elementId: string): string | null => {
-    for (const page of pages) {
-      if (page.elements.some((el) => el.id === elementId)) {
-        return page.id
-      }
-    }
-    return null
-  }, [pages])
-
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const id = event.active.id as string
     const isPanel = id.startsWith('panel:')
-
     if (isPanel) {
       setSelectedElementId(null)
       setRightPanel('preview')
-
       const comp = event.active.data.current?.component as RegisteredComponent | undefined
-      if (comp) {
-        const newElement = createCanvasElement(comp)
-        setDragSession({ type: 'panel', activeId: id, pendingElementId: newElement.id })
-        setPages((prev) =>
-          prev.map((page) =>
-            page.id === activePageId
-              ? { ...page, elements: [...page.elements, newElement] }
-              : page
-          )
+      if (!comp) return
+      // Pending uses a unique canvas id (NOT active.id) to avoid dnd-kit duplicate
+      // registration conflicts between the panel's useDraggable and the pending's
+      // useSortable. Sortable auto-shift won't trigger for active (since active.id
+      // isn't in items) — panel drag uses isPending prop to render the 4px line.
+      const pending = createCanvasElement(comp)
+      dragSessionRef.current = { type: 'panel', activeId: id, pendingElementId: pending.id }
+      setDragSession({ type: 'panel', activeId: id, pendingElementId: pending.id })
+      setPages((prev) =>
+        prev.map((page) =>
+          page.id === activePageId
+            ? { ...page, elements: [...page.elements, pending] }
+            : page
         )
-      }
+      )
     } else {
+      dragSessionRef.current = { type: 'canvas', activeId: id }
       setDragSession({ type: 'canvas', activeId: id })
     }
   }, [activePageId])
@@ -817,73 +859,50 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
     const { active, over } = event
     if (!over) return
 
-    const activeId = active.id as string
     const overId = over.id as string
+    const currentPages = pagesRef.current
+    const session = dragSessionRef.current
 
-    // Track which page the cursor is over
-    let hoverPageId = findPageForElement(overId)
-    if (!hoverPageId) {
-      const isPage = pages.some((p) => p.id === overId)
-      if (isPage) hoverPageId = overId
+    const findPage = (id: string): string | null => {
+      for (const p of currentPages) {
+        if (p.elements.some((el) => el.id === id)) return p.id
+      }
+      return null
     }
+
+    let hoverPageId = findPage(overId)
+    if (!hoverPageId && currentPages.some((p) => p.id === overId)) hoverPageId = overId
     if (hoverPageId) {
-      setDragSession((prev) => prev ? { ...prev, overPageId: hoverPageId } : prev)
+      setDragSession((prev) => (prev && prev.overPageId !== hoverPageId ? { ...prev, overPageId: hoverPageId } : prev))
     }
 
-    // Panel items: reposition the pending element
-    const pendingId = dragSession?.pendingElementId
-    if (activeId.startsWith('panel:') && pendingId) {
-      const pendingPageId = findPageForElement(pendingId)
-      let targetPageId = findPageForElement(overId)
-      if (!targetPageId) {
-        const isPage = pages.some((p) => p.id === overId)
-        if (isPage) targetPageId = overId
-      }
-      if (!targetPageId) return
+    // MC cross-page move + same-page reorder for the tracked canvas element
+    // (pending for panel drag, active for canvas drag).
+    const movingId = session?.type === 'panel' ? session.pendingElementId : (active.id as string)
+    if (!movingId) return
+    const sourcePageId = findPage(movingId)
+    let targetPageId = findPage(overId)
+    if (!targetPageId && currentPages.some((p) => p.id === overId)) targetPageId = overId
+    if (!sourcePageId || !targetPageId) return
 
-      // Compute cursor Y from the dragged item's current rect
-      const activeRect = event.active.rect.current.translated
-      const cursorY = activeRect ? activeRect.top + activeRect.height / 2 : 0
-
-      // Decide insert index in target page's elements (with pending removed)
-      const computeInsertIdx = (targetPage: AppPage): number => {
-        const withoutPending = targetPage.elements.filter((e) => e.id !== pendingId)
-        if (overId === targetPageId) {
-          // Over is the page itself — pick by cursor vs element midpoints
-          for (let i = 0; i < withoutPending.length; i++) {
-            const el = document.querySelector(`[data-element-id="${withoutPending[i].id}"]`) as HTMLElement | null
-            if (!el) continue
-            const r = el.getBoundingClientRect()
-            if (cursorY < r.top + r.height / 2) return i
-          }
-          return withoutPending.length
-        }
-        // Over is an element — decide before/after by cursor vs over midpoint
-        const overIdxInReduced = withoutPending.findIndex((e) => e.id === overId)
-        if (overIdxInReduced === -1) return withoutPending.length
-        const overMidY = over.rect.top + over.rect.height / 2
-        return cursorY > overMidY ? overIdxInReduced + 1 : overIdxInReduced
-      }
-
+    // Cross-page: relocate moving element to target page (handles MC case).
+    if (sourcePageId !== targetPageId) {
       setPages((prev) => {
-        const targetPage = prev.find((p) => p.id === targetPageId)!
-        const sourcePage = prev.find((p) => p.id === pendingPageId)!
-        const element = sourcePage.elements.find((el) => el.id === pendingId)
+        const sourcePage = prev.find((p) => p.id === sourcePageId)
+        const destPage = prev.find((p) => p.id === targetPageId)
+        if (!sourcePage || !destPage) return prev
+        const element = sourcePage.elements.find((el) => el.id === movingId)
         if (!element) return prev
-
-        const insertIdx = computeInsertIdx(targetPage)
-
+        const overIndex = destPage.elements.findIndex((el) => el.id === overId)
+        const insertIndex = overIndex >= 0 ? overIndex : destPage.elements.length
         return prev.map((page) => {
-          if (page.id === pendingPageId && page.id !== targetPageId) {
-            // Cross-page: remove pending from source page
-            return { ...page, elements: page.elements.filter((el) => el.id !== pendingId) }
+          if (page.id === sourcePageId) {
+            return { ...page, elements: page.elements.filter((el) => el.id !== movingId) }
           }
           if (page.id === targetPageId) {
-            const base = page.id === pendingPageId
-              ? page.elements.filter((el) => el.id !== pendingId)
-              : [...page.elements]
-            base.splice(insertIdx, 0, element)
-            return { ...page, elements: base }
+            const newElements = [...page.elements]
+            newElements.splice(insertIndex, 0, element)
+            return { ...page, elements: newElements }
           }
           return page
         })
@@ -891,51 +910,50 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
       return
     }
 
-    // Determine source and target pages
-    const sourcePageId = findPageForElement(activeId)
+    // Same-page reorder (panel drag only — canvas drag's same-page reorder is
+    // handled visually by sortable transforms and committed on drag end).
+    if (session?.type !== 'panel') return
+    const page = currentPages.find((p) => p.id === sourcePageId)
+    if (!page) return
+    const pendingIdx = page.elements.findIndex((e) => e.id === movingId)
+    const overIdx = page.elements.findIndex((e) => e.id === overId)
+    if (pendingIdx === -1 || overIdx === -1) return
 
-    let targetPageId = findPageForElement(overId)
-    if (!targetPageId) {
-      const isPage = pages.some((p) => p.id === overId)
-      if (isPage) targetPageId = overId
-    }
+    // Decide before/after based on cursor Y vs over element's midpoint.
+    const overMidY = over.rect.top + over.rect.height / 2
+    const cursorY = cursorYRef.current
+    const insertAfter = cursorY > overMidY
+    const reducedOverIdx = pendingIdx < overIdx ? overIdx - 1 : overIdx
+    const newIdx = insertAfter ? reducedOverIdx + 1 : reducedOverIdx
+    if (newIdx === pendingIdx) return // idempotent — already in the right slot
 
-
-
-    // Only move if crossing pages
-    if (!sourcePageId || !targetPageId || sourcePageId === targetPageId) return
-
-    // Move element to target page immediately for visual feedback
-    setPages((prev) => {
-      const sourcePage = prev.find((p) => p.id === sourcePageId)!
-      const element = sourcePage.elements.find((el) => el.id === activeId)!
-      if (!element) return prev
-
-      const destPage = prev.find((p) => p.id === targetPageId)!
-      const overIndex = destPage.elements.findIndex((el) => el.id === overId)
-      const insertIndex = overIndex >= 0 ? overIndex : destPage.elements.length
-
-      return prev.map((page) => {
-        if (page.id === sourcePageId) {
-          return { ...page, elements: page.elements.filter((el) => el.id !== activeId) }
-        }
-        if (page.id === targetPageId) {
-          const newElements = [...page.elements]
-          newElements.splice(insertIndex, 0, element)
-          return { ...page, elements: newElements }
-        }
-        return page
+    setPages((prev) =>
+      prev.map((p) => {
+        if (p.id !== sourcePageId) return p
+        return { ...p, elements: arrayMove(p.elements, pendingIdx, newIdx) }
       })
-    })
-  }, [findPageForElement, pages, dragSession])
+    )
+  }, [])
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
-    const pendingId = dragSession?.pendingElementId
+    const session = dragSessionRef.current
+    const pendingId = session?.pendingElementId
+    dragSessionRef.current = null
     setDragSession(null)
 
+    const activeId = active.id as string
+    const isPanel = activeId.startsWith('panel:')
+    const currentPages = pagesRef.current
+
+    const findPage = (id: string): string | null => {
+      for (const p of currentPages) {
+        if (p.elements.some((el) => el.id === id)) return p.id
+      }
+      return null
+    }
+
     if (!over) {
-      // Cancelled — remove pending element if panel drag
       if (pendingId) {
         setPages((prev) =>
           prev.map((page) => ({
@@ -947,23 +965,44 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
       return
     }
 
-    const activeId = active.id as string
     const overId = over.id as string
 
-    // Handle panel item drop
-    if (activeId.startsWith('panel:') && pendingId) {
-      const targetPageId = findPageForElement(pendingId)
+    if (isPanel && pendingId) {
+      const overPageId = findPage(overId)
+      const isOverPage = currentPages.some((p) => p.id === overId)
+      // Drop outside any page → cancel (remove pending)
+      if (!overPageId && !isOverPage) {
+        setPages((prev) =>
+          prev.map((page) => ({
+            ...page,
+            elements: page.elements.filter((el) => el.id !== pendingId),
+          }))
+        )
+        return
+      }
+      const pendingPageId = findPage(pendingId)
+      if (!pendingPageId) return
+      // Pending already has a real canvas id (no rename needed). If dropped on a
+      // sibling element, arrayMove pending to that element's position.
+      setPages((prev) =>
+        prev.map((page) => {
+          if (page.id !== pendingPageId) return page
+          const pendingIdx = page.elements.findIndex((e) => e.id === pendingId)
+          const overIdx = page.elements.findIndex((e) => e.id === overId)
+          if (overIdx === -1 || overIdx === pendingIdx) return page
+          return { ...page, elements: arrayMove(page.elements, pendingIdx, overIdx) }
+        })
+      )
       setSelectedElementId(pendingId)
+      setActivePageId(pendingPageId)
       setRightPanel('properties')
-      if (targetPageId) setActivePageId(targetPageId)
       return
     }
 
-    // Same-page reorder (cross-page already handled in handleDragOver)
-    const sourcePageId = findPageForElement(activeId)
+    // Canvas drag
+    const sourcePageId = findPage(activeId)
     if (!sourcePageId || activeId === overId) return
-
-    const targetPageId = findPageForElement(overId)
+    const targetPageId = findPage(overId)
     if (sourcePageId !== targetPageId) return
 
     setPages((prev) =>
@@ -972,24 +1011,21 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         const oldIndex = page.elements.findIndex((el) => el.id === activeId)
         const newIndex = page.elements.findIndex((el) => el.id === overId)
         if (oldIndex === -1 || newIndex === -1) return page
-        const newElements = [...page.elements]
-        const [moved] = newElements.splice(oldIndex, 1)
-        newElements.splice(newIndex, 0, moved)
-        return { ...page, elements: newElements }
+        return { ...page, elements: arrayMove(page.elements, oldIndex, newIndex) }
       })
     )
 
-    // Remove empty first page after cross-page move
     setPages((prev) => {
       if (prev.length <= 1 || prev[0].elements.length > 0) return prev
       const remaining = prev.slice(1)
       setActivePageId(remaining[0].id)
       return remaining
     })
-  }, [findPageForElement, pages, dragSession])
+  }, [])
 
   const handleDragCancel = useCallback(() => {
-    const pendingId = dragSession?.pendingElementId
+    const pendingId = dragSessionRef.current?.pendingElementId
+    dragSessionRef.current = null
     setDragSession(null)
     if (pendingId) {
       setPages((prev) =>
@@ -999,7 +1035,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         }))
       )
     }
-  }, [dragSession])
+  }, [])
 
   // Find dragged element for overlay
   let draggedElement: CanvasElement | null = null
@@ -1132,7 +1168,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                     }}
                   >
                     <SortableContext
-                      items={page.elements.map((el) => el.id)}
+                      items={itemsByPage[page.id] ?? []}
                       strategy={verticalListSortingStrategy}
                       id={page.id}
                     >
@@ -1145,16 +1181,21 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                             <EmptyState mobile={isMobileView} />
                           </section>
                         ) : (
-                          page.elements.map((element) => (
-                            <SortableElement
-                              key={element.id}
-                              element={element}
-                              isSelected={selectedElementId === element.id}
-
-                              onSelect={handleSelectElement}
-                              onPropertyChange={handlePropertyChange}
-                            />
-                          ))
+                          page.elements.map((element) => {
+                            if (dragSession?.type === 'panel' && dragSession.pendingElementId === element.id) {
+                              return <DropLinePlaceholder key={element.id} />
+                            }
+                            return (
+                              <SortableElement
+                                key={element.id}
+                                element={element}
+                                isSelected={selectedElementId === element.id}
+                                isPending={false}
+                                onSelect={handleSelectElement}
+                                onPropertyChange={handlePropertyChange}
+                              />
+                            )
+                          })
                         )}
                       </DroppablePage>
                     </SortableContext>
