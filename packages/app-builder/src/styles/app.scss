@@ -1373,6 +1373,9 @@ body {
   position: relative;
   contain: layout style;
 
+  // Pragmatic-dnd DropIndicator color/width overrides
+  --ds-border-selected: var(--border-info);
+  --ds-border-width-selected: 4px;
 
   &--shrinked {
     flex: 1 1 calc(50% - var(--space-4) / 2);

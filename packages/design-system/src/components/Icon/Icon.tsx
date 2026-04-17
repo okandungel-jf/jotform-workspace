@@ -15,8 +15,8 @@ export function Icon({
   size = 24,
   className,
 }: IconProps) {
-  const [svg, setSvg] = useState('');
   const key = `${category}/${name}`;
+  const [svg, setSvg] = useState(() => cache.get(key) || '');
 
   useEffect(() => {
     if (cache.has(key)) {
