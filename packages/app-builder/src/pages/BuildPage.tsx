@@ -48,8 +48,15 @@ interface AppPage {
   elements: CanvasElement[]
 }
 
-let elementCounter = 0
-let pageCounter = 1
+function nextNumericId(prefix: string, existingIds: string[]): string {
+  const re = new RegExp(`^${prefix}-(\\d+)$`)
+  const max = existingIds.reduce((m, id) => {
+    const match = id.match(re)
+    const n = match ? parseInt(match[1], 10) : 0
+    return n > m ? n : m
+  }, 0)
+  return `${prefix}-${max + 1}`
+}
 
 const ELEMENT_ICON_MAP: Record<string, { icon: string; iconCategory: string }> = {
   'form': { icon: 'form-filled', iconCategory: 'forms-files' },
@@ -91,7 +98,7 @@ const WIDGETS_GROUPS: PanelGroup[] = [
 
 const HIDDEN_ELEMENTS = ['empty-state', 'app-header', 'bottom-navigation', 'color-picker']
 
-function createCanvasElement(comp: RegisteredComponent): CanvasElement {
+function createCanvasElement(comp: RegisteredComponent, id: string): CanvasElement {
   const variants: VariantValues = {}
   for (const [group, config] of Object.entries(comp.variants)) {
     variants[group] = config.default || config.options[0]
@@ -108,12 +115,16 @@ function createCanvasElement(comp: RegisteredComponent): CanvasElement {
   }
 
   return {
-    id: `element-${++elementCounter}`,
+    id,
     componentId: comp.id,
     variants,
     properties,
     states,
   }
+}
+
+function nextElementId(pages: AppPage[]): string {
+  return nextNumericId('element', pages.flatMap((p) => p.elements.map((el) => el.id)))
 }
 
 const INLINE_EDITABLE_MAP: Record<string, { selector: string; property: string }[]> = {
@@ -672,7 +683,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const activeGroups = activeTab === 'basic' ? BASIC_GROUPS : WIDGETS_GROUPS
 
   const handleAddElement = useCallback((comp: RegisteredComponent) => {
-    const element = createCanvasElement(comp)
+    const element = createCanvasElement(comp, nextElementId(pagesRef.current))
     setPages((prev) => {
       let targetPageId = activePageId
       if (forceTargetPageId) {
@@ -744,9 +755,11 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   }, [])
 
   const handleAddPage = useCallback((afterPageId: string) => {
+    const pageId = nextNumericId('page', pagesRef.current.map((p) => p.id))
+    const pageNum = pageId.replace(/^page-/, '')
     const newPage: AppPage = {
-      id: `page-${++pageCounter}`,
-      name: `Page ${pageCounter}`,
+      id: pageId,
+      name: `Page ${pageNum}`,
       elements: [],
     }
     setPages((prev) => {
@@ -846,7 +859,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         if (data.type === 'panel') {
           const comp = ComponentRegistry.get(data.componentId)
           if (!comp) return
-          const newEl = createCanvasElement(comp)
+          const newEl = createCanvasElement(comp, nextElementId(pagesRef.current))
           const targetPageId = targetData.pageId
 
           setPages((prev) =>
