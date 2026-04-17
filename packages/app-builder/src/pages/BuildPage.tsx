@@ -1031,11 +1031,10 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                     }}
                   >
                     {(() => {
-                      const draggedIsOnlyEl =
-                        draggedCanvasId !== null &&
-                        page.elements.length === 1 &&
-                        page.elements[0].id === draggedCanvasId
-                      const virtuallyEmpty = page.elements.length === 0 || draggedIsOnlyEl
+                      const visibleCount = draggedCanvasId
+                        ? page.elements.filter((el) => el.id !== draggedCanvasId).length
+                        : page.elements.length
+                      const virtuallyEmpty = visibleCount === 0
                       return (
                         <DroppablePage
                           pageId={page.id}
@@ -1059,7 +1058,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                               element={element}
                               pageId={page.id}
                               isSelected={selectedElementId === element.id}
-                              hideDuringDrag={element.id === draggedCanvasId && draggedIsOnlyEl}
+                              hideDuringDrag={element.id === draggedCanvasId}
                               onSelect={handleSelectElement}
                               onPropertyChange={handlePropertyChange}
                             />
