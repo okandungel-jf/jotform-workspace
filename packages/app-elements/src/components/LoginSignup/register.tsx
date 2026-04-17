@@ -26,7 +26,6 @@ ComponentRegistry.register({
     { name: 'Subtitle', type: 'text', default: '' },
     { name: 'Button Label', type: 'text', default: '' },
     { name: 'Input Icons', type: 'boolean', default: true },
-    { name: 'Shrinked', type: 'boolean', default: false },
   ],
 
   states: [
@@ -122,13 +121,6 @@ ComponentRegistry.register({
         'When `true`, renders a 2px info-colored outline around the component (used in the app builder for selection state).',
     },
     {
-      name: 'shrinked',
-      type: 'boolean',
-      default: 'false',
-      description:
-        'When `true`, reduces the card width from 440px to 360px.',
-    },
-    {
       name: 'skeleton',
       type: 'boolean',
       default: 'false',
@@ -153,7 +145,6 @@ ComponentRegistry.register({
         subtitle={props['Subtitle'] as string}
         buttonLabel={props['Button Label'] as string}
         showInputIcons={props['Input Icons'] as boolean}
-        shrinked={props['Shrinked'] as boolean}
         skeleton={states['Skeleton']}
       />
     );

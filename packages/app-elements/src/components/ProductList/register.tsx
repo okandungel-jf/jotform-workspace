@@ -25,7 +25,6 @@ ComponentRegistry.register({
     { name: 'Show Toolbar', type: 'boolean', default: true },
     { name: 'Show Images', type: 'boolean', default: false },
     { name: 'Selected', type: 'boolean', default: false },
-    { name: 'Shrinked', type: 'boolean', default: false },
     { name: 'Add New Card', type: 'boolean', default: true },
     { name: 'Skeleton', type: 'boolean', default: false },
     { name: 'Products', type: 'text', default: JSON.stringify([{ name: 'Product Name', price: '10.00' }]) },
@@ -81,13 +80,6 @@ ComponentRegistry.register({
     { name: "Premium Plan", price: "$9.99/mo" },
     { name: "Basic Plan", price: "$4.99/mo" },
   ]}
-/>
-
-// Shrinked variant (408px)
-<ProductList
-  layout="TwoColumns"
-  shrinked={true}
-  title="Shop"
 />`,
 
   propDocs: [
@@ -133,13 +125,6 @@ ComponentRegistry.register({
       description:
         'When `true`, applies a 2px `border-info` border around the entire product list.',
     },
-    {
-      name: 'shrinked',
-      type: 'boolean',
-      default: 'false',
-      description:
-        'When `true`, constrains the list width to 408px instead of 616px.',
-    },
   ],
 
   render(variants: VariantValues, props: PropertyValues, _states: StateValues, onPropertyChange?: (name: string, value: string | boolean | number) => void): React.ReactNode {
@@ -166,7 +151,6 @@ ComponentRegistry.register({
         searchPlaceholder={props['Search Placeholder'] as string}
         buttonLabel={props['Button Label'] as string}
         selected={props['Selected'] as boolean}
-        shrinked={props['Shrinked'] as boolean}
         products={products}
         showAddNew={props['Add New Card'] as boolean}
         skeleton={props['Skeleton'] as boolean}

@@ -14,7 +14,6 @@ ComponentRegistry.register({
   properties: [
     { name: 'Show Avatars', type: 'boolean', default: false },
     { name: 'Selected', type: 'boolean', default: false },
-    { name: 'Shrinked', type: 'boolean', default: false },
     { name: 'Skeleton', type: 'boolean', default: false },
   ],
 
@@ -43,10 +42,7 @@ ComponentRegistry.register({
     { name: "John Smith", text: "\u201CChanged how we work.\u201D" },
     { name: "Sarah Lee", text: "\u201CHighly recommended.\u201D" },
   ]}
-/>
-
-// Shrinked (vertical layout)
-<Testimonial shrinked />`,
+/>`,
 
   propDocs: [
     {
@@ -61,12 +57,6 @@ ComponentRegistry.register({
       type: 'boolean',
       default: 'false',
       description: 'When `true`, applies a 2px `border-info` border.',
-    },
-    {
-      name: 'shrinked',
-      type: 'boolean',
-      default: 'false',
-      description: 'When `true`, constrains to 300px with vertical/centered layout.',
     },
   ],
 
@@ -83,7 +73,6 @@ ComponentRegistry.register({
       <Testimonial
         items={items}
         selected={props['Selected'] as boolean}
-        shrinked={props['Shrinked'] as boolean}
         skeleton={props['Skeleton'] as boolean}
       />
     );

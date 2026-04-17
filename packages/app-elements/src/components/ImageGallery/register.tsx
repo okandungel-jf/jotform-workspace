@@ -19,7 +19,6 @@ ComponentRegistry.register({
 
   properties: [
     { name: 'Selected', type: 'boolean', default: false },
-    { name: 'Shrinked', type: 'boolean', default: false },
     { name: 'Skeleton', type: 'boolean', default: false },
   ],
 
@@ -64,13 +63,6 @@ ComponentRegistry.register({
       description:
         'When `true`, applies a 2px `border-info` border.',
     },
-    {
-      name: 'shrinked',
-      type: 'boolean',
-      default: 'false',
-      description:
-        'When `true`, constrains width to 300px.',
-    },
   ],
 
   render(variants: VariantValues, props: PropertyValues, _states: StateValues): React.ReactNode {
@@ -78,7 +70,6 @@ ComponentRegistry.register({
       <ImageGallery
         layout={variants['Layout'] as GalleryLayout}
         selected={props['Selected'] as boolean}
-        shrinked={props['Shrinked'] as boolean}
         skeleton={props['Skeleton'] as boolean}
       />
     );

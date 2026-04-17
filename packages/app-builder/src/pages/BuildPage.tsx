@@ -29,7 +29,7 @@ import {
   type Edge,
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
-import { centerUnderPointer } from '@atlaskit/pragmatic-drag-and-drop/element/center-under-pointer'
+import { pointerOutsideOfPreview } from '@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview'
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element'
 import DropIndicator from '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box'
 
@@ -171,7 +171,32 @@ const INLINE_EDITABLE_MAP: Record<string, { selector: string; property: string }
 
 type DragSourceData =
   | { type: 'panel'; componentId: string }
-  | { type: 'canvas'; elementId: string }
+  | { type: 'canvas'; elementId: string; componentId: string }
+
+function isComponentShrinkable(componentId: string): boolean {
+  const comp = ComponentRegistry.get(componentId)
+  return !!comp?.properties.some((p) => p.name === 'Shrinked')
+}
+
+function isElementShrinked(el: CanvasElement): boolean {
+  return el.properties['Shrinked'] === true
+}
+
+// Returns the pair partner's index within page.elements, or -1 if unpaired.
+// Pairing: consecutive shrinked elements group into 2-column rows; element at column 0
+// pairs with column 1 if present. Column-1 is always paired with column-0.
+function pairPartnerIndex(elements: CanvasElement[], index: number): number {
+  const el = elements[index]
+  if (!el || !isElementShrinked(el)) return -1
+  let start = index
+  while (start > 0 && isElementShrinked(elements[start - 1])) start--
+  const k = index - start
+  if (k % 2 === 0) {
+    const next = elements[index + 1]
+    return next && isElementShrinked(next) ? index + 1 : -1
+  }
+  return index - 1
+}
 
 function PanelDragOverlay({ componentId }: { componentId: string }) {
   const iconInfo = ELEMENT_ICON_MAP[componentId]
@@ -199,6 +224,9 @@ const SortableElement = memo(function SortableElement({
   pageId,
   isSelected,
   hideDuringDrag,
+  isPaired,
+  pairPartnerId,
+  partnerSwapEdge,
   onSelect,
   onPropertyChange,
 }: {
@@ -206,6 +234,9 @@ const SortableElement = memo(function SortableElement({
   pageId: string
   isSelected: boolean
   hideDuringDrag: boolean
+  isPaired: boolean
+  pairPartnerId: string | null
+  partnerSwapEdge: Edge | null
   onSelect: (id: string) => void
   onPropertyChange: (elementId: string, property: string, value: string | boolean | number) => void
 }) {
@@ -215,6 +246,13 @@ const SortableElement = memo(function SortableElement({
   const handleRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const [dropEdge, setDropEdge] = useState<Edge | null>(null)
+  const isPairedRef = useRef(isPaired)
+  const pairPartnerIdRef = useRef(pairPartnerId)
+  const partnerSwapEdgeRef = useRef(partnerSwapEdge)
+  useEffect(() => { isPairedRef.current = isPaired }, [isPaired])
+  useEffect(() => { pairPartnerIdRef.current = pairPartnerId }, [pairPartnerId])
+  useEffect(() => { partnerSwapEdgeRef.current = partnerSwapEdge }, [partnerSwapEdge])
+  const selfShrinkable = isComponentShrinkable(element.componentId)
 
   useEffect(() => {
     const section = sectionRef.current
@@ -233,7 +271,7 @@ const SortableElement = memo(function SortableElement({
         onGenerateDragPreview: ({ nativeSetDragImage }) => {
           setCustomNativeDragPreview({
             nativeSetDragImage,
-            getOffset: centerUnderPointer,
+            getOffset: pointerOutsideOfPreview({ x: '16px', y: '16px' }),
             render: ({ container }) => {
               const root = createRoot(container)
               root.render(<PanelDragOverlay componentId={element.componentId} />)
@@ -249,11 +287,30 @@ const SortableElement = memo(function SortableElement({
           if (data.type === 'canvas' && data.elementId === element.id) return false
           return true
         },
-        getData: ({ input, element: target }) =>
-          attachClosestEdge(
+        getData: ({ input, source, element: target }) => {
+          const data = source.data as DragSourceData
+          const sourceIsMyPartner =
+            data.type === 'canvas' && data.elementId === pairPartnerIdRef.current
+          let allowedEdges: Edge[]
+          if (sourceIsMyPartner) {
+            // In-pair swap: only allow dropping on the opposite side of the partner.
+            // Vertical edges still work so the user can break the pair.
+            allowedEdges = partnerSwapEdgeRef.current
+              ? ['top', 'bottom', partnerSwapEdgeRef.current]
+              : ['top', 'bottom']
+          } else {
+            const sourceShrinkable = isComponentShrinkable(data.componentId)
+            const allowHorizontal =
+              sourceShrinkable && selfShrinkable && !isPairedRef.current
+            allowedEdges = allowHorizontal
+              ? ['top', 'bottom', 'left', 'right']
+              : ['top', 'bottom']
+          }
+          return attachClosestEdge(
             { type: 'element', elementId: element.id, pageId },
-            { input, element: target, allowedEdges: ['top', 'bottom'] }
-          ),
+            { input, element: target, allowedEdges }
+          )
+        },
         onDrag: ({ self, source }) => {
           const data = source.data as DragSourceData
           if (data.type === 'canvas' && data.elementId === element.id) {
@@ -267,7 +324,7 @@ const SortableElement = memo(function SortableElement({
         onDrop: () => setDropEdge(null),
       })
     )
-  }, [element.id, element.componentId, pageId])
+  }, [element.id, element.componentId, pageId, selfShrinkable])
 
   useEffect(() => {
     const container = contentRef.current
@@ -402,7 +459,7 @@ function DraggablePanelItem({
       onGenerateDragPreview: ({ nativeSetDragImage }) => {
         setCustomNativeDragPreview({
           nativeSetDragImage,
-          getOffset: centerUnderPointer,
+          getOffset: pointerOutsideOfPreview({ x: '16px', y: '16px' }),
           render: ({ container }) => {
             const root = createRoot(container)
             root.render(<PanelDragOverlay componentId={comp.id} />)
@@ -856,6 +913,14 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
           | { type: 'element'; elementId: string; pageId: string }
           | { type: 'page'; pageId: string }
 
+        const edge = targetData.type === 'element' ? extractClosestEdge(innerTarget.data) : null
+        const isHorizontal = edge === 'left' || edge === 'right'
+
+        const withShrinked = (el: CanvasElement, shrinked: boolean): CanvasElement => ({
+          ...el,
+          properties: { ...el.properties, Shrinked: shrinked },
+        })
+
         if (data.type === 'panel') {
           const comp = ComponentRegistry.get(data.componentId)
           if (!comp) return
@@ -870,11 +935,16 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
               }
               const idx = page.elements.findIndex((el) => el.id === targetData.elementId)
               if (idx === -1) return { ...page, elements: [...page.elements, newEl] }
-              const edge = extractClosestEdge(innerTarget.data)
-              const insertIdx = edge === 'bottom' ? idx + 1 : idx
-              const newElements = [...page.elements]
-              newElements.splice(insertIdx, 0, newEl)
-              return { ...page, elements: newElements }
+              const elements = [...page.elements]
+              if (isHorizontal) {
+                elements[idx] = withShrinked(elements[idx], true)
+                const insertAt = edge === 'right' ? idx + 1 : idx
+                elements.splice(insertAt, 0, withShrinked(newEl, true))
+              } else {
+                const insertAt = edge === 'bottom' ? idx + 1 : idx
+                elements.splice(insertAt, 0, newEl)
+              }
+              return { ...page, elements }
             })
           )
           setSelectedElementId(newEl.id)
@@ -897,25 +967,42 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
 
         if (targetData.type === 'element' && targetData.elementId === sourceId) return
 
+        const sourceEl = withShrinked(movingEl, isHorizontal)
+
         setPages((prev) => {
           let insertIdx: number | null = null
           const withoutSource = prev.map((page) => {
             if (page.id !== sourcePage.id) return page
-            return { ...page, elements: page.elements.filter((el) => el.id !== sourceId) }
+            const srcIdx = page.elements.findIndex((el) => el.id === sourceId)
+            const partnerIdx = pairPartnerIndex(page.elements, srcIdx)
+            const elements = page.elements
+              .map((el, i) => (i === partnerIdx ? withShrinked(el, false) : el))
+              .filter((el) => el.id !== sourceId)
+            return { ...page, elements }
           })
           const next = withoutSource.map((page) => {
             if (page.id !== targetPageId) return page
             if (targetData.type === 'page') {
               insertIdx = page.elements.length
-              return { ...page, elements: [...page.elements, movingEl] }
+              return { ...page, elements: [...page.elements, sourceEl] }
             }
             const idx = page.elements.findIndex((el) => el.id === targetData.elementId)
-            const edge = extractClosestEdge(innerTarget.data)
-            const at = idx === -1 ? page.elements.length : (edge === 'bottom' ? idx + 1 : idx)
-            insertIdx = at
-            const newElements = [...page.elements]
-            newElements.splice(at, 0, movingEl)
-            return { ...page, elements: newElements }
+            if (idx === -1) {
+              insertIdx = page.elements.length
+              return { ...page, elements: [...page.elements, sourceEl] }
+            }
+            const elements = [...page.elements]
+            if (isHorizontal) {
+              elements[idx] = withShrinked(elements[idx], true)
+              const insertAt = edge === 'right' ? idx + 1 : idx
+              elements.splice(insertAt, 0, sourceEl)
+              insertIdx = insertAt
+            } else {
+              const insertAt = edge === 'bottom' ? idx + 1 : idx
+              elements.splice(insertAt, 0, sourceEl)
+              insertIdx = insertAt
+            }
+            return { ...page, elements }
           })
           if (insertIdx === null) return prev
           if (next.length > 1 && next[0].elements.length === 0) {
@@ -1065,17 +1152,29 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                             }
                           }}
                         >
-                          {page.elements.map((element) => (
-                            <SortableElement
-                              key={element.id}
-                              element={element}
-                              pageId={page.id}
-                              isSelected={selectedElementId === element.id}
-                              hideDuringDrag={element.id === draggedCanvasId}
-                              onSelect={handleSelectElement}
-                              onPropertyChange={handlePropertyChange}
-                            />
-                          ))}
+                          {page.elements.map((element, idx) => {
+                            const partnerIdx = pairPartnerIndex(page.elements, idx)
+                            const partnerId = partnerIdx !== -1 ? page.elements[partnerIdx].id : null
+                            const swapEdge: Edge | null = partnerIdx === -1
+                              ? null
+                              : partnerIdx < idx
+                                ? 'right'
+                                : 'left'
+                            return (
+                              <SortableElement
+                                key={element.id}
+                                element={element}
+                                pageId={page.id}
+                                isSelected={selectedElementId === element.id}
+                                hideDuringDrag={element.id === draggedCanvasId}
+                                isPaired={partnerIdx !== -1}
+                                pairPartnerId={partnerId}
+                                partnerSwapEdge={swapEdge}
+                                onSelect={handleSelectElement}
+                                onPropertyChange={handlePropertyChange}
+                              />
+                            )
+                          })}
                         </DroppablePage>
                       )
                     })()}
