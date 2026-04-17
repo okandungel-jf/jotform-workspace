@@ -19,12 +19,14 @@ import { PageNavigationBar, getPageIconName } from '../components/PageNavigation
 import {
   DndContext,
   DragOverlay,
-  closestCenter,
+  closestCorners,
+  pointerWithin,
   PointerSensor,
   useDraggable,
   useDroppable,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragStartEvent,
   type DragEndEvent,
   type DragOverEvent,
@@ -189,7 +191,6 @@ const SortableElement = memo(function SortableElement({
   const style = {
     transform: CSS.Translate.toString(transform),
     transition: 'transform 200ms ease',
-    opacity: isDragging ? 0.4 : 1,
   }
 
   // Enable inline editing when selected
@@ -290,23 +291,29 @@ const SortableElement = memo(function SortableElement({
     <section
       ref={setNodeRef}
       style={style}
-      className={`themes-view__section build-page__canvas-element ${isSelected ? 'build-page__canvas-element--selected' : ''} ${isShrinked ? 'build-page__canvas-element--shrinked' : ''}`}
+      className={`themes-view__section build-page__canvas-element ${isDragging ? 'build-page__canvas-element--dragging-line' : ''} ${isSelected ? 'build-page__canvas-element--selected' : ''} ${isShrinked ? 'build-page__canvas-element--shrinked' : ''}`}
       data-element-id={element.id}
       onClick={(e) => {
         e.stopPropagation()
         onSelect(element.id)
       }}
     >
-      <div
-        className="build-page__drag-handle"
-        {...attributes}
-        {...listeners}
-      >
-        <Icon name="grid-dots-vertical" category="general" size={24} />
-      </div>
-      <div ref={contentRef} className="build-page__canvas-element-content">
-        {comp.render(element.variants, element.properties, element.states, (name, value) => onPropertyChange(element.id, name, value))}
-      </div>
+      {isDragging ? (
+        <div className="build-page__drag-line" aria-hidden />
+      ) : (
+        <>
+          <div
+            className="build-page__drag-handle"
+            {...attributes}
+            {...listeners}
+          >
+            <Icon name="grid-dots-vertical" category="general" size={24} />
+          </div>
+          <div ref={contentRef} className="build-page__canvas-element-content">
+            {comp.render(element.variants, element.properties, element.states, (name, value) => onPropertyChange(element.id, name, value))}
+          </div>
+        </>
+      )}
     </section>
   )
 })
@@ -382,6 +389,15 @@ const snapCenterToCursor: import('@dnd-kit/core').Modifier = ({ activatorEvent, 
     }
   }
   return transform
+}
+
+// Prefer real pointer position over active.rect for collisions. This is crucial
+// for panel drags where DragOverlay is centered on cursor via snapCenterToCursor
+// but active.rect.current.translated stays at the panel-origin + drag-delta.
+const pointerFirstCollision: CollisionDetection = (args) => {
+  const pointer = pointerWithin(args)
+  if (pointer.length > 0) return pointer
+  return closestCorners(args)
 }
 
 function TabMenu({ activeTab, onTabChange }: { activeTab: 'basic' | 'widgets'; onTabChange: (tab: 'basic' | 'widgets') => void }) {
@@ -825,42 +841,53 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
       }
       if (!targetPageId) return
 
-      if (pendingPageId && pendingPageId !== targetPageId) {
-        // Move pending element to the target page
-        setPages((prev) => {
-          const sourcePage = prev.find((p) => p.id === pendingPageId)!
-          const element = sourcePage.elements.find((el) => el.id === pendingId)!
-          if (!element) return prev
-          const overIndex = prev.find((p) => p.id === targetPageId)!.elements.findIndex((el) => el.id === overId)
-          const insertIndex = overIndex >= 0 ? overIndex : 0
+      // Compute cursor Y from the dragged item's current rect
+      const activeRect = event.active.rect.current.translated
+      const cursorY = activeRect ? activeRect.top + activeRect.height / 2 : 0
 
-          return prev.map((page) => {
-            if (page.id === pendingPageId) {
-              return { ...page, elements: page.elements.filter((el) => el.id !== pendingId) }
-            }
-            if (page.id === targetPageId) {
-              const newElements = [...page.elements]
-              newElements.splice(insertIndex, 0, element)
-              return { ...page, elements: newElements }
-            }
-            return page
-          })
-        })
-      } else if (pendingPageId === targetPageId && overId !== pendingId) {
-        // Reorder within same page
-        setPages((prev) =>
-          prev.map((page) => {
-            if (page.id !== targetPageId) return page
-            const oldIndex = page.elements.findIndex((el) => el.id === pendingId)
-            const newIndex = page.elements.findIndex((el) => el.id === overId)
-            if (oldIndex === -1 || newIndex === -1) return page
-            const newElements = [...page.elements]
-            const [moved] = newElements.splice(oldIndex, 1)
-            newElements.splice(newIndex, 0, moved)
-            return { ...page, elements: newElements }
-          })
-        )
+      // Decide insert index in target page's elements (with pending removed)
+      const computeInsertIdx = (targetPage: AppPage): number => {
+        const withoutPending = targetPage.elements.filter((e) => e.id !== pendingId)
+        if (overId === targetPageId) {
+          // Over is the page itself — pick by cursor vs element midpoints
+          for (let i = 0; i < withoutPending.length; i++) {
+            const el = document.querySelector(`[data-element-id="${withoutPending[i].id}"]`) as HTMLElement | null
+            if (!el) continue
+            const r = el.getBoundingClientRect()
+            if (cursorY < r.top + r.height / 2) return i
+          }
+          return withoutPending.length
+        }
+        // Over is an element — decide before/after by cursor vs over midpoint
+        const overIdxInReduced = withoutPending.findIndex((e) => e.id === overId)
+        if (overIdxInReduced === -1) return withoutPending.length
+        const overMidY = over.rect.top + over.rect.height / 2
+        return cursorY > overMidY ? overIdxInReduced + 1 : overIdxInReduced
       }
+
+      setPages((prev) => {
+        const targetPage = prev.find((p) => p.id === targetPageId)!
+        const sourcePage = prev.find((p) => p.id === pendingPageId)!
+        const element = sourcePage.elements.find((el) => el.id === pendingId)
+        if (!element) return prev
+
+        const insertIdx = computeInsertIdx(targetPage)
+
+        return prev.map((page) => {
+          if (page.id === pendingPageId && page.id !== targetPageId) {
+            // Cross-page: remove pending from source page
+            return { ...page, elements: page.elements.filter((el) => el.id !== pendingId) }
+          }
+          if (page.id === targetPageId) {
+            const base = page.id === pendingPageId
+              ? page.elements.filter((el) => el.id !== pendingId)
+              : [...page.elements]
+            base.splice(insertIdx, 0, element)
+            return { ...page, elements: base }
+          }
+          return page
+        })
+      })
       return
     }
 
@@ -1003,7 +1030,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
     <DndContext
       id="build-page-dnd"
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={pointerFirstCollision}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}

@@ -1398,6 +1398,18 @@ body {
   }
 }
 
+// Source element while being dragged: collapse to a 4px blue line in place.
+.build-page__canvas-element--dragging-line {
+  gap: 0;
+}
+
+.build-page__drag-line {
+  height: 4px;
+  width: 100%;
+  background: var(--border-info);
+  border-radius: 2px;
+}
+
 
 .build-page__drag-handle {
   position: absolute;
