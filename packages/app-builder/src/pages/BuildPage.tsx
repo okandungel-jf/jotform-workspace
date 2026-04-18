@@ -420,6 +420,7 @@ const SortableElement = memo(function SortableElement({
       ref={sectionRef}
       className={`themes-view__section build-page__canvas-element ${isSelected ? 'build-page__canvas-element--selected' : ''} ${isShrinked ? 'build-page__canvas-element--shrinked' : ''}`}
       data-element-id={element.id}
+      data-component-id={element.componentId}
       style={hideDuringDrag ? { display: 'none' } : undefined}
       onClick={(e) => {
         e.stopPropagation()
@@ -1370,6 +1371,9 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                                     const previewProps = {
                                       ...element.properties,
                                       'Add New Card': false,
+                                      // Strip Shrinked in mobile preview so elements stretch full-width.
+                                      // Button keeps its shrinked state — a full-width button is worse than a compact one.
+                                      Shrinked: element.componentId === 'button' ? element.properties['Shrinked'] : false,
                                     }
                                     return (
                                       <section key={element.id} className="themes-view__section">

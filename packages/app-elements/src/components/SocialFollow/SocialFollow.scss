@@ -31,6 +31,10 @@
   &--shrinked {
     width: 300px;
 
+    @media (max-width: 768px) {
+      width: 100%;
+    }
+
     &.jf-social--horizontal {
       flex-wrap: wrap;
       justify-content: center;

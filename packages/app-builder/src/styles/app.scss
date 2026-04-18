@@ -1382,6 +1382,14 @@ body {
     max-width: calc(50% - var(--space-4) / 2);
     min-width: 0;
     align-self: flex-start;
+
+    // Mobile: stretch to full width, except buttons which stay compact
+    @media (max-width: 768px) {
+      &:not([data-component-id="button"]) {
+        flex: 1 1 100%;
+        max-width: 100%;
+      }
+    }
   }
 }
 
