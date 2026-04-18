@@ -1215,6 +1215,19 @@ body {
   .themes-view__app {
     padding: var(--space-4, 16px);
     gap: var(--space-4, 16px);
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .themes-view__section {
+    flex: 1 1 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .themes-view__section--shrinked {
+    flex: 1 1 calc(50% - var(--space-4) / 2);
+    max-width: calc(50% - var(--space-4) / 2);
   }
 }
 

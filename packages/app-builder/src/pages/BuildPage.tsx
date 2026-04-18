@@ -1375,8 +1375,9 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                                       // Button keeps its shrinked state — a full-width button is worse than a compact one.
                                       Shrinked: element.componentId === 'button' ? element.properties['Shrinked'] : false,
                                     }
+                                    const isButtonShrinked = element.componentId === 'button' && element.properties['Shrinked'] === true
                                     return (
-                                      <section key={element.id} className="themes-view__section">
+                                      <section key={element.id} className={`themes-view__section${isButtonShrinked ? ' themes-view__section--shrinked' : ''}`}>
                                         {comp.render(element.variants, previewProps, element.states)}
                                       </section>
                                     )
