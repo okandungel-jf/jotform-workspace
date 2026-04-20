@@ -9,6 +9,8 @@ export {
   DropdownMulti,
   DropdownLanguage,
 } from './components/Dropdown';
+export { Toggle } from './components/Toggle';
+export type { ToggleProps, ToggleSize } from './components/Toggle';
 export type {
   DropdownSingleProps,
   DropdownMultiProps,

@@ -1,0 +1,295 @@
+// ============================================
+// Toggle (Switch) Component
+// Source: Figma / Toggle
+// ============================================
+
+.jf-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &__input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    margin: 0;
+    cursor: inherit;
+  }
+
+  &__track {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    background: var(--navy-200);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+    box-sizing: border-box;
+  }
+
+  &__thumb {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--background-white);
+    border-radius: 3px;
+    box-shadow:
+      0 0 1px 0 rgba(37, 45, 91, 0.04),
+      0 2px 4px 0 rgba(84, 95, 111, 0.16);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+  }
+
+  &__grip {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  &__grip-line {
+    width: 1px;
+    background: var(--navy-200);
+  }
+
+  &__spinner {
+    display: inline-block;
+    border-radius: 50%;
+    border: 1.5px solid var(--navy-100);
+    border-top-color: var(--navy-300);
+    animation: jf-toggle-spin 0.8s linear infinite;
+  }
+
+  // ===== Size: Small (28×16) =====
+  &--sm {
+    .jf-toggle__track {
+      width: 28px;
+      height: 16px;
+      padding: 2px;
+      border-radius: 3px;
+    }
+
+    .jf-toggle__thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+
+    .jf-toggle__grip-line {
+      height: 6px;
+    }
+
+    .jf-toggle__spinner {
+      width: 8px;
+      height: 8px;
+      border-width: 1px;
+    }
+
+    .jf-toggle__input:checked ~ .jf-toggle__track .jf-toggle__thumb {
+      transform: translateX(12px);
+    }
+  }
+
+  // ===== Size: Medium/Default (42×24) =====
+  &--md {
+    .jf-toggle__track {
+      width: 42px;
+      height: 24px;
+    }
+
+    .jf-toggle__thumb {
+      width: 18px;
+      height: 18px;
+    }
+
+    .jf-toggle__grip-line {
+      height: 10px;
+    }
+
+    .jf-toggle__spinner {
+      width: 12px;
+      height: 12px;
+    }
+
+    .jf-toggle__input:checked ~ .jf-toggle__track .jf-toggle__thumb {
+      transform: translateX(18px);
+    }
+  }
+
+  // ===== Size: Large (58×32) =====
+  &--lg {
+    .jf-toggle__track {
+      width: 58px;
+      height: 32px;
+    }
+
+    .jf-toggle__thumb {
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+    }
+
+    .jf-toggle__grip-line {
+      height: 14px;
+    }
+
+    .jf-toggle__spinner {
+      width: 16px;
+      height: 16px;
+    }
+
+    .jf-toggle__input:checked ~ .jf-toggle__track .jf-toggle__thumb {
+      transform: translateX(26px);
+    }
+  }
+
+  // ===== Checked (On) =====
+  .jf-toggle__input:checked ~ .jf-toggle__track {
+    background: var(--accent-default);
+  }
+
+  // ===== Hover =====
+  &:hover .jf-toggle__input:not(:disabled) ~ .jf-toggle__track {
+    background: var(--navy-300);
+  }
+
+  &:hover .jf-toggle__input:checked:not(:disabled) ~ .jf-toggle__track {
+    background: var(--accent-hover, #0066c7);
+  }
+
+  // ===== Focus =====
+  .jf-toggle__input:focus-visible ~ .jf-toggle__track {
+    box-shadow: 0 0 0 3px rgba(119, 207, 255, 0.5);
+  }
+
+  // ===== Error =====
+  &--error {
+    .jf-toggle__track {
+      background: var(--error-default);
+    }
+
+    .jf-toggle__grip-line {
+      background: var(--navy-100);
+    }
+
+    &:hover .jf-toggle__input:not(:disabled) ~ .jf-toggle__track {
+      background: var(--error-default);
+      opacity: 0.85;
+    }
+
+    .jf-toggle__input:focus-visible ~ .jf-toggle__track {
+      box-shadow: 0 0 0 3px rgba(254, 202, 202, 0.5);
+    }
+
+    .jf-toggle__input:checked ~ .jf-toggle__track {
+      background: var(--error-default);
+    }
+  }
+
+  // ===== Disabled =====
+  &--disabled {
+    cursor: not-allowed;
+
+    .jf-toggle__track {
+      opacity: 0.5;
+    }
+  }
+
+  // ===== Loading =====
+  &--loading {
+    cursor: wait;
+
+    .jf-toggle__input {
+      cursor: wait;
+    }
+  }
+}
+
+@keyframes jf-toggle-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ============================================
+// Toggle with label wrapper
+// ============================================
+.jf-toggle-field {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &--disabled {
+    cursor: not-allowed;
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 2px;
+  }
+
+  &__label {
+    font-family: var(--font-family-circular);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-sm);
+    color: var(--text-darkest);
+  }
+
+  &__description {
+    font-family: var(--font-family-circular);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-book);
+    line-height: var(--line-height-xs);
+    color: var(--text-medium);
+  }
+}
+
+// ============================================
+// Dark mode
+// ============================================
+[data-theme='dark'] {
+  .jf-toggle {
+    &__track {
+      background: var(--gray-400);
+    }
+
+    &__thumb {
+      background: var(--background-white);
+    }
+
+    &__grip-line {
+      background: var(--navy-200);
+    }
+
+    &:hover .jf-toggle__input:not(:disabled) ~ .jf-toggle__track {
+      background: var(--gray-300, #777d94);
+    }
+
+    .jf-toggle__input:focus-visible ~ .jf-toggle__track {
+      box-shadow: 0 0 0 3px rgba(0, 117, 227, 0.3);
+    }
+
+    &--error .jf-toggle__input:focus-visible ~ .jf-toggle__track {
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
+    }
+  }
+
+  .jf-toggle-field {
+    &__label {
+      color: var(--secondary-text-white);
+    }
+
+    &__description {
+      color: var(--secondary-text-light);
+    }
+  }
+}

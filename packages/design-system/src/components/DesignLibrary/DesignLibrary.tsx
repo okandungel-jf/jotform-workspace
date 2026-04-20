@@ -29,6 +29,8 @@ import { CheckboxSection, CheckboxPanel, defaultCheckboxState } from './sections
 import type { CheckboxPanelState } from './sections/CheckboxSection';
 import { DropdownSection, DropdownPanel, defaultDropdownState } from './sections/DropdownSection';
 import type { DropdownPanelState } from './sections/DropdownSection';
+import { ToggleSection, TogglePanel, defaultToggleState } from './sections/ToggleSection';
+import type { TogglePanelState } from './sections/ToggleSection';
 import './DesignLibrary.scss';
 
 const FOUNDATIONS = [
@@ -52,6 +54,7 @@ const COMPONENTS = [
   { id: 'radio-button', label: 'Radio Button' },
   { id: 'checkbox', label: 'Checkbox' },
   { id: 'dropdown', label: 'Dropdown' },
+  { id: 'toggle', label: 'Toggle' },
 ] as const;
 
 const ALL_ITEMS = [...FOUNDATIONS, ...COMPONENTS] as const;
@@ -72,6 +75,7 @@ export function DesignLibrary() {
   const [radioButtonState, setRadioButtonState] = useState<RadioButtonPanelState>(defaultRadioButtonState);
   const [checkboxState, setCheckboxState] = useState<CheckboxPanelState>(defaultCheckboxState);
   const [dropdownState, setDropdownState] = useState<DropdownPanelState>(defaultDropdownState);
+  const [toggleState, setToggleState] = useState<TogglePanelState>(defaultToggleState);
 
   const hasPanel = COMPONENT_IDS.has(activeSection as string);
 
@@ -111,6 +115,8 @@ export function DesignLibrary() {
         return <CheckboxSection state={checkboxState} />;
       case 'dropdown':
         return <DropdownSection state={dropdownState} />;
+      case 'toggle':
+        return <ToggleSection state={toggleState} />;
     }
   };
 
@@ -143,6 +149,8 @@ export function DesignLibrary() {
         return <CheckboxPanel state={checkboxState} onChange={setCheckboxState} />;
       case 'dropdown':
         return <DropdownPanel state={dropdownState} onChange={setDropdownState} />;
+      case 'toggle':
+        return <TogglePanel state={toggleState} onChange={setToggleState} />;
       default:
         return null;
     }

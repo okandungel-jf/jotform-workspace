@@ -1,12 +1,12 @@
-import { type ReactNode, type KeyboardEvent, type RefObject } from 'react';
+import { type ReactNode, type KeyboardEvent, type Ref } from 'react';
 import { createPortal } from 'react-dom';
 
 interface DropdownMenuShellProps {
   placement: 'top' | 'bottom';
   isSheet: boolean;
   title?: string;
-  menuRef: RefObject<HTMLDivElement>;
-  triggerRef?: RefObject<HTMLElement>;
+  menuRef: Ref<HTMLDivElement>;
+  triggerRef?: { readonly current: HTMLElement | null };
   onClose: () => void;
   onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => void;
   multiselectable?: boolean;
