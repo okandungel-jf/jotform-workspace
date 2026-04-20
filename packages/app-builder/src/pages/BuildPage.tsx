@@ -17,6 +17,7 @@ import { Icon, Button as DSButton } from '@jf/design-system'
 import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
+import { MobileBottomBar } from '../components/MobileBottomBar'
 import {
   draggable,
   dropTargetForElements,
@@ -1421,6 +1422,27 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         </div>
       </aside>
     </div>
+
+    {/* Mobile: Bottom Bar (replaces floating buttons) */}
+    {isMobileView && (
+      <MobileBottomBar
+        onElementsClick={() => {
+          if (rightPanel === 'designer') setRightPanel('preview')
+          setMobileElementsSheet(true)
+        }}
+        onDesignClick={() => {
+          setMobileElementsSheet(false)
+          setSelectedElementId(null)
+          setRightPanel('designer')
+        }}
+        onPagesClick={() => {
+          /* placeholder */
+        }}
+        onPreviewClick={() => {
+          /* placeholder */
+        }}
+      />
+    )}
 
     {/* Mobile: Add Element Bottom Sheet */}
     <BottomSheet

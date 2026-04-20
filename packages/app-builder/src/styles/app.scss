@@ -885,7 +885,7 @@ body {
 
   @media (max-width: 768px) {
     overflow-y: visible;
-    padding-bottom: max(var(--bottom-sheet-height, 0px), var(--space-6));
+    padding-bottom: max(var(--bottom-sheet-height, 0px), calc(var(--mobile-bottom-bar-height, 0px) + var(--space-2)));
     transition: padding-bottom 0.25s ease;
   }
 
@@ -2013,19 +2013,8 @@ body {
     padding-bottom: max(var(--bottom-sheet-height, 0px), 72px);
   }
 
-  // Floating buttons — fade out in design mode
-  .builder--design-mode .build-page__floating-buttons {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-  }
-
+  // Floating buttons — replaced by MobileBottomBar on mobile
   .build-page__floating-buttons {
-    transition: opacity 0.2s ease;
-  }
-
-  // Elements sheet open — hide floating buttons, slide topbar up
-  .builder--elements-sheet .build-page__floating-buttons {
     display: none;
   }
 
@@ -2034,6 +2023,134 @@ body {
     margin-bottom: -96px; // main bar (56px) + tab bar (40px)
   }
 
+}
+
+// ============================================
+// Mobile Bottom Bar
+// ============================================
+.mobile-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2xs);
+  background: var(--ds-bg-surface);
+  box-shadow:
+    0 -2px 8px 0 rgba(19, 22, 32, 0.06),
+    0 -2px 8px 0 rgba(19, 22, 32, 0.01);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+// Expose bar height on .builder so canvas padding can reserve space below the bar
+.builder {
+  --mobile-bottom-bar-height: 0px;
+}
+
+@media (max-width: 768px) {
+  .builder {
+    --mobile-bottom-bar-height: 112px;
+  }
+
+  // Hide bottom bar when elements sheet or design mode is active
+  .builder--elements-sheet .mobile-bottom-bar,
+  .builder--design-mode .mobile-bottom-bar {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-bottom-bar {
+    display: none;
+  }
+}
+
+.mobile-bottom-bar__input-wrapper {
+  padding: var(--ds-space-xs) var(--ds-space-xs) 0;
+}
+
+.mobile-bottom-bar__input {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-sm);
+  height: 44px;
+  padding: var(--ds-space-2xs) var(--ds-space-xs);
+  background: var(--ds-bg-page);
+  border-radius: var(--radius-xxl);
+  overflow: hidden;
+}
+
+.mobile-bottom-bar__avatar {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  display: block;
+  object-fit: contain;
+}
+
+.mobile-bottom-bar__input-placeholder {
+  flex: 1 1 0;
+  min-width: 0;
+  color: var(--ds-text-medium);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-md);
+  font-weight: var(--ds-font-weight-book);
+  line-height: var(--ds-line-height-md);
+  letter-spacing: -0.011em;
+  opacity: 0.8;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.mobile-bottom-bar__voice-btn {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-rounded);
+  background: var(--ds-accent);
+  color: var(--btn-primary-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-bottom-bar__menu {
+  display: flex;
+  align-items: center;
+}
+
+.mobile-bottom-bar__menu-item {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 56px;
+  border: none;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2xs);
+  color: var(--text-dark);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-book);
+  line-height: var(--ds-line-height-xs);
+  letter-spacing: -0.006em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active {
+    background: var(--ds-bg-page);
+  }
 }
 
 // ============================================
