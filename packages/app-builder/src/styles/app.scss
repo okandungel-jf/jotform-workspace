@@ -1723,30 +1723,79 @@ body {
 .settings-page {
   display: flex;
   height: 100%;
+  background: var(--ds-bg-page);
 }
 
-.settings-page__nav {
-  width: 260px;
-  background: var(--btn-primary-bg);
-  color: var(--tooltip-fg);
+.side-nav {
   flex-shrink: 0;
-  padding: var(--ds-space-md);
+  background: var(--ds-bg-surface-dark);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-sm);
+  padding: var(--ds-space-xl) 0 var(--ds-space-xl) var(--ds-space-sm);
+}
 
-  ul {
-    list-style: none;
+.side-nav__item {
+  width: 280px;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-sm);
+  padding: var(--ds-space-md) var(--ds-space-sm);
+  background: transparent;
+  border: none;
+  border-top-left-radius: var(--ds-radius-sm);
+  border-bottom-left-radius: var(--ds-radius-sm);
+  cursor: pointer;
+  text-align: left;
+  color: var(--ds-text-primary);
+  font-family: var(--ds-font-family);
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover:not(.side-nav__item--active) {
+    background: var(--ds-bg-secondary);
   }
 
-  li {
-    padding: var(--ds-space-sm) var(--ds-space-md);
-    border-radius: var(--ds-radius-sm);
-    cursor: pointer;
-    font-size: var(--ds-font-size-md);
-    opacity: 0.7;
+  &--active {
+    background: var(--ds-bg-page);
+    color: var(--text-dark);
+  }
+}
 
-    &.active {
-      opacity: 1;
-      background: rgba(255, 255, 255, 0.1);
-    }
+.side-nav__icon {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.side-nav__text {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2xs);
+}
+
+.side-nav__title {
+  font-size: var(--ds-font-size-md);
+  font-weight: var(--ds-font-weight-medium);
+  line-height: var(--ds-line-height-xs);
+  letter-spacing: -0.011em;
+  color: inherit;
+}
+
+.side-nav__desc {
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-book);
+  line-height: var(--ds-line-height-xs);
+  letter-spacing: -0.006em;
+  color: var(--ds-text-secondary);
+
+  .side-nav__item--active & {
+    color: inherit;
   }
 }
 
@@ -1766,10 +1815,7 @@ body {
 .publish-page {
   display: flex;
   height: 100%;
-}
-
-.publish-page__nav {
-  @extend .settings-page__nav;
+  background: var(--ds-bg-page);
 }
 
 .publish-page__content {
