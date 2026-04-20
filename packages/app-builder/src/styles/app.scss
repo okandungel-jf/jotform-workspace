@@ -1757,7 +1757,7 @@ body {
 
   &--active {
     background: var(--ds-bg-page);
-    color: var(--text-dark);
+    color: var(--secondary-text-dark);
   }
 }
 
@@ -1795,7 +1795,7 @@ body {
   color: var(--ds-text-secondary);
 
   .side-nav__item--active & {
-    color: inherit;
+    color: var(--ds-text-medium);
   }
 }
 
