@@ -267,11 +267,15 @@
     }
 
     &__grip-line {
-      background: var(--navy-200);
+      background: var(--gray-200);
     }
 
     &:hover .jf-toggle__input:not(:disabled) ~ .jf-toggle__track {
-      background: var(--gray-300, #777d94);
+      background: var(--gray-300);
+    }
+
+    &:hover .jf-toggle__input:checked:not(:disabled) ~ .jf-toggle__track {
+      background: var(--accent-hover, #0066c7);
     }
 
     .jf-toggle__input:focus-visible ~ .jf-toggle__track {
@@ -280,6 +284,11 @@
 
     &--error .jf-toggle__input:focus-visible ~ .jf-toggle__track {
       box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
+    }
+
+    &__spinner {
+      border-color: var(--gray-400);
+      border-top-color: var(--gray-200);
     }
   }
 
