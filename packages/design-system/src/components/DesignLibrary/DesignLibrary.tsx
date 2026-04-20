@@ -27,6 +27,8 @@ import { RadioButtonSection, RadioButtonPanel, defaultRadioButtonState } from '.
 import type { RadioButtonPanelState } from './sections/RadioButtonSection';
 import { CheckboxSection, CheckboxPanel, defaultCheckboxState } from './sections/CheckboxSection';
 import type { CheckboxPanelState } from './sections/CheckboxSection';
+import { DropdownSection, DropdownPanel, defaultDropdownState } from './sections/DropdownSection';
+import type { DropdownPanelState } from './sections/DropdownSection';
 import './DesignLibrary.scss';
 
 const FOUNDATIONS = [
@@ -49,6 +51,7 @@ const COMPONENTS = [
   { id: 'search-input', label: 'Search Input' },
   { id: 'radio-button', label: 'Radio Button' },
   { id: 'checkbox', label: 'Checkbox' },
+  { id: 'dropdown', label: 'Dropdown' },
 ] as const;
 
 const ALL_ITEMS = [...FOUNDATIONS, ...COMPONENTS] as const;
@@ -68,6 +71,7 @@ export function DesignLibrary() {
   const [searchInputState, setSearchInputState] = useState<SearchInputPanelState>(defaultSearchInputState);
   const [radioButtonState, setRadioButtonState] = useState<RadioButtonPanelState>(defaultRadioButtonState);
   const [checkboxState, setCheckboxState] = useState<CheckboxPanelState>(defaultCheckboxState);
+  const [dropdownState, setDropdownState] = useState<DropdownPanelState>(defaultDropdownState);
 
   const hasPanel = COMPONENT_IDS.has(activeSection as string);
 
@@ -105,6 +109,8 @@ export function DesignLibrary() {
         return <RadioButtonSection state={radioButtonState} />;
       case 'checkbox':
         return <CheckboxSection state={checkboxState} />;
+      case 'dropdown':
+        return <DropdownSection state={dropdownState} />;
     }
   };
 
@@ -135,6 +141,8 @@ export function DesignLibrary() {
         return <RadioButtonPanel state={radioButtonState} onChange={setRadioButtonState} />;
       case 'checkbox':
         return <CheckboxPanel state={checkboxState} onChange={setCheckboxState} />;
+      case 'dropdown':
+        return <DropdownPanel state={dropdownState} onChange={setDropdownState} />;
       default:
         return null;
     }
