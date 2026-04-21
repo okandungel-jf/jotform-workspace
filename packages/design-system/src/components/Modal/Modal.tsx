@@ -124,7 +124,7 @@ export function Modal({
             </div>
           </div>
           <Button
-            variant="transparent"
+            variant="filled"
             colorScheme="secondary"
             shape="rounded"
             iconOnly
