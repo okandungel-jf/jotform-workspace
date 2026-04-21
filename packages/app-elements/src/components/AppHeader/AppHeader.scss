@@ -3,6 +3,10 @@
 // ============================================
 
 .jf-app-header {
+  // Capture originals here (parent scope) so children can swap without circular refs
+  --_jf-ahdr-brand: var(--bg-fill-brand);
+  --_jf-ahdr-inverse: var(--fg-inverse);
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -116,5 +120,106 @@
     overflow: hidden;
     margin: 0;
     opacity: 0;
+  }
+}
+
+// ============================================
+// Actions slot (children below description)
+// Swaps --bg-fill-brand ↔ --fg-inverse so Button / SocialFollow
+// stay visible against the header's brand background.
+// ============================================
+.jf-app-header__actions {
+  // Swap: brand ↔ inverse (captures are defined on the parent .jf-app-header)
+  --bg-fill-brand: var(--_jf-ahdr-inverse);
+  --fg-inverse: var(--_jf-ahdr-brand);
+  --bg-fill-brand-hover: color-mix(in srgb, var(--_jf-ahdr-inverse) 85%, var(--_jf-ahdr-brand));
+  --bg-fill-brand-disabled: color-mix(in srgb, var(--_jf-ahdr-inverse) 55%, transparent);
+  --fg-brand: var(--_jf-ahdr-inverse);
+  --bg-surface-brand-hover: color-mix(in srgb, var(--_jf-ahdr-inverse) 20%, transparent);
+
+  // Secondary variant → translucent inverse tint so it reads on brand bg
+  --bg-fill-secondary: color-mix(in srgb, var(--_jf-ahdr-inverse) 18%, transparent);
+  --bg-fill-secondary-hover: color-mix(in srgb, var(--_jf-ahdr-inverse) 28%, transparent);
+  // Secondary disabled bg (Button Secondary uses --neutral-50 for disabled)
+  --neutral-50: color-mix(in srgb, var(--_jf-ahdr-inverse) 10%, transparent);
+
+  // Outlined variant & Secondary text — text/border flip to inverse so content
+  // stays legible against the brand-colored header background
+  --fg-primary: var(--_jf-ahdr-inverse);
+  // Subtle translucent border (matches page's subtle --border visual weight)
+  --border: color-mix(in srgb, var(--_jf-ahdr-inverse) 30%, transparent);
+  --border-hover: var(--_jf-ahdr-inverse);
+  --fg-disabled: color-mix(in srgb, var(--_jf-ahdr-inverse) 45%, transparent);
+
+  // Match .themes-view__canvas + .themes-view__app dimensions exactly so items
+  // line up with page elements horizontally.
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 644px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 var(--space-6);
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    // Escape .jf-app-header's var(--space-4) outer padding so actions span the
+    // same horizontal area as page canvas at mobile.
+    max-width: none;
+    margin-left: calc(-1 * var(--space-4));
+    margin-right: calc(-1 * var(--space-4));
+    padding: 0 var(--space-4);
+    gap: var(--space-3);
+  }
+
+  // Only take visible space when populated or while a drag is active (builder hint)
+  &:not(:empty),
+  &--drag-active {
+    margin-top: var(--space-10);
+    min-height: var(--space-12);
+  }
+}
+
+// Children (Button / SocialFollow) align their inner content to match header layout
+.jf-app-header--center .jf-app-header__actions {
+  .jf-btn,
+  .jf-social--horizontal,
+  .jf-social--wrap {
+    justify-content: center;
+  }
+}
+
+.jf-app-header--left .jf-app-header__actions {
+  .jf-btn,
+  .jf-social--horizontal,
+  .jf-social--wrap {
+    justify-content: flex-start;
+  }
+}
+
+.jf-app-header--right .jf-app-header__actions {
+  .jf-btn,
+  .jf-social--horizontal,
+  .jf-social--wrap {
+    justify-content: flex-end;
+  }
+}
+
+.jf-app-header__actions-row {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+// SocialFollow inside header: force full width (Shrinked property ignored)
+.jf-app-header__actions .jf-social--shrinked {
+  width: 100%;
+
+  &.jf-social--horizontal {
+    flex-wrap: nowrap;
   }
 }

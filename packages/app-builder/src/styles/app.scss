@@ -1229,6 +1229,23 @@ body {
     flex: 1 1 calc(50% - var(--space-4) / 2);
     max-width: calc(50% - var(--space-4) / 2);
   }
+
+  // Header actions slot — rely on .jf-app-header's existing var(--space-4)
+  // outer padding to provide the 16px inset, matching page .themes-view__app
+  // padding exactly. Zero padding on actions avoids the align-items: center
+  // interaction that breaks negative-margin escapes.
+  .jf-app-header__actions {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0;
+    gap: var(--space-4);
+  }
+
+  .live-preview__header-action--shrinked {
+    flex: 1 1 calc(50% - var(--space-4) / 2);
+    max-width: calc(50% - var(--space-4) / 2);
+  }
 }
 
 .live-preview__bottom-nav {
@@ -1451,13 +1468,23 @@ body {
   }
 
   .build-page__canvas-element:hover &,
-  .build-page__canvas-element--selected & {
+  .build-page__canvas-element--selected &,
+  .build-page__header-action:hover &,
+  .build-page__header-action--selected & {
     opacity: 1;
   }
 
   .build-page__canvas--dragging .build-page__canvas-element:hover &,
-  .build-page__canvas--dragging .build-page__canvas-element--selected & {
+  .build-page__canvas--dragging .build-page__canvas-element--selected &,
+  .build-page__canvas--dragging .build-page__header-action:hover &,
+  .build-page__canvas--dragging .build-page__header-action--selected & {
     opacity: 0;
+  }
+
+  // Inside header slot, use original inverse (pre-swap) so handle stays visible
+  // against the brand-colored header background.
+  .jf-app-header__actions & {
+    color: var(--_jf-ahdr-inverse);
   }
 }
 
@@ -2552,5 +2579,84 @@ body {
     color: var(--gray-300);
     font-family: var(--ds-font-family);
     font-size: var(--label-sm-size);
+  }
+}
+
+// ============================================
+// App Header actions slot (drop zone + items)
+// ============================================
+.build-page__header-action,
+.live-preview__header-action {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 100%;
+  width: auto;
+  max-width: 100%;
+}
+
+.live-preview__header-action--shrinked {
+  min-width: 0;
+}
+
+.build-page__header-action-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.build-page__header-action {
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  outline: 2px solid transparent;
+  outline-offset: 4px;
+  transition: outline-color 120ms ease;
+  flex: 1 1 100%;
+
+  // Pragmatic-dnd DropIndicator color/width overrides
+  --ds-border-selected: var(--_jf-ahdr-inverse, var(--border-info));
+  --ds-border-width-selected: 4px;
+
+  &--selected {
+    outline-color: var(--border-info);
+  }
+
+  &--shrinked {
+    flex: 1 1 calc(50% - var(--space-4) / 2);
+    max-width: calc(50% - var(--space-4) / 2);
+    min-width: 0;
+    align-self: flex-start;
+
+    @media (max-width: 768px) {
+      flex: 1 1 calc(50% - var(--space-3) / 2);
+      max-width: calc(50% - var(--space-3) / 2);
+    }
+  }
+}
+
+.build-page__header-slot-dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  flex: 1 1 100%;
+  min-height: 48px;
+  padding: var(--space-3) var(--space-4);
+  border: 2px dashed var(--_jf-ahdr-inverse);
+  border-radius: var(--radius-md);
+  color: var(--_jf-ahdr-inverse);
+  font-family: var(--font-family);
+  font-size: var(--font-size-label-md);
+  font-weight: var(--font-weight-medium);
+  opacity: 0.55;
+  background: transparent;
+  pointer-events: none;
+  transition: opacity 120ms ease, background 120ms ease, border-style 120ms ease;
+
+  &--active {
+    opacity: 1;
+    border-style: solid;
+    background: color-mix(in srgb, var(--_jf-ahdr-inverse) 15%, transparent);
   }
 }

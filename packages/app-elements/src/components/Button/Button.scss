@@ -121,8 +121,11 @@
 
   // =========================================
   // Variant: Outlined
+  // Compound selector (.jf-btn.jf-btn--outlined) to raise specificity above
+  // @jf/design-system's .jf-btn base which also defines a transparent border
+  // and would otherwise win via source-order at equal specificity.
   // =========================================
-  &--outlined {
+  &.jf-btn--outlined {
     background: transparent;
     color: var(--fg-primary);
     border: 1px solid var(--border);

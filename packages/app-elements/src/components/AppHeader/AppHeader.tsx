@@ -11,6 +11,8 @@ export interface AppHeaderProps {
   subtitle?: string;
   skeleton?: boolean;
   skeletonAnimation?: 'pulse' | 'shimmer';
+  actions?: React.ReactNode;
+  actionsSlotRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
@@ -20,6 +22,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   subtitle = "Istanbul's Rare Plant Haven",
   skeleton = false,
   skeletonAnimation = 'pulse',
+  actions,
+  actionsSlotRef,
 }) => {
   const animClass = skeletonAnimation === 'shimmer' ? 'animate-shimmer' : 'animate-pulse';
 
@@ -47,6 +51,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           <h1 className="jf-app-header__title">{title}</h1>
           <p className={`jf-app-header__subtitle ${!subtitle ? 'jf-app-header__subtitle--empty' : ''}`}>{subtitle}</p>
         </div>
+      </div>
+      <div ref={actionsSlotRef} className="jf-app-header__actions">
+        {actions}
       </div>
     </div>
   );

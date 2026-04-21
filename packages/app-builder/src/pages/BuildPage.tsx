@@ -124,9 +124,17 @@ function createCanvasElement(comp: RegisteredComponent, id: string): CanvasEleme
   }
 }
 
-function nextElementId(pages: AppPage[]): string {
-  return nextNumericId('element', pages.flatMap((p) => p.elements.map((el) => el.id)))
+function nextElementId(pages: AppPage[], headerActions: CanvasElement[] = []): string {
+  return nextNumericId('element', [
+    ...pages.flatMap((p) => p.elements.map((el) => el.id)),
+    ...headerActions.map((el) => el.id),
+  ])
 }
+
+const HEADER_ACTION_ALLOWED = ['button', 'social-follow']
+const HEADER_ACTIONS_MAX = 3
+// In header context only Button can be shrinked (Social Follow stays full-width)
+const isHeaderShrinkable = (componentId: string): boolean => componentId === 'button'
 
 const INLINE_EDITABLE_MAP: Record<string, { selector: string; property: string }[]> = {
   card: [
@@ -174,6 +182,131 @@ type DragSourceData =
   | { type: 'panel'; componentId: string }
   | { type: 'canvas'; elementId: string; componentId: string }
 
+function HeaderActionItem({
+  element,
+  isSelected,
+  hideDuringDrag,
+  isPaired,
+  pairPartnerId,
+  partnerSwapEdge,
+  onSelect,
+  onPropertyChange,
+}: {
+  element: CanvasElement
+  isSelected: boolean
+  hideDuringDrag: boolean
+  isPaired: boolean
+  pairPartnerId: string | null
+  partnerSwapEdge: Edge | null
+  onSelect: (id: string) => void
+  onPropertyChange: (elementId: string, property: string, value: string | boolean | number) => void
+}) {
+  const comp = ComponentRegistry.get(element.componentId)
+  const isShrinked = element.properties['Shrinked'] === true
+  const ref = useRef<HTMLDivElement>(null)
+  const handleRef = useRef<HTMLDivElement>(null)
+  const [dropEdge, setDropEdge] = useState<Edge | null>(null)
+  const isPairedRef = useRef(isPaired)
+  const pairPartnerIdRef = useRef(pairPartnerId)
+  const partnerSwapEdgeRef = useRef(partnerSwapEdge)
+  useEffect(() => { isPairedRef.current = isPaired }, [isPaired])
+  useEffect(() => { pairPartnerIdRef.current = pairPartnerId }, [pairPartnerId])
+  useEffect(() => { partnerSwapEdgeRef.current = partnerSwapEdge }, [partnerSwapEdge])
+  const selfShrinkable = isHeaderShrinkable(element.componentId)
+
+  useEffect(() => {
+    const el = ref.current
+    const handle = handleRef.current
+    if (!el) return
+    return combine(
+      draggable({
+        element: el,
+        dragHandle: handle ?? undefined,
+        getInitialData: (): Record<string, unknown> => ({
+          type: 'canvas',
+          elementId: element.id,
+          componentId: element.componentId,
+        }),
+        onGenerateDragPreview: ({ nativeSetDragImage }) => {
+          setCustomNativeDragPreview({
+            nativeSetDragImage,
+            getOffset: pointerOutsideOfPreview({ x: '16px', y: '16px' }),
+            render: ({ container }) => {
+              const root = createRoot(container)
+              root.render(<PanelDragOverlay componentId={element.componentId} />)
+              return () => root.unmount()
+            },
+          })
+        },
+      }),
+      dropTargetForElements({
+        element: el,
+        canDrop: ({ source }) => {
+          const data = source.data as DragSourceData
+          if (data.type === 'canvas' && data.elementId === element.id) return false
+          return HEADER_ACTION_ALLOWED.includes(data.componentId)
+        },
+        getData: ({ input, source, element: target }) => {
+          const data = source.data as DragSourceData
+          const sourceIsMyPartner =
+            data.type === 'canvas' && data.elementId === pairPartnerIdRef.current
+          let allowedEdges: Edge[]
+          if (sourceIsMyPartner) {
+            allowedEdges = partnerSwapEdgeRef.current
+              ? ['top', 'bottom', partnerSwapEdgeRef.current]
+              : ['top', 'bottom']
+          } else {
+            const sourceShrinkable = isHeaderShrinkable(data.componentId)
+            const allowHorizontal =
+              sourceShrinkable && selfShrinkable && !isPairedRef.current
+            allowedEdges = allowHorizontal
+              ? ['top', 'bottom', 'left', 'right']
+              : ['top', 'bottom']
+          }
+          return attachClosestEdge(
+            { type: 'header-action', elementId: element.id },
+            { input, element: target, allowedEdges }
+          )
+        },
+        onDrag: ({ self, source }) => {
+          const data = source.data as DragSourceData
+          if (data.type === 'canvas' && data.elementId === element.id) {
+            setDropEdge(null)
+            return
+          }
+          setDropEdge(extractClosestEdge(self.data))
+        },
+        onDragLeave: () => setDropEdge(null),
+        onDrop: () => setDropEdge(null),
+      })
+    )
+  }, [element.id, element.componentId, selfShrinkable])
+
+  if (!comp) return null
+
+  return (
+    <div
+      ref={ref}
+      className={`build-page__header-action${isSelected ? ' build-page__header-action--selected' : ''}${isShrinked ? ' build-page__header-action--shrinked' : ''}`}
+      data-element-id={element.id}
+      data-component-id={element.componentId}
+      style={hideDuringDrag ? { display: 'none' } : undefined}
+      onClick={(e) => {
+        e.stopPropagation()
+        onSelect(element.id)
+      }}
+    >
+      <div ref={handleRef} className="build-page__drag-handle">
+        <Icon name="grid-dots-vertical" category="general" size={24} />
+      </div>
+      <div className="build-page__header-action-content">
+        {comp.render(element.variants, element.properties, element.states, (name, value) => onPropertyChange(element.id, name, value))}
+      </div>
+      {dropEdge && <DropIndicator edge={dropEdge} gap="16px" />}
+    </div>
+  )
+}
+
 function isComponentShrinkable(componentId: string): boolean {
   const comp = ComponentRegistry.get(componentId)
   return !!comp?.properties.some((p) => p.name === 'Shrinked')
@@ -195,6 +328,21 @@ function pairPartnerIndex(elements: CanvasElement[], index: number): number {
   if (k % 2 === 0) {
     const next = elements[index + 1]
     return next && isElementShrinked(next) ? index + 1 : -1
+  }
+  return index - 1
+}
+
+// Header-only variant: only Button elements can pair (SocialFollow stays full-width).
+function headerPairPartnerIndex(elements: CanvasElement[], index: number): number {
+  const el = elements[index]
+  if (!el || el.componentId !== 'button' || !isElementShrinked(el)) return -1
+  const qualifies = (e: CanvasElement | undefined) =>
+    !!e && e.componentId === 'button' && isElementShrinked(e)
+  let start = index
+  while (start > 0 && qualifies(elements[start - 1])) start--
+  const k = index - start
+  if (k % 2 === 0) {
+    return qualifies(elements[index + 1]) ? index + 1 : -1
   }
   return index - 1
 }
@@ -570,11 +718,16 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [pages, setPages] = useState<AppPage[]>([
     { id: 'page-1', name: 'Home', icon: 'House', elements: [] },
   ])
+  const [headerActions, setHeaderActions] = useState<CanvasElement[]>([])
+  const headerActionsRef = useRef<CanvasElement[]>([])
+  useEffect(() => { headerActionsRef.current = headerActions }, [headerActions])
   const [activePageId, setActivePageId] = useState('page-1')
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null)
   const [dragSession, setDragSession] = useState<DragSourceData | null>(null)
   const isDragging = dragSession !== null
   const draggedCanvasId = dragSession?.type === 'canvas' ? dragSession.elementId : null
+  const headerActionsSlotRef = useRef<HTMLDivElement>(null)
+  const [headerSlotDropState, setHeaderSlotDropState] = useState<'idle' | 'accept' | 'reject'>('idle')
   const [leftPanelOpen, setLeftPanelOpen] = useState(false)
   const [mobileElementsSheet, setMobileElementsSheet] = useState(false)
   const [forceTargetPageId, setForceTargetPageId] = useState<string | null>(null)
@@ -601,6 +754,53 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   useEffect(() => {
     return ComponentRegistry.subscribe(() => {
       setComponents(ComponentRegistry.getAll())
+    })
+  }, [])
+
+  const canDropInHeader = (() => {
+    if (!dragSession) return false
+    if (!HEADER_ACTION_ALLOWED.includes(dragSession.componentId)) return false
+    if (dragSession.type === 'canvas') {
+      const alreadyInSlot = headerActions.some((a) => a.id === dragSession.elementId)
+      return alreadyInSlot || headerActions.length < HEADER_ACTIONS_MAX
+    }
+    return headerActions.length < HEADER_ACTIONS_MAX
+  })()
+
+  useEffect(() => {
+    const el = headerActionsSlotRef.current
+    if (!el) return
+    if (canDropInHeader) el.classList.add('jf-app-header__actions--drag-active')
+    else el.classList.remove('jf-app-header__actions--drag-active')
+  }, [canDropInHeader])
+
+  useEffect(() => {
+    const el = headerActionsSlotRef.current
+    if (!el) return
+    return dropTargetForElements({
+      element: el,
+      canDrop: ({ source }) => {
+        const data = source.data as DragSourceData
+        if (!HEADER_ACTION_ALLOWED.includes(data.componentId)) return false
+        const currentCount = headerActionsRef.current.length
+        if (data.type === 'panel') return currentCount < HEADER_ACTIONS_MAX
+        if (data.type === 'canvas') {
+          const alreadyInSlot = headerActionsRef.current.some((a) => a.id === data.elementId)
+          return alreadyInSlot || currentCount < HEADER_ACTIONS_MAX
+        }
+        return false
+      },
+      getData: () => ({ type: 'header-actions' }),
+      onDragEnter: ({ source }) => {
+        const data = source.data as DragSourceData
+        const currentCount = headerActionsRef.current.length
+        const alreadyInSlot = data.type === 'canvas' && headerActionsRef.current.some((a) => a.id === data.elementId)
+        const typeOk = HEADER_ACTION_ALLOWED.includes(data.componentId)
+        const countOk = alreadyInSlot || currentCount < HEADER_ACTIONS_MAX
+        setHeaderSlotDropState(typeOk && countOk ? 'accept' : 'reject')
+      },
+      onDragLeave: () => setHeaderSlotDropState('idle'),
+      onDrop: () => setHeaderSlotDropState('idle'),
     })
   }, [])
 
@@ -742,7 +942,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const activeGroups = activeTab === 'basic' ? BASIC_GROUPS : WIDGETS_GROUPS
 
   const handleAddElement = useCallback((comp: RegisteredComponent) => {
-    const element = createCanvasElement(comp, nextElementId(pagesRef.current))
+    const element = createCanvasElement(comp, nextElementId(pagesRef.current, headerActionsRef.current))
     setPages((prev) => {
       let targetPageId = activePageId
       if (forceTargetPageId) {
@@ -809,6 +1009,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         elements: page.elements.filter((el) => el.id !== elementId),
       }))
     )
+    setHeaderActions((prev) => prev.filter((el) => el.id !== elementId))
     setSelectedElementId((prev) => (prev === elementId ? null : prev))
     setRightPanel('preview')
   }, [])
@@ -880,6 +1081,13 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         ),
       }))
     )
+    setHeaderActions((prev) =>
+      prev.map((el) =>
+        el.id === elementId
+          ? { ...el, properties: { ...el.properties, [name]: value } }
+          : el
+      )
+    )
   }, [])
 
   const handleVariantChange = useCallback((elementId: string, group: string, value: string) => {
@@ -892,6 +1100,13 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
             : el
         ),
       }))
+    )
+    setHeaderActions((prev) =>
+      prev.map((el) =>
+        el.id === elementId
+          ? { ...el, variants: { ...el.variants, [group]: value } }
+          : el
+      )
     )
   }, [])
 
@@ -914,8 +1129,13 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         const targetData = innerTarget.data as
           | { type: 'element'; elementId: string; pageId: string }
           | { type: 'page'; pageId: string }
+          | { type: 'header-actions' }
+          | { type: 'header-action'; elementId: string }
 
-        const edge = targetData.type === 'element' ? extractClosestEdge(innerTarget.data) : null
+        const edge =
+          targetData.type === 'element' || targetData.type === 'header-action'
+            ? extractClosestEdge(innerTarget.data)
+            : null
         const isHorizontal = edge === 'left' || edge === 'right'
 
         const withShrinked = (el: CanvasElement, shrinked: boolean): CanvasElement => ({
@@ -923,11 +1143,190 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
           properties: { ...el.properties, Shrinked: shrinked },
         })
 
+        // --- Drop onto a specific header action (reorder / insert at position) ---
+        if (targetData.type === 'header-action') {
+          if (!HEADER_ACTION_ALLOWED.includes(data.componentId)) return
+          const targetId = targetData.elementId
+          const currentActions = headerActionsRef.current
+
+          // Horizontal drop only valid when source is a Button (SocialFollow is full-width in header)
+          const horizontalAllowed = isHorizontal && isHeaderShrinkable(data.componentId)
+          const useHorizontal = horizontalAllowed
+
+          if (data.type === 'panel') {
+            if (currentActions.length >= HEADER_ACTIONS_MAX) return
+            const comp = ComponentRegistry.get(data.componentId)
+            if (!comp) return
+            const newEl = createCanvasElement(
+              comp,
+              nextElementId(pagesRef.current, currentActions)
+            )
+            setHeaderActions((prev) => {
+              const idx = prev.findIndex((a) => a.id === targetId)
+              if (idx === -1) return [...prev, newEl]
+              const next = [...prev]
+              if (useHorizontal) {
+                next[idx] = withShrinked(next[idx], true)
+                const insertAt = edge === 'right' ? idx + 1 : idx
+                next.splice(insertAt, 0, withShrinked(newEl, true))
+              } else {
+                const insertAt = edge === 'bottom' ? idx + 1 : idx
+                next.splice(insertAt, 0, newEl)
+              }
+              return next
+            })
+            setSelectedElementId(newEl.id)
+            setRightPanel('properties')
+            return
+          }
+
+          if (data.type === 'canvas') {
+            const sourceId = data.elementId
+            if (sourceId === targetId) return
+            const alreadyInSlot = currentActions.some((a) => a.id === sourceId)
+
+            if (alreadyInSlot) {
+              // Reorder within header (with optional pairing)
+              setHeaderActions((prev) => {
+                const srcIdx = prev.findIndex((a) => a.id === sourceId)
+                if (srcIdx === -1) return prev
+                const partnerIdx = headerPairPartnerIndex(prev, srcIdx)
+                // Break existing pair when moving
+                let arr = prev.map((el, i) => (i === partnerIdx ? withShrinked(el, false) : el))
+                const sourceEl = arr[srcIdx]
+                arr = arr.filter((_, i) => i !== srcIdx)
+                const tgtIdx = arr.findIndex((a) => a.id === targetId)
+                if (tgtIdx === -1) return prev
+                if (useHorizontal) {
+                  arr[tgtIdx] = withShrinked(arr[tgtIdx], true)
+                  const insertAt = edge === 'right' ? tgtIdx + 1 : tgtIdx
+                  arr.splice(insertAt, 0, withShrinked(sourceEl, true))
+                } else {
+                  const insertAt = edge === 'bottom' ? tgtIdx + 1 : tgtIdx
+                  arr.splice(insertAt, 0, withShrinked(sourceEl, false))
+                }
+                return arr
+              })
+              return
+            }
+
+            // Moving from page into header at a specific position
+            if (currentActions.length >= HEADER_ACTIONS_MAX) return
+            let movingEl: CanvasElement | null = null
+            for (const page of pagesRef.current) {
+              const found = page.elements.find((el) => el.id === sourceId)
+              if (found) { movingEl = found; break }
+            }
+            if (!movingEl) return
+            setPages((prev) =>
+              prev.map((page) => ({
+                ...page,
+                elements: page.elements.filter((el) => el.id !== sourceId),
+              }))
+            )
+            setHeaderActions((prev) => {
+              const idx = prev.findIndex((a) => a.id === targetId)
+              if (idx === -1) return [...prev, withShrinked(movingEl!, false)]
+              const next = [...prev]
+              if (useHorizontal) {
+                next[idx] = withShrinked(next[idx], true)
+                const insertAt = edge === 'right' ? idx + 1 : idx
+                next.splice(insertAt, 0, withShrinked(movingEl!, true))
+              } else {
+                const insertAt = edge === 'bottom' ? idx + 1 : idx
+                next.splice(insertAt, 0, withShrinked(movingEl!, false))
+              }
+              return next
+            })
+            return
+          }
+          return
+        }
+
+        // --- Header actions slot handling (empty-slot / append) ---
+        if (targetData.type === 'header-actions') {
+          if (!HEADER_ACTION_ALLOWED.includes(data.componentId)) return
+          if (data.type === 'panel') {
+            if (headerActionsRef.current.length >= HEADER_ACTIONS_MAX) return
+            const comp = ComponentRegistry.get(data.componentId)
+            if (!comp) return
+            const newEl = createCanvasElement(
+              comp,
+              nextElementId(pagesRef.current, headerActionsRef.current)
+            )
+            setHeaderActions((prev) => [...prev, newEl])
+            setSelectedElementId(newEl.id)
+            setRightPanel('properties')
+            return
+          }
+          if (data.type === 'canvas') {
+            const sourceId = data.elementId
+            const alreadyInSlot = headerActionsRef.current.some((a) => a.id === sourceId)
+            if (!alreadyInSlot && headerActionsRef.current.length >= HEADER_ACTIONS_MAX) return
+            // Pull from pages if not already in slot
+            let movingEl: CanvasElement | null = null
+            if (alreadyInSlot) {
+              movingEl = headerActionsRef.current.find((a) => a.id === sourceId) || null
+            } else {
+              for (const page of pagesRef.current) {
+                const found = page.elements.find((el) => el.id === sourceId)
+                if (found) { movingEl = found; break }
+              }
+              if (!movingEl) return
+              setPages((prev) =>
+                prev.map((page) => ({
+                  ...page,
+                  elements: page.elements.filter((el) => el.id !== sourceId),
+                }))
+              )
+            }
+            if (!movingEl) return
+            const el = withShrinked(movingEl, false)
+            setHeaderActions((prev) =>
+              alreadyInSlot ? prev : [...prev, el]
+            )
+            return
+          }
+          return
+        }
+
+        // --- Moving OUT of header slot into page / element ---
+        if (data.type === 'canvas' && headerActionsRef.current.some((a) => a.id === data.elementId)) {
+          const sourceId = data.elementId
+          const movingEl = headerActionsRef.current.find((a) => a.id === sourceId)
+          if (!movingEl) return
+          setHeaderActions((prev) => prev.filter((a) => a.id !== sourceId))
+          const targetPageId = (targetData as { pageId?: string }).pageId
+          if (!targetPageId) return
+          const sourceEl = withShrinked(movingEl, isHorizontal)
+          setPages((prev) =>
+            prev.map((page) => {
+              if (page.id !== targetPageId) return page
+              if (targetData.type === 'page') {
+                return { ...page, elements: [...page.elements, sourceEl] }
+              }
+              const idx = page.elements.findIndex((el) => el.id === (targetData as { elementId: string }).elementId)
+              if (idx === -1) return { ...page, elements: [...page.elements, sourceEl] }
+              const elements = [...page.elements]
+              if (isHorizontal) {
+                elements[idx] = withShrinked(elements[idx], true)
+                const insertAt = edge === 'right' ? idx + 1 : idx
+                elements.splice(insertAt, 0, sourceEl)
+              } else {
+                const insertAt = edge === 'bottom' ? idx + 1 : idx
+                elements.splice(insertAt, 0, sourceEl)
+              }
+              return { ...page, elements }
+            })
+          )
+          return
+        }
+
         if (data.type === 'panel') {
           const comp = ComponentRegistry.get(data.componentId)
           if (!comp) return
-          const newEl = createCanvasElement(comp, nextElementId(pagesRef.current))
-          const targetPageId = targetData.pageId
+          const newEl = createCanvasElement(comp, nextElementId(pagesRef.current, headerActionsRef.current))
+          const targetPageId = (targetData as { pageId: string }).pageId
 
           setPages((prev) =>
             prev.map((page) => {
@@ -1034,6 +1433,13 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
       break
     }
   }
+  if (!selectedElement) {
+    const found = headerActions.find((el) => el.id === selectedElementId)
+    if (found) {
+      selectedElement = found
+      selectedComponent = ComponentRegistry.get(found.componentId) || null
+    }
+  }
 
   return (
     <>
@@ -1116,7 +1522,51 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
           <div className="app-scope">
             <div className="themes-view__device">
               <div ref={appHeaderRef}>
-                <AppHeader layout="Center" title={appTitle} subtitle={appSubtitle} />
+                <AppHeader
+                  layout="Center"
+                  title={appTitle}
+                  subtitle={appSubtitle}
+                  actionsSlotRef={headerActionsSlotRef}
+                  actions={
+                    <>
+                      {headerActions.map((element, idx) => {
+                        const partnerIdx = headerPairPartnerIndex(headerActions, idx)
+                        const partnerId = partnerIdx !== -1 ? headerActions[partnerIdx].id : null
+                        const swapEdge: Edge | null = partnerIdx === -1
+                          ? null
+                          : partnerIdx < idx
+                            ? 'right'
+                            : 'left'
+                        return (
+                          <HeaderActionItem
+                            key={element.id}
+                            element={element}
+                            isSelected={selectedElementId === element.id}
+                            hideDuringDrag={element.id === draggedCanvasId}
+                            isPaired={partnerIdx !== -1}
+                            pairPartnerId={partnerId}
+                            partnerSwapEdge={swapEdge}
+                            onSelect={handleSelectElement}
+                            onPropertyChange={handlePropertyChange}
+                          />
+                        )
+                      })}
+                      {canDropInHeader && (() => {
+                        const draggedComp = dragSession ? ComponentRegistry.get(dragSession.componentId) : null
+                        return (
+                          <div
+                            className={`build-page__header-slot-dropzone${
+                              headerSlotDropState === 'accept' ? ' build-page__header-slot-dropzone--active' : ''
+                            }`}
+                          >
+                            <Icon name="plus" category="general" size={20} />
+                            <span>Drop {draggedComp?.name ?? 'element'} here</span>
+                          </div>
+                        )
+                      })()}
+                    </>
+                  }
+                />
               </div>
 
               {pages.map((page, pageIndex) => (
@@ -1363,7 +1813,26 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                             const isFirstPage = activePage?.id === pages[0]?.id
                             return activePage ? (
                               <>
-                              {isFirstPage && <AppHeader layout="Center" title={appTitle} subtitle={appSubtitle} />}
+                              {isFirstPage && (
+                                <AppHeader
+                                  layout="Center"
+                                  title={appTitle}
+                                  subtitle={appSubtitle}
+                                  actions={headerActions.map((el) => {
+                                    const comp = ComponentRegistry.get(el.componentId)
+                                    if (!comp) return null
+                                    const isShrinked = el.componentId === 'button' && el.properties['Shrinked'] === true
+                                    return (
+                                      <div
+                                        key={el.id}
+                                        className={`live-preview__header-action${isShrinked ? ' live-preview__header-action--shrinked' : ''}`}
+                                      >
+                                        {comp.render(el.variants, el.properties, el.states)}
+                                      </div>
+                                    )
+                                  })}
+                                />
+                              )}
                               <div className={`themes-view__canvas${isFirstPage ? ' themes-view__canvas--first' : ''}`}>
                                 <div className="themes-view__app">
                                   {activePage.elements.map((element) => {
