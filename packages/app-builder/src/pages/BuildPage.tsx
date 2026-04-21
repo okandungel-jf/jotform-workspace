@@ -1263,28 +1263,39 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
             const sourceId = data.elementId
             const alreadyInSlot = headerActionsRef.current.some((a) => a.id === sourceId)
             if (!alreadyInSlot && headerActionsRef.current.length >= HEADER_ACTIONS_MAX) return
-            // Pull from pages if not already in slot
-            let movingEl: CanvasElement | null = null
+
             if (alreadyInSlot) {
-              movingEl = headerActionsRef.current.find((a) => a.id === sourceId) || null
-            } else {
-              for (const page of pagesRef.current) {
-                const found = page.elements.find((el) => el.id === sourceId)
-                if (found) { movingEl = found; break }
-              }
-              if (!movingEl) return
-              setPages((prev) =>
-                prev.map((page) => ({
-                  ...page,
-                  elements: page.elements.filter((el) => el.id !== sourceId),
-                }))
-              )
+              // Dropping on slot gap (not a specific item) → break any existing
+              // pair and move to end of list as non-shrinked.
+              setHeaderActions((prev) => {
+                const srcIdx = prev.findIndex((a) => a.id === sourceId)
+                if (srcIdx === -1) return prev
+                const partnerIdx = headerPairPartnerIndex(prev, srcIdx)
+                const sourceEl = prev[srcIdx]
+                const arr = prev
+                  .map((el, i) => (i === partnerIdx ? withShrinked(el, false) : el))
+                  .filter((_, i) => i !== srcIdx)
+                arr.push(withShrinked(sourceEl, false))
+                return arr
+              })
+              return
+            }
+
+            // Pull from pages
+            let movingEl: CanvasElement | null = null
+            for (const page of pagesRef.current) {
+              const found = page.elements.find((el) => el.id === sourceId)
+              if (found) { movingEl = found; break }
             }
             if (!movingEl) return
-            const el = withShrinked(movingEl, false)
-            setHeaderActions((prev) =>
-              alreadyInSlot ? prev : [...prev, el]
+            setPages((prev) =>
+              prev.map((page) => ({
+                ...page,
+                elements: page.elements.filter((el) => el.id !== sourceId),
+              }))
             )
+            const el = withShrinked(movingEl, false)
+            setHeaderActions((prev) => [...prev, el])
             return
           }
           return

@@ -144,11 +144,12 @@
   --neutral-50: color-mix(in srgb, var(--_jf-ahdr-inverse) 10%, transparent);
 
   // Outlined variant & Secondary text — text/border flip to inverse so content
-  // stays legible against the brand-colored header background
+  // stays legible against the brand-colored header background.
+  // Translucent borders mirror page's subtle --border / --border-hover weight
+  // so the Outlined button doesn't over-emphasize itself on brand bg.
   --fg-primary: var(--_jf-ahdr-inverse);
-  // Subtle translucent border (matches page's subtle --border visual weight)
   --border: color-mix(in srgb, var(--_jf-ahdr-inverse) 30%, transparent);
-  --border-hover: var(--_jf-ahdr-inverse);
+  --border-hover: color-mix(in srgb, var(--_jf-ahdr-inverse) 55%, transparent);
   --fg-disabled: color-mix(in srgb, var(--_jf-ahdr-inverse) 45%, transparent);
 
   // Match .themes-view__canvas + .themes-view__app dimensions exactly so items
