@@ -2921,6 +2921,10 @@ body {
   }
   flex-shrink: 0;
   position: relative;
+
+  .bottom-sheet:has(.jf-tabs) > & {
+    border-bottom: none;
+  }
 }
 
 .bottom-sheet__handle {
@@ -4304,6 +4308,10 @@ body {
   padding: 0 16px;
   background: #33384A;
   border-bottom: 1px solid #2A2D3B;
+
+  &:has(+ .sidebar-panel__slider .sidebar-panel__tabs) {
+    border-bottom: none;
+  }
   position: sticky;
   top: 0;
   z-index: 2;
@@ -4376,40 +4384,9 @@ body {
 }
 
 .sidebar-panel__tabs {
-  display: flex;
-  background: #292D3C;
   position: sticky;
   top: 0;
   z-index: 2;
-}
-
-.sidebar-panel__tab {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 48px;
-  padding: 0 16px;
-  border: none;
-  border-bottom: 4px solid transparent;
-  background: transparent;
-  color: #BFC3CE;
-  font-size: 14px;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: -0.08px;
-  cursor: pointer;
-
-  &--active {
-    color: #FFFFFF;
-    border-bottom-color: #9C4DD3;
-  }
-
-  &:hover:not(&--active) {
-    background: #292D3C;
-    border-bottom-color: #9C4DD3;
-    color: #BFC3CE;
-  }
 }
 
 .edit-theme-panel {

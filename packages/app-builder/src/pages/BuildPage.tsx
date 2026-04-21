@@ -13,7 +13,7 @@ import {
   type PropertyValues,
   type StateValues,
 } from '@jf/app-elements'
-import { Icon, Button as DSButton } from '@jf/design-system'
+import { Icon, Button as DSButton, Tabs as DSTabs } from '@jf/design-system'
 import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
@@ -773,19 +773,16 @@ function DroppablePage({
 
 function TabMenu({ activeTab, onTabChange }: { activeTab: 'basic' | 'widgets'; onTabChange: (tab: 'basic' | 'widgets') => void }) {
   return (
-    <div className="build-page__tab-menu">
-      <button
-        className={`build-page__tab${activeTab === 'basic' ? ' build-page__tab--active' : ''}`}
-        onClick={() => onTabChange('basic')}
-      >
-        BASIC
-      </button>
-      <button
-        className={`build-page__tab${activeTab === 'widgets' ? ' build-page__tab--active' : ''}`}
-        onClick={() => onTabChange('widgets')}
-      >
-        WIDGETS
-      </button>
+    <div className="build-page__tab-menu" data-theme="dark">
+      <DSTabs
+        accent="apps"
+        value={activeTab}
+        onChange={(v) => onTabChange(v as 'basic' | 'widgets')}
+        items={[
+          { value: 'basic', label: 'Basic' },
+          { value: 'widgets', label: 'Widgets' },
+        ]}
+      />
     </div>
   )
 }
@@ -2054,38 +2051,40 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
     >
       <div className="mobile-elements-sheet v2-sheet">
         <TabMenu activeTab={activeTab} onTabChange={setActiveTab} />
-        {activeGroups.map((group, groupIndex) => {
-          const validItems = group.elementIds.map((id) => componentMap[id]).filter(Boolean)
-          if (validItems.length === 0) return null
-          return (
-            <div key={group.label || groupIndex}>
-              {group.label && (
-                <div className="mobile-elements-grid__separator">{group.label}</div>
-              )}
-              <div className="mobile-elements-grid">
-                {validItems.map((comp) => {
-                  const iconInfo = ELEMENT_ICON_MAP[comp.id]
-                  return (
-                    <button
-                      key={comp.id}
-                      className="mobile-elements-grid__item"
-                      onClick={() => { handleAddElement(comp); }}
-                    >
-                      <div className="mobile-elements-grid__icon">
-                        {iconInfo ? (
-                          <Icon name={iconInfo.icon} category={iconInfo.iconCategory} size={24} />
-                        ) : (
-                          <Icon name="grid-2-filled" category="layout" size={24} />
-                        )}
-                      </div>
-                      <span className="mobile-elements-grid__label">{comp.name}</span>
-                    </button>
-                  )
-                })}
+        <div className="mobile-elements-sheet__list">
+          {activeGroups.map((group, groupIndex) => {
+            const validItems = group.elementIds.map((id) => componentMap[id]).filter(Boolean)
+            if (validItems.length === 0) return null
+            return (
+              <div key={group.label || groupIndex}>
+                {group.label && (
+                  <div className="mobile-elements-grid__separator">{group.label}</div>
+                )}
+                <div className="mobile-elements-grid">
+                  {validItems.map((comp) => {
+                    const iconInfo = ELEMENT_ICON_MAP[comp.id]
+                    return (
+                      <button
+                        key={comp.id}
+                        className="mobile-elements-grid__item"
+                        onClick={() => { handleAddElement(comp); }}
+                      >
+                        <div className="mobile-elements-grid__icon">
+                          {iconInfo ? (
+                            <Icon name={iconInfo.icon} category={iconInfo.iconCategory} size={24} />
+                          ) : (
+                            <Icon name="grid-2-filled" category="layout" size={24} />
+                          )}
+                        </div>
+                        <span className="mobile-elements-grid__label">{comp.name}</span>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
     </BottomSheet>
 

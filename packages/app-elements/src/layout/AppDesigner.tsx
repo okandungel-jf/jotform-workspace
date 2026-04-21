@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { Tabs as DSTabs } from '@jf/design-system';
 import { Icon } from '../components/Icon/Icon';
 import { useIconLibrary, type IconLibrary } from '../context/IconLibraryContext';
 import { loadLibrary } from '../utils/iconRegistry';
@@ -1118,19 +1119,16 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
       {/* Slide 1: Designer */}
       <div className="sidebar-panel__slide">
       {/* Tab Bar */}
-      <div className="sidebar-panel__tabs">
-        <button
-          className={`sidebar-panel__tab${designerTab === 'general' ? ' sidebar-panel__tab--active' : ''}`}
-          onClick={() => setDesignerTab('general')}
-        >
-          General
-        </button>
-        <button
-          className={`sidebar-panel__tab${designerTab === 'layout' ? ' sidebar-panel__tab--active' : ''}`}
-          onClick={() => setDesignerTab('layout')}
-        >
-          Layout
-        </button>
+      <div className="sidebar-panel__tabs" data-theme="dark">
+        <DSTabs
+          accent="apps"
+          value={designerTab}
+          onChange={(v) => setDesignerTab(v as 'general' | 'layout')}
+          items={[
+            { value: 'general', label: 'General' },
+            { value: 'layout', label: 'Layout' },
+          ]}
+        />
       </div>
       {/* Color Themes */}
       <div className="v2-section v2-section--color-themes">

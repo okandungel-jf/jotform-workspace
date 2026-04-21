@@ -17,6 +17,7 @@
     "remotion": "npx remotion studio src/remotion/index.tsx"
   },
   "dependencies": {
+    "@jf/design-system": "workspace:*",
     "@phosphor-icons/react": "^2.1.10",
     "@remotion/cli": "^4.0.438",
     "@remotion/player": "^4.0.438",
