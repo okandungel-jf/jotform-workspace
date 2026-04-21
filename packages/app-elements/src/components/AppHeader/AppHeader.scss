@@ -17,6 +17,12 @@
   padding: var(--space-12) var(--space-4);
   background: var(--bg-fill-brand);
   font-family: var(--font-family);
+
+  @media (max-width: 768px) {
+    &:has(.jf-app-header__actions .jf-btn) {
+      padding-bottom: var(--space-4);
+    }
+  }
 }
 
 .jf-app-header__inner {
@@ -180,7 +186,7 @@
   // Only take visible space when populated or while a drag is active (builder hint)
   &:not(:empty),
   &--drag-active {
-    margin-top: var(--space-10);
+    margin-top: var(--space-6);
     min-height: var(--space-12);
   }
 }

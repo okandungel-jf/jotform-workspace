@@ -1177,6 +1177,10 @@ body {
 
   .jf-app-header {
     padding-top: var(--space-12);
+
+    &:has(.jf-app-header__actions .jf-btn) {
+      padding-bottom: var(--space-4);
+    }
   }
 
   .themes-view__canvas {
