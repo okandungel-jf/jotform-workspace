@@ -11,6 +11,10 @@ export {
 } from './components/Dropdown';
 export { Toggle } from './components/Toggle';
 export type { ToggleProps, ToggleSize } from './components/Toggle';
+export { Modal } from './components/Modal';
+export type { ModalProps, ModalSize, ModalIntent } from './components/Modal';
+export { Link } from './components/Link';
+export type { LinkProps, LinkSize, LinkColorScheme } from './components/Link';
 export type {
   DropdownSingleProps,
   DropdownMultiProps,

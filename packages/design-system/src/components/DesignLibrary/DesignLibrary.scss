@@ -2,6 +2,94 @@
   display: flex;
   min-height: 100vh;
 
+  &__topbar {
+    display: none;
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background: var(--background-white);
+    border-bottom: 1px solid var(--border-light);
+    padding: var(--spacing-sm) var(--spacing-md);
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+
+  &__topbar-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-darkest);
+    flex-shrink: 0;
+
+    &:hover {
+      background: var(--background-lightest);
+    }
+  }
+
+  &__hamburger,
+  &__hamburger::before,
+  &__hamburger::after {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+    position: relative;
+  }
+
+  &__hamburger {
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+    }
+    &::before { top: -6px; }
+    &::after { top: 6px; }
+  }
+
+  &__gear {
+    display: block;
+    width: 18px;
+    height: 18px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  &__topbar-title {
+    flex: 1 1 0;
+    min-width: 0;
+    font-family: var(--font-family-circular);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-darkest);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__scrim {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    background: color-mix(in srgb, var(--navy-700) 40%, transparent);
+  }
+
+  &--nav-open &__scrim,
+  &--panel-open &__scrim {
+    display: block;
+  }
+
   &__sidebar {
     position: fixed;
     top: 0;
@@ -15,7 +103,7 @@
     flex-direction: column;
     gap: var(--spacing-2xl);
     overflow-y: auto;
-    z-index: 10;
+    z-index: 20;
   }
 
   &__logo {
@@ -109,7 +197,7 @@
     flex-direction: column;
     gap: var(--spacing-md);
     overflow-y: auto;
-    z-index: 10;
+    z-index: 20;
   }
 
   &__panel-title {
@@ -120,6 +208,48 @@
     color: var(--text-darkest);
     padding-bottom: var(--spacing-sm);
     border-bottom: 1px solid var(--border-light);
+  }
+
+  // ============================================
+  // Mobile
+  // ============================================
+  @media (max-width: 768px) {
+    flex-direction: column;
+
+    &__topbar {
+      display: flex;
+    }
+
+    &__sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-lg);
+    }
+
+    &--nav-open &__sidebar {
+      transform: translateX(0);
+    }
+
+    &__content {
+      margin-left: 0;
+      padding: var(--spacing-xl) var(--spacing-md);
+      max-width: 100%;
+    }
+
+    &--has-panel &__content {
+      margin-right: 0;
+    }
+
+    &__panel {
+      transform: translateX(100%);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-lg);
+      width: min(320px, 85vw);
+    }
+
+    &--panel-open &__panel {
+      transform: translateX(0);
+    }
   }
 }
 

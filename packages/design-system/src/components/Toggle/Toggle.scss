@@ -38,9 +38,7 @@
     justify-content: center;
     background: var(--background-white);
     border-radius: 3px;
-    box-shadow:
-      0 0 1px 0 rgba(37, 45, 91, 0.04),
-      0 2px 4px 0 rgba(84, 95, 111, 0.16);
+    box-shadow: var(--shadow-xs);
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     box-sizing: border-box;
   }
@@ -158,12 +156,12 @@
   }
 
   &:hover .jf-toggle__input:checked:not(:disabled) ~ .jf-toggle__track {
-    background: var(--accent-hover, #0066c7);
+    background: var(--accent-dark);
   }
 
   // ===== Focus =====
   .jf-toggle__input:focus-visible ~ .jf-toggle__track {
-    box-shadow: 0 0 0 3px rgba(119, 207, 255, 0.5);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue-200) 50%, transparent);
   }
 
   // ===== Error =====
@@ -182,7 +180,7 @@
     }
 
     .jf-toggle__input:focus-visible ~ .jf-toggle__track {
-      box-shadow: 0 0 0 3px rgba(254, 202, 202, 0.5);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--red-200) 50%, transparent);
     }
 
     .jf-toggle__input:checked ~ .jf-toggle__track {
@@ -275,15 +273,15 @@
     }
 
     &:hover .jf-toggle__input:checked:not(:disabled) ~ .jf-toggle__track {
-      background: var(--accent-hover, #0066c7);
+      background: var(--accent-dark);
     }
 
     .jf-toggle__input:focus-visible ~ .jf-toggle__track {
-      box-shadow: 0 0 0 3px rgba(0, 117, 227, 0.3);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-default) 30%, transparent);
     }
 
     &--error .jf-toggle__input:focus-visible ~ .jf-toggle__track {
-      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--error-default) 30%, transparent);
     }
 
     &__spinner {

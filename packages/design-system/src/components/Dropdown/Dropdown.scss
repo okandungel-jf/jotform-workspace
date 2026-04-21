@@ -90,14 +90,14 @@
 
   &:hover {
     border-color: var(--navy-300);
-    box-shadow: 0px 2px 1px 0px rgba(0, 0, 0, 0.05);
+    box-shadow: 0px 2px 1px 0px color-mix(in srgb, var(--core-black) 5%, transparent);
   }
 
   &:focus-visible,
   &--open {
     outline: none;
     border-color: var(--accent-default);
-    box-shadow: 0 0 0 3px rgba(119, 207, 255, 0.5);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue-200) 50%, transparent);
   }
 
   // ===== Size: Large =====
@@ -153,13 +153,13 @@
 
     &:hover {
       border-color: var(--error-default);
-      box-shadow: 0px 2px 1px 0px rgba(0, 0, 0, 0.05);
+      box-shadow: 0px 2px 1px 0px color-mix(in srgb, var(--core-black) 5%, transparent);
     }
 
     &:focus-visible,
     &.jf-dropdown--open {
       border-color: var(--error-default);
-      box-shadow: 0 0 0 3px rgba(254, 202, 202, 0.5);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--red-200) 50%, transparent);
     }
   }
 
@@ -307,9 +307,7 @@
   background: var(--background-white);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
-  box-shadow:
-    0 2px 4px 0 rgba(37, 45, 91, 0.04),
-    0 8px 16px 0 rgba(84, 95, 111, 0.16);
+  box-shadow: var(--shadow-md);
   padding: var(--spacing-2xs) 0;
   max-height: 280px;
   overflow-y: auto;
@@ -333,7 +331,7 @@
     z-index: 1000;
     max-height: min(70vh, 560px);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    box-shadow: 0 -4px 24px 0 rgba(0, 0, 0, 0.16);
+    box-shadow: 0 -4px 24px 0 color-mix(in srgb, var(--navy-700) 16%, transparent);
     padding: 0 0 env(safe-area-inset-bottom, 0px);
     display: flex;
     flex-direction: column;
@@ -356,7 +354,7 @@
 .jf-dropdown__sheet-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(10, 21, 81, 0.4);
+  background: color-mix(in srgb, var(--navy-700) 40%, transparent);
   animation: jf-dropdown-fade-in 0.2s ease;
 }
 
@@ -437,7 +435,7 @@
     &:focus-visible,
     &--open {
       border-color: var(--accent-default);
-      box-shadow: 0 0 0 3px rgba(0, 117, 227, 0.3);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-default) 30%, transparent);
     }
 
     &--error {
@@ -445,7 +443,7 @@
 
       &:focus-visible,
       &.jf-dropdown--open {
-        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--error-default) 30%, transparent);
       }
     }
 
@@ -495,9 +493,7 @@
   .jf-dropdown__menu {
     background: var(--gray-500);
     border-color: transparent;
-    box-shadow:
-      0 2px 8px 0 rgba(10, 11, 13, 0.04),
-      0 16px 24px 0 rgba(10, 11, 13, 0.32);
+    box-shadow: var(--shadow-lg);
   }
 
   .jf-dropdown__item {
@@ -557,11 +553,11 @@
   }
 
   &--selected {
-    background: var(--accent-lightest, #D4EAFF);
+    background: var(--accent-lightest);
   }
 
   &--selected.jf-dropdown__item--active {
-    background: var(--accent-lightest, #D4EAFF);
+    background: var(--accent-lightest);
   }
 
   &-leading {

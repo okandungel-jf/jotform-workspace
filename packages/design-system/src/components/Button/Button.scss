@@ -105,10 +105,11 @@
     }
 
     &.jf-btn--secondary {
-      background: var(--text-dark);
-      &:hover { background: var(--text-darkest); }
-      &:active { background: var(--text-darkest); }
-      &:focus-visible { box-shadow: 0 0 0 3px var(--navy-100); }
+      background: var(--background-light);
+      color: var(--text-dark);
+      &:hover { background: var(--background-medium); }
+      &:active { background: var(--background-medium); }
+      &:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--navy-50) 50%, transparent); }
     }
 
     &.jf-btn--constructive {

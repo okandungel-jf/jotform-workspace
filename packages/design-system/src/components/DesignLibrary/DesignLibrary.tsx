@@ -31,6 +31,10 @@ import { DropdownSection, DropdownPanel, defaultDropdownState } from './sections
 import type { DropdownPanelState } from './sections/DropdownSection';
 import { ToggleSection, TogglePanel, defaultToggleState } from './sections/ToggleSection';
 import type { TogglePanelState } from './sections/ToggleSection';
+import { ModalSection, ModalPanel, defaultModalState } from './sections/ModalSection';
+import type { ModalPanelState } from './sections/ModalSection';
+import { LinkSection, LinkPanel, defaultLinkState } from './sections/LinkSection';
+import type { LinkPanelState } from './sections/LinkSection';
 import './DesignLibrary.scss';
 
 const FOUNDATIONS = [
@@ -55,6 +59,8 @@ const COMPONENTS = [
   { id: 'checkbox', label: 'Checkbox' },
   { id: 'dropdown', label: 'Dropdown' },
   { id: 'toggle', label: 'Toggle' },
+  { id: 'modal', label: 'Modal' },
+  { id: 'link', label: 'Link' },
 ] as const;
 
 const ALL_ITEMS = [...FOUNDATIONS, ...COMPONENTS] as const;
@@ -64,6 +70,8 @@ const COMPONENT_IDS = new Set<string>(COMPONENTS.map((c) => c.id));
 
 export function DesignLibrary() {
   const [activeSection, setActiveSection] = useState<SectionId>('colors');
+  const [navOpen, setNavOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
   const [buttonState, setButtonState] = useState<ButtonPanelState>(defaultButtonState);
   const [basicInputState, setBasicInputState] = useState<BasicInputPanelState>(defaultBasicInputState);
   const [dateInputState, setDateInputState] = useState<DateInputPanelState>(defaultDateInputState);
@@ -76,6 +84,8 @@ export function DesignLibrary() {
   const [checkboxState, setCheckboxState] = useState<CheckboxPanelState>(defaultCheckboxState);
   const [dropdownState, setDropdownState] = useState<DropdownPanelState>(defaultDropdownState);
   const [toggleState, setToggleState] = useState<TogglePanelState>(defaultToggleState);
+  const [modalState, setModalState] = useState<ModalPanelState>(defaultModalState);
+  const [linkState, setLinkState] = useState<LinkPanelState>(defaultLinkState);
 
   const hasPanel = COMPONENT_IDS.has(activeSection as string);
 
@@ -117,6 +127,10 @@ export function DesignLibrary() {
         return <DropdownSection state={dropdownState} />;
       case 'toggle':
         return <ToggleSection state={toggleState} />;
+      case 'modal':
+        return <ModalSection state={modalState} />;
+      case 'link':
+        return <LinkSection state={linkState} />;
     }
   };
 
@@ -151,13 +165,56 @@ export function DesignLibrary() {
         return <DropdownPanel state={dropdownState} onChange={setDropdownState} />;
       case 'toggle':
         return <TogglePanel state={toggleState} onChange={setToggleState} />;
+      case 'modal':
+        return <ModalPanel state={modalState} onChange={setModalState} />;
+      case 'link':
+        return <LinkPanel state={linkState} onChange={setLinkState} />;
       default:
         return null;
     }
   };
 
+  const activeLabel = ALL_ITEMS.find((i) => i.id === activeSection)?.label ?? '';
+
+  const rootClass = [
+    'dl',
+    hasPanel && 'dl--has-panel',
+    navOpen && 'dl--nav-open',
+    panelOpen && hasPanel && 'dl--panel-open',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <div className={`dl ${hasPanel ? 'dl--has-panel' : ''}`}>
+    <div className={rootClass}>
+      <header className="dl__topbar">
+        <button
+          type="button"
+          className="dl__topbar-btn"
+          aria-label="Open navigation"
+          onClick={() => setNavOpen(true)}
+        >
+          <span className="dl__hamburger" />
+        </button>
+        <span className="dl__topbar-title">{activeLabel}</span>
+        {hasPanel && (
+          <button
+            type="button"
+            className="dl__topbar-btn"
+            aria-label="Open properties"
+            onClick={() => setPanelOpen(true)}
+          >
+            <span className="dl__gear" />
+          </button>
+        )}
+      </header>
+      <div
+        className="dl__scrim"
+        onClick={() => {
+          setNavOpen(false);
+          setPanelOpen(false);
+        }}
+      />
       <aside className="dl__sidebar">
         <div className="dl__logo">
           <img src={logoLight} alt="JotForm Design System" className="dl__logo-img dl__logo-img--light" />
@@ -169,7 +226,10 @@ export function DesignLibrary() {
             <button
               key={item.id}
               className={`dl__nav-item ${activeSection === item.id ? 'dl__nav-item--active' : ''}`}
-              onClick={() => setActiveSection(item.id)}
+              onClick={() => {
+                setActiveSection(item.id);
+                setNavOpen(false);
+              }}
             >
               {item.label}
             </button>
@@ -179,7 +239,10 @@ export function DesignLibrary() {
             <button
               key={item.id}
               className={`dl__nav-item ${activeSection === item.id ? 'dl__nav-item--active' : ''}`}
-              onClick={() => setActiveSection(item.id)}
+              onClick={() => {
+                setActiveSection(item.id);
+                setNavOpen(false);
+              }}
             >
               {item.label}
             </button>
