@@ -6,6 +6,7 @@ import type {
   BadgeStatus,
 } from '../../Badge';
 import { Icon } from '../../Icon';
+import { DropdownSingle } from '../../Dropdown';
 
 export interface BadgePanelState {
   size: BadgeSize;
@@ -164,17 +165,19 @@ export function BadgePanel({
 
       <div className="dl-playground__field">
         <label className="dl-playground__label">Status</label>
-        <div className="dl-playground__segmented">
-          {(['success', 'error', 'warning', 'information', 'neutral'] as const).map((s) => (
-            <button
-              key={s}
-              className={`dl-playground__seg-btn ${state.status === s ? 'dl-playground__seg-btn--active' : ''}`}
-              onClick={() => update({ status: s })}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
+        <DropdownSingle
+          size="sm"
+          showLeadingIcon={false}
+          value={state.status}
+          onChange={(v) => update({ status: v as BadgeStatus })}
+          options={[
+            { value: 'success', label: 'Success' },
+            { value: 'error', label: 'Error' },
+            { value: 'warning', label: 'Warning' },
+            { value: 'information', label: 'Information' },
+            { value: 'neutral', label: 'Neutral' },
+          ]}
+        />
       </div>
 
       <div className="dl-playground__divider" />
