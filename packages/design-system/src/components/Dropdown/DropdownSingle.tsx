@@ -102,6 +102,7 @@ export const DropdownSingle = forwardRef<DropdownHandle, DropdownSingleProps>(
             {leading && <span className="jf-dropdown__leading">{leading}</span>}
             <span
               className={`jf-dropdown__value${selected ? '' : ' jf-dropdown__value--placeholder'}`}
+              style={selected?.labelStyle}
             >
               {selected ? selected.label : placeholder}
             </span>
@@ -147,7 +148,7 @@ export const DropdownSingle = forwardRef<DropdownHandle, DropdownSingleProps>(
                         <Icon name="circle-filled" category="general" size={size === 'lg' ? 24 : 20} />
                       </span>
                     ))}
-                    <span className="jf-dropdown__item-label">{opt.label}</span>
+                    <span className="jf-dropdown__item-label" style={opt.labelStyle}>{opt.label}</span>
                   </div>
                 );
               })}

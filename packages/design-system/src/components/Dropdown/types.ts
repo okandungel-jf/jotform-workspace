@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 export type DropdownSize = 'sm' | 'md' | 'lg';
 export type DropdownStatus = 'default' | 'error' | 'readonly';
@@ -7,6 +7,8 @@ export interface DropdownOption {
   value: string;
   label: string;
   leading?: ReactNode;
+  /** Inline style applied to the label span (trigger + menu item). Useful e.g. for font-preview rows. */
+  labelStyle?: CSSProperties;
 }
 
 export interface DropdownBaseProps {

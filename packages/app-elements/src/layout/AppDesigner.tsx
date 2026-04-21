@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Tabs as DSTabs } from '@jf/design-system';
+import { Tabs as DSTabs, DropdownSingle } from '@jf/design-system';
 import { Icon } from '../components/Icon/Icon';
 import { useIconLibrary, type IconLibrary } from '../context/IconLibraryContext';
 import { loadLibrary } from '../utils/iconRegistry';
@@ -409,6 +409,12 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
     return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
   });
   const [designerTab, setDesignerTab] = useState<'general' | 'layout'>('general');
+
+  // Preload fonts so their previews render in the font dropdowns.
+  useEffect(() => {
+    FONT_OPTIONS.forEach(loadGoogleFont);
+    HEADING_FONT_OPTIONS.forEach(loadGoogleFont);
+  }, []);
 
   // Picker state
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -950,7 +956,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
         </BottomSheet>
 
         {/* Font BottomSheet */}
-        <BottomSheet open={activeTab === 'font'} onClose={() => setActiveTab(null)} title="Font" noOverlay dark renderCloseButton={sheetCloseButton}>
+        <BottomSheet open={activeTab === 'font' && !mobileFontSheet} onClose={() => setActiveTab(null)} title="Font" noOverlay dark renderCloseButton={sheetCloseButton}>
           <div className="themes-sheet-content v2-sheet">
             <div className="themes-sheet-content__section">
               <h3 className="v2-section__title">Heading Font</h3>
@@ -1244,13 +1250,31 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
       {/* Heading Font */}
       <div className="v2-section v2-section--heading-font">
         <h3 className="v2-section__title">Heading Font</h3>
-        <FontDropdown fonts={HEADING_FONT_OPTIONS} active={headingFont || font} onChange={handleHeadingFontChange} />
+        <DropdownSingle
+          showLeadingIcon={false}
+          value={headingFont || font}
+          onChange={handleHeadingFontChange}
+          options={HEADING_FONT_OPTIONS.map((f) => ({
+            value: f,
+            label: f,
+            labelStyle: { fontFamily: `'${f}', sans-serif` },
+          }))}
+        />
       </div>
 
       {/* Body Font */}
       <div className="v2-section v2-section--body-font">
         <h3 className="v2-section__title">Body Font</h3>
-        <FontDropdown fonts={FONT_OPTIONS} active={font} onChange={handleFontChange} />
+        <DropdownSingle
+          showLeadingIcon={false}
+          value={font}
+          onChange={handleFontChange}
+          options={FONT_OPTIONS.map((f) => ({
+            value: f,
+            label: f,
+            labelStyle: { fontFamily: `'${f}', sans-serif` },
+          }))}
+        />
       </div>
 
       </div>{/* end Slide 1 */}

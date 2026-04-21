@@ -2007,7 +2007,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
               isMobile={isMobileView}
               visible={rightPanel === 'designer'}
               renderIcon={(name, size) => <Icon name={name} category="editor" size={size} />}
-              doneButton={<DSButton variant="filled" colorScheme="primary" shape="rounded" size="md" onClick={handleCloseDesigner}>Done</DSButton>}
+              doneButton={<DSButton variant="filled" colorScheme="primary" shape="rectangle" size="md" onClick={handleCloseDesigner}>Done</DSButton>}
             />
           </div>
 
