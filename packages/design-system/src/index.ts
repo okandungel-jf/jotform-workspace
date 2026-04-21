@@ -30,6 +30,8 @@ export type {
   IndicatorStyle,
   IndicatorStatus,
 } from './components/Indicator';
+export { Dialog } from './components/Dialog';
+export type { DialogProps, DialogStyle, DialogFooterLink } from './components/Dialog';
 export type {
   DropdownSingleProps,
   DropdownMultiProps,

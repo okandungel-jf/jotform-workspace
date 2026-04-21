@@ -39,6 +39,8 @@ import { BadgeSection, BadgePanel, defaultBadgeState } from './sections/BadgeSec
 import type { BadgePanelState } from './sections/BadgeSection';
 import { IndicatorSection, IndicatorPanel, defaultIndicatorState } from './sections/IndicatorSection';
 import type { IndicatorPanelState } from './sections/IndicatorSection';
+import { DialogSection, DialogPanel, defaultDialogState } from './sections/DialogSection';
+import type { DialogPanelState } from './sections/DialogSection';
 import './DesignLibrary.scss';
 
 const FOUNDATIONS = [
@@ -67,6 +69,7 @@ const COMPONENTS = [
   { id: 'link', label: 'Link' },
   { id: 'badge', label: 'Badge' },
   { id: 'indicator', label: 'Indicator' },
+  { id: 'dialog', label: 'Dialog' },
 ] as const;
 
 const ALL_ITEMS = [...FOUNDATIONS, ...COMPONENTS] as const;
@@ -94,6 +97,7 @@ export function DesignLibrary() {
   const [linkState, setLinkState] = useState<LinkPanelState>(defaultLinkState);
   const [badgeState, setBadgeState] = useState<BadgePanelState>(defaultBadgeState);
   const [indicatorState, setIndicatorState] = useState<IndicatorPanelState>(defaultIndicatorState);
+  const [dialogState, setDialogState] = useState<DialogPanelState>(defaultDialogState);
 
   const hasPanel = COMPONENT_IDS.has(activeSection as string);
 
@@ -143,6 +147,8 @@ export function DesignLibrary() {
         return <BadgeSection state={badgeState} />;
       case 'indicator':
         return <IndicatorSection state={indicatorState} />;
+      case 'dialog':
+        return <DialogSection state={dialogState} />;
     }
   };
 
@@ -185,6 +191,8 @@ export function DesignLibrary() {
         return <BadgePanel state={badgeState} onChange={setBadgeState} />;
       case 'indicator':
         return <IndicatorPanel state={indicatorState} onChange={setIndicatorState} />;
+      case 'dialog':
+        return <DialogPanel state={dialogState} onChange={setDialogState} />;
       default:
         return null;
     }
