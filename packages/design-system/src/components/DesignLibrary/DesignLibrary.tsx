@@ -35,6 +35,10 @@ import { ModalSection, ModalPanel, defaultModalState } from './sections/ModalSec
 import type { ModalPanelState } from './sections/ModalSection';
 import { LinkSection, LinkPanel, defaultLinkState } from './sections/LinkSection';
 import type { LinkPanelState } from './sections/LinkSection';
+import { BadgeSection, BadgePanel, defaultBadgeState } from './sections/BadgeSection';
+import type { BadgePanelState } from './sections/BadgeSection';
+import { IndicatorSection, IndicatorPanel, defaultIndicatorState } from './sections/IndicatorSection';
+import type { IndicatorPanelState } from './sections/IndicatorSection';
 import './DesignLibrary.scss';
 
 const FOUNDATIONS = [
@@ -61,6 +65,8 @@ const COMPONENTS = [
   { id: 'toggle', label: 'Toggle' },
   { id: 'modal', label: 'Modal' },
   { id: 'link', label: 'Link' },
+  { id: 'badge', label: 'Badge' },
+  { id: 'indicator', label: 'Indicator' },
 ] as const;
 
 const ALL_ITEMS = [...FOUNDATIONS, ...COMPONENTS] as const;
@@ -86,6 +92,8 @@ export function DesignLibrary() {
   const [toggleState, setToggleState] = useState<TogglePanelState>(defaultToggleState);
   const [modalState, setModalState] = useState<ModalPanelState>(defaultModalState);
   const [linkState, setLinkState] = useState<LinkPanelState>(defaultLinkState);
+  const [badgeState, setBadgeState] = useState<BadgePanelState>(defaultBadgeState);
+  const [indicatorState, setIndicatorState] = useState<IndicatorPanelState>(defaultIndicatorState);
 
   const hasPanel = COMPONENT_IDS.has(activeSection as string);
 
@@ -131,6 +139,10 @@ export function DesignLibrary() {
         return <ModalSection state={modalState} />;
       case 'link':
         return <LinkSection state={linkState} />;
+      case 'badge':
+        return <BadgeSection state={badgeState} />;
+      case 'indicator':
+        return <IndicatorSection state={indicatorState} />;
     }
   };
 
@@ -169,6 +181,10 @@ export function DesignLibrary() {
         return <ModalPanel state={modalState} onChange={setModalState} />;
       case 'link':
         return <LinkPanel state={linkState} onChange={setLinkState} />;
+      case 'badge':
+        return <BadgePanel state={badgeState} onChange={setBadgeState} />;
+      case 'indicator':
+        return <IndicatorPanel state={indicatorState} onChange={setIndicatorState} />;
       default:
         return null;
     }

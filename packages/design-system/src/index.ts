@@ -15,6 +15,21 @@ export { Modal } from './components/Modal';
 export type { ModalProps, ModalSize, ModalIntent } from './components/Modal';
 export { Link } from './components/Link';
 export type { LinkProps, LinkSize, LinkColorScheme } from './components/Link';
+export { Badge } from './components/Badge';
+export type {
+  BadgeProps,
+  BadgeSize,
+  BadgeShape,
+  BadgeEmphasis,
+  BadgeStatus,
+} from './components/Badge';
+export { Indicator } from './components/Indicator';
+export type {
+  IndicatorProps,
+  IndicatorSize,
+  IndicatorStyle,
+  IndicatorStatus,
+} from './components/Indicator';
 export type {
   DropdownSingleProps,
   DropdownMultiProps,
