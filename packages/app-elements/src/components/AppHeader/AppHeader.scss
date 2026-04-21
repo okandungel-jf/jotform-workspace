@@ -165,6 +165,7 @@
   margin-right: auto;
   padding: 0 var(--space-6);
   box-sizing: border-box;
+  position: relative;
 
   @media (max-width: 768px) {
     // Escape .jf-app-header's var(--space-4) outer padding so actions span the

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, memo } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, useContext, createContext, memo, type CSSProperties, type RefObject } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
   ComponentRegistry,
@@ -32,7 +32,6 @@ import {
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
 import { pointerOutsideOfPreview } from '@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview'
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element'
-import DropIndicator from '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box'
 
 interface CanvasElement {
   id: string
@@ -182,6 +181,81 @@ type DragSourceData =
   | { type: 'panel'; componentId: string }
   | { type: 'canvas'; elementId: string; componentId: string }
 
+type DropEdgeChange = (elementId: string, edge: Edge | null) => void
+const DropEdgeContext = createContext<DropEdgeChange | null>(null)
+
+type DropTarget = { elementId: string; edge: Edge }
+
+function CanvasDropLine({
+  target,
+  containerRef,
+}: {
+  target: DropTarget | null
+  containerRef: RefObject<HTMLDivElement | null>
+}) {
+  const [style, setStyle] = useState<CSSProperties | null>(null)
+
+  useLayoutEffect(() => {
+    if (!target) {
+      setStyle(null)
+      return
+    }
+    const container = containerRef.current
+    if (!container) return
+    const el = container.querySelector(
+      `[data-element-id="${target.elementId}"]`
+    ) as HTMLElement | null
+    if (!el) {
+      setStyle(null)
+      return
+    }
+
+    const cRect = container.getBoundingClientRect()
+    const eRect = el.getBoundingClientRect()
+    const cs = getComputedStyle(container)
+    const padLeft = parseFloat(cs.paddingLeft) || 0
+    const padRight = parseFloat(cs.paddingRight) || 0
+    const gap = parseFloat(cs.rowGap || cs.gap || '0') || 16
+    const thickness = 4
+    const contentWidth = container.clientWidth - padLeft - padRight
+    const top = eRect.top - cRect.top + container.scrollTop
+    const left = eRect.left - cRect.left + container.scrollLeft
+
+    if (target.edge === 'top') {
+      setStyle({
+        top: top - gap / 2 - thickness / 2,
+        left: padLeft,
+        width: contentWidth,
+        height: thickness,
+      })
+    } else if (target.edge === 'bottom') {
+      setStyle({
+        top: top + eRect.height + gap / 2 - thickness / 2,
+        left: padLeft,
+        width: contentWidth,
+        height: thickness,
+      })
+    } else if (target.edge === 'left') {
+      setStyle({
+        top,
+        left: left - gap / 2 - thickness / 2,
+        width: thickness,
+        height: eRect.height,
+      })
+    } else if (target.edge === 'right') {
+      setStyle({
+        top,
+        left: left + eRect.width + gap / 2 - thickness / 2,
+        width: thickness,
+        height: eRect.height,
+      })
+    }
+  }, [target, containerRef])
+
+  if (!style) return null
+  return <div className="build-page__drop-line" style={style} />
+}
+
 function HeaderActionItem({
   element,
   isSelected,
@@ -205,7 +279,7 @@ function HeaderActionItem({
   const isShrinked = element.properties['Shrinked'] === true
   const ref = useRef<HTMLDivElement>(null)
   const handleRef = useRef<HTMLDivElement>(null)
-  const [dropEdge, setDropEdge] = useState<Edge | null>(null)
+  const onDropEdgeChange = useContext(DropEdgeContext)
   const isPairedRef = useRef(isPaired)
   const pairPartnerIdRef = useRef(pairPartnerId)
   const partnerSwapEdgeRef = useRef(partnerSwapEdge)
@@ -218,6 +292,7 @@ function HeaderActionItem({
     const el = ref.current
     const handle = handleRef.current
     if (!el) return
+    const reportEdge = (edge: Edge | null) => onDropEdgeChange?.(element.id, edge)
     return combine(
       draggable({
         element: el,
@@ -271,16 +346,16 @@ function HeaderActionItem({
         onDrag: ({ self, source }) => {
           const data = source.data as DragSourceData
           if (data.type === 'canvas' && data.elementId === element.id) {
-            setDropEdge(null)
+            reportEdge(null)
             return
           }
-          setDropEdge(extractClosestEdge(self.data))
+          reportEdge(extractClosestEdge(self.data))
         },
-        onDragLeave: () => setDropEdge(null),
-        onDrop: () => setDropEdge(null),
+        onDragLeave: () => reportEdge(null),
+        onDrop: () => reportEdge(null),
       })
     )
-  }, [element.id, element.componentId, selfShrinkable])
+  }, [element.id, element.componentId, selfShrinkable, onDropEdgeChange])
 
   if (!comp) return null
 
@@ -302,7 +377,6 @@ function HeaderActionItem({
       <div className="build-page__header-action-content">
         {comp.render(element.variants, element.properties, element.states, (name, value) => onPropertyChange(element.id, name, value))}
       </div>
-      {dropEdge && <DropIndicator edge={dropEdge} gap="16px" />}
     </div>
   )
 }
@@ -394,7 +468,7 @@ const SortableElement = memo(function SortableElement({
   const sectionRef = useRef<HTMLElement>(null)
   const handleRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
-  const [dropEdge, setDropEdge] = useState<Edge | null>(null)
+  const onDropEdgeChange = useContext(DropEdgeContext)
   const isPairedRef = useRef(isPaired)
   const pairPartnerIdRef = useRef(pairPartnerId)
   const partnerSwapEdgeRef = useRef(partnerSwapEdge)
@@ -407,6 +481,7 @@ const SortableElement = memo(function SortableElement({
     const section = sectionRef.current
     const handle = handleRef.current
     if (!section) return
+    const reportEdge = (edge: Edge | null) => onDropEdgeChange?.(element.id, edge)
     return combine(
       draggable({
         element: section,
@@ -463,17 +538,16 @@ const SortableElement = memo(function SortableElement({
         onDrag: ({ self, source }) => {
           const data = source.data as DragSourceData
           if (data.type === 'canvas' && data.elementId === element.id) {
-            setDropEdge(null)
+            reportEdge(null)
             return
           }
-          const edge = extractClosestEdge(self.data)
-          setDropEdge(edge)
+          reportEdge(extractClosestEdge(self.data))
         },
-        onDragLeave: () => setDropEdge(null),
-        onDrop: () => setDropEdge(null),
+        onDragLeave: () => reportEdge(null),
+        onDrop: () => reportEdge(null),
       })
     )
-  }, [element.id, element.componentId, pageId, selfShrinkable])
+  }, [element.id, element.componentId, pageId, selfShrinkable, onDropEdgeChange])
 
   useEffect(() => {
     const container = contentRef.current
@@ -582,7 +656,6 @@ const SortableElement = memo(function SortableElement({
       <div ref={contentRef} className="build-page__canvas-element-content">
         {comp.render(element.variants, element.properties, element.states, (name, value) => onPropertyChange(element.id, name, value))}
       </div>
-      {dropEdge && <DropIndicator edge={dropEdge} gap="16px" />}
     </section>
   )
 })
@@ -645,6 +718,17 @@ function DroppablePage({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const [isOverEmpty, setIsOverEmpty] = useState(false)
+  const [dropTarget, setDropTarget] = useState<DropTarget | null>(null)
+
+  const handleDropEdgeChange = useCallback<DropEdgeChange>((elementId, edge) => {
+    setDropTarget((prev) => {
+      if (edge === null) {
+        return prev?.elementId === elementId ? null : prev
+      }
+      if (prev?.elementId === elementId && prev.edge === edge) return prev
+      return { elementId, edge }
+    })
+  }, [])
 
   useEffect(() => {
     const el = ref.current
@@ -654,27 +738,36 @@ function DroppablePage({
       getData: () => ({ type: 'page', pageId }),
       getIsSticky: () => false,
       onDragEnter: () => setIsOverEmpty(true),
-      onDragLeave: () => setIsOverEmpty(false),
-      onDrop: () => setIsOverEmpty(false),
+      onDragLeave: () => {
+        setIsOverEmpty(false)
+        setDropTarget(null)
+      },
+      onDrop: () => {
+        setIsOverEmpty(false)
+        setDropTarget(null)
+      },
     })
   }, [pageId])
 
   return (
-    <div
-      ref={ref}
-      data-page-id={pageId}
-      className={`themes-view__app ${showEmptyState && isOverEmpty ? 'build-page__droppable--over' : ''}`}
-    >
-      {showEmptyState && (
-        <section
-          className="themes-view__section themes-view__section--center build-page__empty-state"
-          onClick={onEmptyStateClick}
-        >
-          <EmptyState mobile={window.matchMedia('(max-width: 768px)').matches} />
-        </section>
-      )}
-      {children}
-    </div>
+    <DropEdgeContext.Provider value={handleDropEdgeChange}>
+      <div
+        ref={ref}
+        data-page-id={pageId}
+        className={`themes-view__app ${showEmptyState && isOverEmpty ? 'build-page__droppable--over' : ''}`}
+      >
+        {showEmptyState && (
+          <section
+            className="themes-view__section themes-view__section--center build-page__empty-state"
+            onClick={onEmptyStateClick}
+          >
+            <EmptyState mobile={window.matchMedia('(max-width: 768px)').matches} />
+          </section>
+        )}
+        {children}
+        <CanvasDropLine target={dropTarget} containerRef={ref} />
+      </div>
+    </DropEdgeContext.Provider>
   )
 }
 
@@ -728,6 +821,16 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const draggedCanvasId = dragSession?.type === 'canvas' ? dragSession.elementId : null
   const headerActionsSlotRef = useRef<HTMLDivElement>(null)
   const [headerSlotDropState, setHeaderSlotDropState] = useState<'idle' | 'accept' | 'reject'>('idle')
+  const [headerDropTarget, setHeaderDropTarget] = useState<DropTarget | null>(null)
+  const handleHeaderDropEdgeChange = useCallback<DropEdgeChange>((elementId, edge) => {
+    setHeaderDropTarget((prev) => {
+      if (edge === null) {
+        return prev?.elementId === elementId ? null : prev
+      }
+      if (prev?.elementId === elementId && prev.edge === edge) return prev
+      return { elementId, edge }
+    })
+  }, [])
   const [leftPanelOpen, setLeftPanelOpen] = useState(false)
   const [mobileElementsSheet, setMobileElementsSheet] = useState(false)
   const [forceTargetPageId, setForceTargetPageId] = useState<string | null>(null)
@@ -757,15 +860,20 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
     })
   }, [])
 
+  const isReorderingInHeader =
+    dragSession?.type === 'canvas' &&
+    headerActions.some((a) => a.id === dragSession.elementId)
+
   const canDropInHeader = (() => {
     if (!dragSession) return false
     if (!HEADER_ACTION_ALLOWED.includes(dragSession.componentId)) return false
     if (dragSession.type === 'canvas') {
-      const alreadyInSlot = headerActions.some((a) => a.id === dragSession.elementId)
-      return alreadyInSlot || headerActions.length < HEADER_ACTIONS_MAX
+      return isReorderingInHeader || headerActions.length < HEADER_ACTIONS_MAX
     }
     return headerActions.length < HEADER_ACTIONS_MAX
   })()
+
+  const showHeaderDropzone = canDropInHeader && !isReorderingInHeader
 
   useEffect(() => {
     const el = headerActionsSlotRef.current
@@ -799,8 +907,14 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         const countOk = alreadyInSlot || currentCount < HEADER_ACTIONS_MAX
         setHeaderSlotDropState(typeOk && countOk ? 'accept' : 'reject')
       },
-      onDragLeave: () => setHeaderSlotDropState('idle'),
-      onDrop: () => setHeaderSlotDropState('idle'),
+      onDragLeave: () => {
+        setHeaderSlotDropState('idle')
+        setHeaderDropTarget(null)
+      },
+      onDrop: () => {
+        setHeaderSlotDropState('idle')
+        setHeaderDropTarget(null)
+      },
     })
   }, [])
 
@@ -1539,7 +1653,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                   subtitle={appSubtitle}
                   actionsSlotRef={headerActionsSlotRef}
                   actions={
-                    <>
+                    <DropEdgeContext.Provider value={handleHeaderDropEdgeChange}>
                       {headerActions.map((element, idx) => {
                         const partnerIdx = headerPairPartnerIndex(headerActions, idx)
                         const partnerId = partnerIdx !== -1 ? headerActions[partnerIdx].id : null
@@ -1562,7 +1676,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                           />
                         )
                       })}
-                      {canDropInHeader && (() => {
+                      {showHeaderDropzone && (() => {
                         const draggedComp = dragSession ? ComponentRegistry.get(dragSession.componentId) : null
                         return (
                           <div
@@ -1575,7 +1689,8 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                           </div>
                         )
                       })()}
-                    </>
+                      <CanvasDropLine target={headerDropTarget} containerRef={headerActionsSlotRef} />
+                    </DropEdgeContext.Provider>
                   }
                 />
               </div>
