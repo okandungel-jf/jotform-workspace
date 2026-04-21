@@ -3,6 +3,7 @@ import { Icon } from '../Icon/Icon';
 import './Tabs.scss';
 
 export type TabsSize = 'sm' | 'md';
+export type TabsAccent = 'default' | 'apps';
 
 export interface TabItem {
   value: string;
@@ -17,6 +18,7 @@ export interface TabsProps {
   value: string;
   onChange: (value: string) => void;
   size?: TabsSize;
+  accent?: TabsAccent;
   className?: string;
 }
 
@@ -25,9 +27,15 @@ export function Tabs({
   value,
   onChange,
   size = 'md',
+  accent = 'default',
   className,
 }: TabsProps) {
-  const rootClass = ['jf-tabs', `jf-tabs--${size}`, className]
+  const rootClass = [
+    'jf-tabs',
+    `jf-tabs--${size}`,
+    `jf-tabs--accent-${accent}`,
+    className,
+  ]
     .filter(Boolean)
     .join(' ');
   const iconSize = size === 'sm' ? 12 : 16;

@@ -38,7 +38,14 @@
   // Active
   &--active {
     color: var(--text-dark);
-    box-shadow: inset 0 -4px 0 var(--accent-default);
+
+    .jf-tabs--accent-default & {
+      box-shadow: inset 0 -4px 0 var(--accent-default);
+    }
+
+    .jf-tabs--accent-apps & {
+      box-shadow: inset 0 -4px 0 var(--product-apps-default);
+    }
   }
 
   // Hover (inactive, enabled)
@@ -75,4 +82,34 @@
 
 .jf-tabs__label {
   white-space: nowrap;
+}
+
+[data-theme='dark'] {
+  .jf-tabs__item {
+    background: var(--secondary-background-dark);
+    color: var(--secondary-text-light);
+
+    &--active {
+      color: var(--text-white);
+      box-shadow: inset 0 -4px 0 var(--product-apps-default);
+    }
+
+    &:not(&--active):not(&--disabled):not(:disabled):hover {
+      color: var(--text-white);
+      box-shadow: inset 0 -4px 0 color-mix(in srgb, var(--secondary-border-light) 30%, transparent);
+    }
+
+    &:not(&--active):not(&--disabled):not(:disabled):focus-visible {
+      color: var(--text-white);
+
+      &::after {
+        border-color: color-mix(in srgb, var(--secondary-border-light) 30%, transparent);
+      }
+    }
+
+    &--disabled,
+    &:disabled {
+      color: var(--secondary-background-lightest);
+    }
+  }
 }

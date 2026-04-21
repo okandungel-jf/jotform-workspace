@@ -33,7 +33,7 @@ export type {
 export { Dialog } from './components/Dialog';
 export type { DialogProps, DialogStyle, DialogFooterLink } from './components/Dialog';
 export { Tabs } from './components/Tabs';
-export type { TabsProps, TabItem, TabsSize } from './components/Tabs';
+export type { TabsProps, TabItem, TabsSize, TabsAccent } from './components/Tabs';
 export type {
   DropdownSingleProps,
   DropdownMultiProps,

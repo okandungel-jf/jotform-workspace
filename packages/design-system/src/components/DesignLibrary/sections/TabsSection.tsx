@@ -9,6 +9,7 @@ export interface TabsPanelState {
   count: number;
   value: string;
   disableSecond: boolean;
+  darkPreview: boolean;
 }
 
 export const defaultTabsState: TabsPanelState = {
@@ -17,6 +18,7 @@ export const defaultTabsState: TabsPanelState = {
   count: 3,
   value: 'tab-1',
   disableSecond: false,
+  darkPreview: false,
 };
 
 const DEFAULT_ICONS = [
@@ -66,7 +68,11 @@ export function TabsSection({
         Horizontal tab row. Each tab can have an icon, a label, or both. Active tab gets a 4px accent underline and darker text color. Supports hover, keyboard focus, disabled per-item, and sm/md sizes.
       </p>
 
-      <div className="dl-playground__preview">
+      <div
+        className="dl-playground__preview"
+        data-theme={state.darkPreview ? 'dark' : undefined}
+        style={state.darkPreview ? { background: 'var(--secondary-background-medium)' } : undefined}
+      >
         <div style={{ width: '100%', maxWidth: 768 }}>
           <Tabs
             items={items}
@@ -214,6 +220,16 @@ export function TabsPanel({
         <button
           className={`dl-playground__toggle ${state.disableSecond ? 'dl-playground__toggle--on' : ''}`}
           onClick={() => update({ disableSecond: !state.disableSecond })}
+        >
+          <span className="dl-playground__toggle-thumb" />
+        </button>
+      </div>
+
+      <div className="dl-playground__field dl-playground__field--row">
+        <label className="dl-playground__label">Dark preview</label>
+        <button
+          className={`dl-playground__toggle ${state.darkPreview ? 'dl-playground__toggle--on' : ''}`}
+          onClick={() => update({ darkPreview: !state.darkPreview })}
         >
           <span className="dl-playground__toggle-thumb" />
         </button>
