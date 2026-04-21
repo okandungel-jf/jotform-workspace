@@ -235,6 +235,22 @@
       background: var(--bg-fill-brand-disabled);
       cursor: not-allowed;
     }
+
+    // Secondary overrides when variant="Secondary"
+    &.jf-btn-icon--secondary {
+      background: var(--bg-fill-secondary);
+      color: var(--fg-primary);
+
+      &:hover,
+      &.jf-btn-icon--hovered {
+        background: var(--bg-fill-secondary-hover);
+      }
+
+      &.jf-btn-icon--disabled {
+        background: var(--neutral-50);
+        color: var(--fg-disabled);
+      }
+    }
   }
 
   // Ghost variant (no bg)

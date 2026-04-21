@@ -1,6 +1,6 @@
 import { ComponentRegistry } from '../../types/registry';
 import { SocialFollow } from './SocialFollow';
-import type { SocialLayout } from './SocialFollow';
+import type { SocialLayout, SocialVariant } from './SocialFollow';
 import type { VariantValues, PropertyValues, StateValues } from '../../types/component';
 import socialScss from './SocialFollow.scss?raw';
 
@@ -14,6 +14,11 @@ ComponentRegistry.register({
     Layout: {
       options: ['Horizontal', 'Wrap'],
       default: 'Horizontal',
+    },
+    Variant: {
+      options: ['Primary', 'Secondary'],
+      default: 'Primary',
+      showWhen: { Filled: 'Yes' },
     },
     Filled: {
       options: ['Yes', 'No'],
@@ -32,8 +37,10 @@ ComponentRegistry.register({
   scss: socialScss,
 
   colorTokens: [
-    { token: 'Icon BG', variable: '--bg-fill-brand', value: '#7D38EF', description: '--bg-fill-brand → primary-600', variants: { Filled: 'Yes' } },
-    { token: 'Icon Color', variable: '--fg-inverse', value: '#FFFFFF', description: '--fg-inverse → neutral-0', variants: { Filled: 'Yes' } },
+    { token: 'Icon BG', variable: '--bg-fill-brand', value: '#7D38EF', description: '--bg-fill-brand → primary-600', variants: { Filled: 'Yes', Variant: 'Primary' } },
+    { token: 'Icon Color', variable: '--fg-inverse', value: '#FFFFFF', description: '--fg-inverse → neutral-0', variants: { Filled: 'Yes', Variant: 'Primary' } },
+    { token: 'Icon BG', variable: '--bg-fill-secondary', value: '#F5F5F5', description: '--bg-fill-secondary → neutral-100', variants: { Filled: 'Yes', Variant: 'Secondary' } },
+    { token: 'Icon Color', variable: '--fg-primary', value: '#0F0F0F', description: '--fg-primary → neutral-900', variants: { Filled: 'Yes', Variant: 'Secondary' } },
     { token: 'Icon Color', variable: '--fg-brand', value: '#7D38EF', description: '--fg-brand → primary-600', variants: { Filled: 'No' } },
   ],
 
@@ -110,6 +117,7 @@ ComponentRegistry.register({
     return (
       <SocialFollow
         layout={variants['Layout'] as SocialLayout}
+        variant={variants['Variant'] as SocialVariant}
         filled={variants['Filled'] === 'Yes'}
         selected={props['Selected'] as boolean}
         shrinked={props['Shrinked'] as boolean}

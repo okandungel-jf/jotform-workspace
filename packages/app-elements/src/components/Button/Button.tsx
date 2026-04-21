@@ -57,6 +57,7 @@ export const Button: React.FC<ButtonProps> = ({
     const iconOnlyClasses = [
       'jf-btn-icon',
       iconOnlyFilled ? 'jf-btn-icon--filled' : 'jf-btn-icon--ghost',
+      iconOnlyFilled && `jf-btn-icon--${variant.toLowerCase()}`,
       corner === 'Rounded' ? 'jf-btn-icon--rounded' : 'jf-btn-icon--default',
       iconOnlySm && 'jf-btn-icon--sm',
       state === 'Hovered' && 'jf-btn-icon--hovered',

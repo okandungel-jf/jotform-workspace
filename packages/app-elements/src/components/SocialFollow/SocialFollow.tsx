@@ -3,6 +3,7 @@ import { Button } from '../Button';
 import './SocialFollow.scss';
 
 export type SocialLayout = 'Horizontal' | 'Wrap';
+export type SocialVariant = 'Primary' | 'Secondary';
 
 export interface SocialPlatform {
   icon: string;
@@ -11,6 +12,7 @@ export interface SocialPlatform {
 
 export interface SocialFollowProps {
   layout?: SocialLayout;
+  variant?: SocialVariant;
   filled?: boolean;
   platforms?: SocialPlatform[];
   selected?: boolean;
@@ -28,6 +30,7 @@ const DEFAULT_PLATFORMS: SocialPlatform[] = [
 
 export const SocialFollow: FC<SocialFollowProps> = ({
   layout = 'Horizontal',
+  variant = 'Primary',
   filled = true,
   platforms = DEFAULT_PLATFORMS,
   selected = false,
@@ -66,6 +69,7 @@ export const SocialFollow: FC<SocialFollowProps> = ({
           iconOnly
           iconOnlyIcon={platform.icon}
           iconOnlyFilled={filled}
+          variant={variant === 'Secondary' ? 'Secondary' : 'Default'}
           corner="Rounded"
         />
       ))}
