@@ -340,47 +340,6 @@ function TokenSwatch({ variable, label, color, gradient, isEditing, onEdit }: {
   );
 }
 
-function FontDropdown({ fonts, active, onChange }: { fonts: string[]; active: string; onChange: (f: string) => void }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    fonts.forEach(loadGoogleFont);
-  }, [fonts]);
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
-  return (
-    <div className="preset-dropdown" ref={ref}>
-      <button className="preset-dropdown__trigger" onClick={() => setOpen(!open)}>
-        <span className="preset-dropdown__label font-preview" style={{ fontFamily: `'${active}', sans-serif` }}>{active}</span>
-        <Icon name="ChevronDown" size={16} className={`preset-dropdown__chevron${open ? ' open' : ''}`} />
-      </button>
-      {open && (
-        <div className="preset-dropdown__menu">
-          {fonts.map((f) => (
-            <button
-              key={f}
-              className={`preset-dropdown__item font-preview${f === active ? ' active' : ''}`}
-              style={{ fontFamily: `'${f}', sans-serif` }}
-              onClick={() => { onChange(f); setOpen(false); }}
-            >
-              <span className="preset-dropdown__item-label font-preview">{f}</span>
-              {f === active && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="preset-dropdown__check"><path d="M20 6 9 17l-5-5"/></svg>}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Main Component ─────────────────────────────────────────────────────
 
 interface AppDesignerProps {

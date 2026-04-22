@@ -2027,12 +2027,12 @@ body {
   }
 
   &--active {
-    background: #0066C3;
+    background: var(--product-apps-default);
     border-color: #2A2D3B;
     color: #FFFFFF;
 
     &:hover {
-      background: #0069cc;
+      background: var(--product-apps-dark);
     }
   }
 }
