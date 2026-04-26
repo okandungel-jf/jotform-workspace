@@ -13,7 +13,7 @@ import {
   type PropertyValues,
   type StateValues,
 } from '@jf/app-elements'
-import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput, FormField as DSFormField, TextArea as DSTextArea, ColorInput as DSColorInput, DropdownSingle as DSDropdownSingle, FieldMapper as DSFieldMapper, FieldComposer as DSFieldComposer, type FieldToken, Link as DSLink, Modal as DSModal, SearchInput as DSSearchInput } from '@jf/design-system'
+import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput, FormField as DSFormField, TextArea as DSTextArea, DropdownSingle as DSDropdownSingle, FieldMapper as DSFieldMapper, FieldComposer as DSFieldComposer, type FieldToken, Link as DSLink, Modal as DSModal, SearchInput as DSSearchInput } from '@jf/design-system'
 import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
@@ -162,7 +162,7 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
   const stored = preset.id === 'empty' ? null : loadSnapshot(preset.id)
   if (stored) {
     const pages = stored.pages as AppPage[]
-    const storedHeader = stored.appHeader ?? {}
+    const storedHeader = (stored.appHeader ?? {}) as Partial<AppHeaderState>
     return {
       pages,
       headerActions: stored.headerActions as CanvasElement[],
@@ -2089,7 +2089,6 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                   const isCard = selectedComponent.id === 'card'
                   const CARD_LAYOUT_VARIANTS = ['Layout', 'Image Style']
                   const CARD_LAYOUT_PROPS = ['Icon']
-                  const CARD_ACTION_VARIANTS = ['Action', 'Icon Filled']
                   const CARD_ACTION_PROPS = ['Button Label']
 
                   const isButton = selectedComponent.id === 'button'
