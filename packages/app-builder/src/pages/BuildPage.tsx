@@ -13,7 +13,7 @@ import {
   type PropertyValues,
   type StateValues,
 } from '@jf/app-elements'
-import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput, FormField as DSFormField, TextArea as DSTextArea, ColorInput as DSColorInput } from '@jf/design-system'
+import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput, FormField as DSFormField, TextArea as DSTextArea, ColorInput as DSColorInput, DropdownSingle as DSDropdownSingle } from '@jf/design-system'
 import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
@@ -2056,6 +2056,67 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                   const CARD_ACTION_VARIANTS = ['Action', 'Icon Filled']
                   const CARD_ACTION_PROPS = ['Button Label']
 
+                  // Card's Action tab — bespoke: Card Actions dropdown + nested Action variant with Button Label/Icon Filled inside.
+                  if (isCard && propertyTab === 'action') {
+                    const cardActionType = String(selectedElement.properties['Card Action'] ?? 'Do Nothing')
+                    const cardActionOptions = [
+                      { value: 'Do Nothing', label: 'Do Nothing', icon: 'minus-sm', iconCategory: 'general' },
+                      { value: 'Navigate to Page', label: 'Navigate to Page', icon: 'form-title-filled', iconCategory: 'general' },
+                      { value: 'Open Form', label: 'Open Form', icon: 'form-filled', iconCategory: 'forms-files' },
+                      { value: 'Open URL', label: 'Open URL', icon: 'link-horizontal', iconCategory: 'general' },
+                      { value: 'Send Email', label: 'Send Email', icon: 'envelope-closed-filled', iconCategory: 'communication' },
+                      { value: 'Make Call', label: 'Make Call', icon: 'phone-filled', iconCategory: 'communication' },
+                    ]
+                    const actionVariantConfig = selectedComponent.variants['Action']
+                    const actionValue = String(selectedElement.variants['Action'] ?? 'None')
+                    return (
+                      <div className="property-panel__body">
+                        <div className="property-panel__field">
+                          <DSFormField title="Card Actions" size="md" showDescription={false} showHelpText={false}>
+                            <DSDropdownSingle
+                              value={cardActionType}
+                              onChange={(val) => handlePropertyChange(selectedElement.id, 'Card Action', val)}
+                              options={cardActionOptions.map((o) => ({
+                                value: o.value,
+                                label: o.label,
+                                leading: <Icon name={o.icon} category={o.iconCategory} size={20} />,
+                              }))}
+                            />
+                          </DSFormField>
+                        </div>
+                        {cardActionType !== 'Do Nothing' && (
+                          <div className="property-panel__field">
+                            <DSFormField title="Action" size="md" showDescription={false} showHelpText={false}>
+                              <Segmented
+                                accent="apps"
+                                variant="text"
+                                value={actionValue}
+                                onChange={(val) => handleVariantChange(selectedElement.id, 'Action', val)}
+                                items={actionVariantConfig.options.map((opt) => ({ value: opt, label: opt }))}
+                              />
+                            </DSFormField>
+                            {actionValue === 'Button' && (
+                              <DSFormField title="Button Label" size="md" showDescription={false} showHelpText={false}>
+                                <DSInput
+                                  value={String(selectedElement.properties['Button Label'] ?? '')}
+                                  onChange={(e) => handlePropertyChange(selectedElement.id, 'Button Label', e.target.value)}
+                                />
+                              </DSFormField>
+                            )}
+                            {actionValue === 'Icon' && (
+                              <DSFormField title="Icon" size="md" showDescription={false} showHelpText={false}>
+                                <IconPropertyField
+                                  value={String(selectedElement.properties['Action Icon'] ?? 'ChevronRight')}
+                                  onChange={(val) => handlePropertyChange(selectedElement.id, 'Action Icon', val)}
+                                />
+                              </DSFormField>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  }
+
                   // Card's Layout tab is bespoke — Layout segment + Image Style segment + conditional Icon/Image upload.
                   if (isCard && propertyTab === 'layout') {
                     const imageStyle = String(selectedElement.variants['Image Style'] ?? 'Square')
@@ -2225,14 +2286,8 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                         ? (propertyTab === 'layout' || propertyTab === 'action')
                         : propertyTab === 'general'
 
-                  const cardTabVariants =
-                    propertyTab === 'layout' ? CARD_LAYOUT_VARIANTS
-                    : propertyTab === 'action' ? CARD_ACTION_VARIANTS
-                    : []
-                  const cardTabProps =
-                    propertyTab === 'layout' ? CARD_LAYOUT_PROPS
-                    : propertyTab === 'action' ? CARD_ACTION_PROPS
-                    : []
+                  const cardTabVariants = propertyTab === 'layout' ? CARD_LAYOUT_VARIANTS : []
+                  const cardTabProps = propertyTab === 'layout' ? CARD_LAYOUT_PROPS : []
 
                   const visibleVariants = !showVariants
                     ? []

@@ -16,6 +16,7 @@ export interface CardProps {
   action?: CardAction;
   actionIconFilled?: boolean;
   iconName?: string;
+  actionIcon?: string;
   imageUrl?: string;
   title?: string;
   description?: string;
@@ -103,18 +104,19 @@ const CardContent: React.FC<CardContentProps> = ({ title, description, centered 
 interface CardActionProps {
   action: CardAction;
   actionIconFilled: boolean;
+  actionIcon: string;
   buttonLabel: string;
   fullWidth?: boolean;
 }
 
-const CardAction: React.FC<CardActionProps> = ({ action, actionIconFilled, buttonLabel, fullWidth }) => {
+const CardAction: React.FC<CardActionProps> = ({ action, actionIconFilled, actionIcon, buttonLabel, fullWidth }) => {
   if (action === 'None') return null;
 
   if (action === 'Icon') {
     return (
       <Button
         iconOnly
-        iconOnlyIcon="ChevronRight"
+        iconOnlyIcon={actionIcon || 'ChevronRight'}
         iconOnlyFilled={actionIconFilled}
         corner="Default"
       />
@@ -137,6 +139,7 @@ export const Card: React.FC<CardProps> = ({
   action = 'None',
   actionIconFilled = true,
   iconName = 'Heart',
+  actionIcon = 'ChevronRight',
   imageUrl,
   title = 'Card Title',
   description = 'Card description',
@@ -204,7 +207,7 @@ export const Card: React.FC<CardProps> = ({
       <div className={classes}>
         <CardImage imageStyle={imageStyle} layout={layout} iconName={iconName} imageUrl={imageUrl} />
         <CardContent title={title} description={description} />
-        <CardAction action={action} actionIconFilled={actionIconFilled} buttonLabel={buttonLabel} />
+        <CardAction action={action} actionIconFilled={actionIconFilled} actionIcon={actionIcon ?? 'ChevronRight'} buttonLabel={buttonLabel} />
       </div>
     );
   }
@@ -220,12 +223,12 @@ export const Card: React.FC<CardProps> = ({
         ) : action === 'Icon' ? (
           <div className="jf-card__body jf-card__body--row">
             <CardContent title={title} description={description} />
-            <CardAction action={action} actionIconFilled={actionIconFilled} buttonLabel={buttonLabel} />
+            <CardAction action={action} actionIconFilled={actionIconFilled} actionIcon={actionIcon ?? 'ChevronRight'} buttonLabel={buttonLabel} />
           </div>
         ) : (
           <div className="jf-card__body">
             <CardContent title={title} description={description} centered />
-            <CardAction action={action} actionIconFilled={actionIconFilled} buttonLabel={buttonLabel} fullWidth />
+            <CardAction action={action} actionIconFilled={actionIconFilled} actionIcon={actionIcon ?? 'ChevronRight'} buttonLabel={buttonLabel} fullWidth />
           </div>
         )}
       </div>
@@ -238,12 +241,12 @@ export const Card: React.FC<CardProps> = ({
       {action === 'Icon' ? (
         <div className="jf-card__body jf-card__body--row">
           <CardContent title={title} description={description} centered={isCentered} />
-          <CardAction action={action} actionIconFilled={actionIconFilled} buttonLabel={buttonLabel} />
+          <CardAction action={action} actionIconFilled={actionIconFilled} actionIcon={actionIcon ?? 'ChevronRight'} buttonLabel={buttonLabel} />
         </div>
       ) : action === 'Button' ? (
         <div className="jf-card__body">
           <CardContent title={title} description={description} centered={isCentered} />
-          <CardAction action={action} actionIconFilled={actionIconFilled} buttonLabel={buttonLabel} fullWidth />
+          <CardAction action={action} actionIconFilled={actionIconFilled} actionIcon={actionIcon ?? 'ChevronRight'} buttonLabel={buttonLabel} fullWidth />
         </div>
       ) : (
         <div className="jf-card__body">

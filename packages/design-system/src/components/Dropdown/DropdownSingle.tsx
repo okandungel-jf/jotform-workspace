@@ -141,6 +141,7 @@ export const DropdownSingle = forwardRef<DropdownHandle, DropdownSingleProps>(
                     onMouseDown={(e) => {
                       e.preventDefault();
                       onChange?.(opt.value);
+                      setOpen(false);
                     }}
                   >
                     {opt.leading ?? (showLeadingIcon && (
