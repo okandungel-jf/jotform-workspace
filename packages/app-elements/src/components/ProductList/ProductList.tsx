@@ -8,7 +8,9 @@ export type ProductListLayout = 'ThreeColumns' | 'TwoColumns' | 'SingleColumn';
 export interface ProductItem {
   name: string;
   price: string;
+  description?: string;
   image?: string;
+  autoScale?: boolean;
 }
 
 export interface ProductListProps {

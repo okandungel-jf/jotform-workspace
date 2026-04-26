@@ -602,4 +602,24 @@
     background: var(--accent-default);
     border-color: var(--accent-default);
   }
+
+  &-trailing {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+  }
+}
+
+.jf-dropdown__divider {
+  height: 1px;
+  margin: var(--spacing-2xs) 0;
+  background: var(--border-light);
+}
+
+[data-theme='dark'] {
+  .jf-dropdown__divider {
+    background: var(--gray-400);
+  }
 }

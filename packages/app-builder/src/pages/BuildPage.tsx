@@ -13,7 +13,7 @@ import {
   type PropertyValues,
   type StateValues,
 } from '@jf/app-elements'
-import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput, FormField as DSFormField, TextArea as DSTextArea, ColorInput as DSColorInput, DropdownSingle as DSDropdownSingle } from '@jf/design-system'
+import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput, FormField as DSFormField, TextArea as DSTextArea, ColorInput as DSColorInput, DropdownSingle as DSDropdownSingle, FieldMapper as DSFieldMapper, FieldComposer as DSFieldComposer, type FieldToken, Link as DSLink, Modal as DSModal, SearchInput as DSSearchInput } from '@jf/design-system'
 import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
@@ -74,6 +74,7 @@ const ELEMENT_ICON_MAP: Record<string, { icon: string; iconCategory: string }> =
   'social-follow': { icon: 'share-nodes-filled', iconCategory: 'general' },
   'product-list': { icon: 'cart-shopping-filled', iconCategory: 'finance' },
   'donation-box': { icon: 'heart-filled', iconCategory: 'general' },
+  'image': { icon: 'image-line-filled', iconCategory: 'general' },
   'image-gallery': { icon: 'images-filled', iconCategory: 'media' },
   'table': { icon: 'table', iconCategory: 'general' },
   'testimonial': { icon: 'message-star-filled', iconCategory: 'communication' },
@@ -90,7 +91,7 @@ interface PanelGroup {
 }
 
 const BASIC_GROUPS: PanelGroup[] = [
-  { elementIds: ['form', 'heading', 'list', 'paragraph', 'card', 'sign-document', 'document', 'image-gallery', 'button', 'spacer'] },
+  { elementIds: ['form', 'heading', 'list', 'paragraph', 'card', 'sign-document', 'document', 'image', 'image-gallery', 'button', 'spacer'] },
   { label: 'PAYMENT ELEMENTS', elementIds: ['product-list', 'donation-box'] },
   { label: 'FEATURED WIDGETS', elementIds: ['social-follow', 'testimonial'] },
   { label: 'DATA ELEMENTS', elementIds: ['table'] },
@@ -901,11 +902,27 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
   const [propertyTab, setPropertyTab] = useState<string>('general')
   const appHeaderImageInputRef = useRef<HTMLInputElement>(null)
+  const [editItemsOpen, setEditItemsOpen] = useState(false)
   const [selectedElementId, _setSelectedElementId] = useState<string | null>(null)
   const setSelectedElementId = useCallback((next: React.SetStateAction<string | null>) => {
     _setSelectedElementId(next)
     setPropertyTab('general')
   }, [])
+  const [editingProductIndex, setEditingProductIndex] = useState<number | null>(null)
+  const [productSearch, setProductSearch] = useState('')
+  useEffect(() => { setEditingProductIndex(null); setProductSearch('') }, [selectedElementId, propertyTab])
+  const [canvasElementWidth, setCanvasElementWidth] = useState<number | null>(null)
+  useEffect(() => {
+    if (!selectedElementId) { setCanvasElementWidth(null); return }
+    const node = document.querySelector(`[data-element-id="${selectedElementId}"]`) as HTMLElement | null
+    if (!node) { setCanvasElementWidth(null); return }
+    const measure = () => setCanvasElementWidth(Math.round(node.getBoundingClientRect().width))
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(node)
+    window.addEventListener('resize', measure)
+    return () => { ro.disconnect(); window.removeEventListener('resize', measure) }
+  }, [selectedElementId])
   const [components, setComponents] = useState<RegisteredComponent[]>(ComponentRegistry.getAll())
   const initial = useRef(buildInitialStateFromPreset(preset)).current
   const [pages, setPages] = useState<AppPage[]>(initial.pages)
@@ -1995,10 +2012,29 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                               { value: 'action', label: 'Action' },
                               { value: 'condition', label: 'Condition' },
                             ]
-                          : [
-                              { value: 'general', label: 'General' },
-                              { value: 'condition', label: 'Condition' },
-                            ]
+                          : selectedComponent.id === 'list'
+                            ? [
+                                { value: 'general', label: 'General' },
+                                { value: 'layout', label: 'Layout' },
+                                { value: 'action', label: 'Action' },
+                                { value: 'condition', label: 'Condition' },
+                              ]
+                            : (selectedComponent.id === 'button' || selectedComponent.id === 'image')
+                              ? [
+                                  { value: 'general', label: 'General' },
+                                  { value: 'action', label: 'Action' },
+                                  { value: 'condition', label: 'Condition' },
+                                ]
+                              : selectedComponent.id === 'product-list'
+                                ? [
+                                    { value: 'general', label: 'General' },
+                                    { value: 'products', label: 'Products' },
+                                    { value: 'condition', label: 'Condition' },
+                                  ]
+                                : [
+                                    { value: 'general', label: 'General' },
+                                    { value: 'condition', label: 'Condition' },
+                                  ]
                     }
                   />
                 </div>
@@ -2055,6 +2091,783 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                   const CARD_LAYOUT_PROPS = ['Icon']
                   const CARD_ACTION_VARIANTS = ['Action', 'Icon Filled']
                   const CARD_ACTION_PROPS = ['Button Label']
+
+                  const isButton = selectedComponent.id === 'button'
+                  const isImage = selectedComponent.id === 'image'
+                  const isList = selectedComponent.id === 'list'
+                  const isImageGallery = selectedComponent.id === 'image-gallery'
+                  const isProductList = selectedComponent.id === 'product-list'
+                  const cardActionOptions = [
+                    { value: 'Do Nothing', label: 'Do Nothing', icon: 'minus-sm', iconCategory: 'general' },
+                    { value: 'Navigate to Page', label: 'Navigate to Page', icon: 'form-title-filled', iconCategory: 'general' },
+                    { value: 'Open Form', label: 'Open Form', icon: 'form-filled', iconCategory: 'forms-files' },
+                    { value: 'Open URL', label: 'Open URL', icon: 'link-horizontal', iconCategory: 'general' },
+                    { value: 'Send Email', label: 'Send Email', icon: 'envelope-closed-filled', iconCategory: 'communication' },
+                    { value: 'Make Call', label: 'Make Call', icon: 'phone-filled', iconCategory: 'communication' },
+                  ]
+                  const renderCardActionsDropdown = (id: string) => (
+                    <div className="property-panel__field">
+                      <DSFormField title="Card Actions" size="md" showDescription={false} showHelpText={false}>
+                        <DSDropdownSingle
+                          value={String(selectedElement.properties['Card Action'] ?? 'Do Nothing')}
+                          onChange={(val) => handlePropertyChange(id, 'Card Action', val)}
+                          options={cardActionOptions.map((o) => ({
+                            value: o.value,
+                            label: o.label,
+                            leading: <Icon name={o.icon} category={o.iconCategory} size={20} />,
+                          }))}
+                        />
+                      </DSFormField>
+                    </div>
+                  )
+
+                  // Button & Image: just the Card Actions dropdown.
+                  if ((isButton || isImage) && propertyTab === 'action') {
+                    return (
+                      <div className="property-panel__body">
+                        {renderCardActionsDropdown(selectedElement.id)}
+                      </div>
+                    )
+                  }
+
+                  // Image Gallery General tab — bespoke 3x3 layout thumbnail grid.
+                  if (isImageGallery && propertyTab === 'general') {
+                    const currentLayout = String(selectedElement.variants['Layout'] ?? '2')
+                    const GALLERY_LAYOUTS: { id: string; cols: number; rows: number; cells: { col: string; row: string }[] }[] = [
+                      { id: '1', cols: 1, rows: 2, cells: [{ col: '1', row: '1' }, { col: '1', row: '2' }] },
+                      { id: '2', cols: 2, rows: 2, cells: [{ col: '1', row: '1' }, { col: '2', row: '1' }, { col: '1', row: '2' }, { col: '2', row: '2' }] },
+                      { id: '3', cols: 3, rows: 2, cells: [{ col: '1', row: '1' }, { col: '2', row: '1' }, { col: '3', row: '1' }, { col: '1', row: '2' }, { col: '2', row: '2' }, { col: '3', row: '2' }] },
+                      { id: '4', cols: 2, rows: 2, cells: [{ col: '1', row: '1 / span 2' }, { col: '2', row: '1' }, { col: '2', row: '2' }] },
+                      { id: '5', cols: 2, rows: 2, cells: [{ col: '1', row: '1' }, { col: '2', row: '1 / span 2' }, { col: '1', row: '2' }] },
+                      { id: '6', cols: 2, rows: 2, cells: [{ col: '1 / span 2', row: '1' }, { col: '1', row: '2' }, { col: '2', row: '2' }] },
+                      { id: '7', cols: 2, rows: 2, cells: [{ col: '1', row: '1' }, { col: '2', row: '1' }, { col: '1 / span 2', row: '2' }] },
+                      { id: '8', cols: 4, rows: 4, cells: [{ col: '1 / span 2', row: '1' }, { col: '1 / span 2', row: '2 / span 3' }, { col: '3 / span 2', row: '1 / span 3' }, { col: '3 / span 2', row: '4' }] },
+                      { id: '9', cols: 4, rows: 4, cells: [{ col: '1 / span 3', row: '1 / span 2' }, { col: '1', row: '3 / span 2' }, { col: '4', row: '1 / span 2' }, { col: '2 / span 3', row: '3 / span 2' }] },
+                    ]
+                    return (
+                      <div className="property-panel__body">
+                        <div className="property-panel__field">
+                          <DSFormField title="Layout" size="md" showDescription={false} showHelpText={false}>
+                            <div className="gallery-layout-grid">
+                              {GALLERY_LAYOUTS.map((l) => {
+                                const isActive = currentLayout === l.id
+                                const maxDim = Math.max(l.cols, l.rows)
+                                const cellSize = maxDim >= 4 ? 7 : maxDim === 3 ? 9 : 11
+                                const gap = maxDim >= 4 ? 2 : 3
+                                return (
+                                  <button
+                                    key={l.id}
+                                    type="button"
+                                    aria-pressed={isActive}
+                                    className={`gallery-layout-grid__item${isActive ? ' gallery-layout-grid__item--active' : ''}`}
+                                    onClick={() => handleVariantChange(selectedElement.id, 'Layout', l.id)}
+                                  >
+                                    <div
+                                      className="gallery-layout-grid__preview"
+                                      style={{
+                                        gridTemplateColumns: `repeat(${l.cols}, ${cellSize}px)`,
+                                        gridTemplateRows: `repeat(${l.rows}, ${cellSize}px)`,
+                                        gap: `${gap}px`,
+                                      }}
+                                    >
+                                      {l.cells.map((c, i) => (
+                                        <span
+                                          key={i}
+                                          className="gallery-layout-grid__cell"
+                                          style={{ gridColumn: c.col, gridRow: c.row }}
+                                        />
+                                      ))}
+                                    </div>
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </DSFormField>
+                        </div>
+                        {(() => {
+                          let galleryImages: string[] = []
+                          try {
+                            const raw = selectedElement.properties['Images']
+                            if (typeof raw === 'string' && raw.trim().length > 0) {
+                              const parsed = JSON.parse(raw)
+                              if (Array.isArray(parsed)) galleryImages = parsed.filter((v) => typeof v === 'string')
+                            }
+                          } catch (_e) {
+                            galleryImages = []
+                          }
+                          const writeImages = (next: string[]) => handlePropertyChange(selectedElement.id, 'Images', JSON.stringify(next))
+                          const inputId = `gallery-input-${selectedElement.id}`
+                          const handleFiles = (files: FileList | null) => {
+                            if (!files || files.length === 0) return
+                            const fileArr = Array.from(files)
+                            Promise.all(
+                              fileArr.map(
+                                (file) => new Promise<string>((resolve, reject) => {
+                                  const reader = new FileReader()
+                                  reader.onload = () => resolve(String(reader.result))
+                                  reader.onerror = () => reject(reader.error)
+                                  reader.readAsDataURL(file)
+                                })
+                              )
+                            ).then((urls) => writeImages([...galleryImages, ...urls]))
+                          }
+                          return (
+                            <div className="property-panel__field">
+                              <DSFormField title="Images" size="md" showDescription={false} showHelpText={false}>
+                                <input
+                                  id={inputId}
+                                  type="file"
+                                  accept="image/*"
+                                  multiple
+                                  hidden
+                                  onChange={(e) => {
+                                    handleFiles(e.target.files)
+                                    e.target.value = ''
+                                  }}
+                                />
+                                {galleryImages.length > 0 && (
+                                  <div className="gallery-images">
+                                    {galleryImages.map((url, i) => (
+                                      <div className="gallery-images__item" key={i}>
+                                        <img src={url} alt="" />
+                                        <button
+                                          type="button"
+                                          className="gallery-images__remove"
+                                          aria-label="Remove image"
+                                          onClick={() => writeImages(galleryImages.filter((_, idx) => idx !== i))}
+                                        >
+                                          <Icon name="trash-filled" category="general" size={14} />
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                <label htmlFor={inputId} className="gallery-images__choose">
+                                  Choose Images
+                                </label>
+                              </DSFormField>
+                            </div>
+                          )
+                        })()}
+                      </div>
+                    )
+                  }
+
+                  // Product List Products tab — list view + inline edit form.
+                  if (isProductList && propertyTab === 'products') {
+                    type Product = { name: string; price: string; description?: string; image?: string; autoScale?: boolean }
+                    const readProducts = (): Product[] => {
+                      try {
+                        const parsed = JSON.parse(String(selectedElement.properties['Products'] ?? '[]'))
+                        return Array.isArray(parsed) ? parsed : []
+                      } catch {
+                        return []
+                      }
+                    }
+                    const writeProducts = (next: Product[]) => handlePropertyChange(selectedElement.id, 'Products', JSON.stringify(next))
+                    const products = readProducts()
+                    const currency = String(selectedElement.properties['Currency'] ?? '$')
+
+                    if (editingProductIndex !== null) {
+                      const idx = editingProductIndex
+                      const isNew = idx === products.length
+                      const current: Product = isNew ? { name: '', price: '0.00' } : (products[idx] ?? { name: '', price: '0.00' })
+                      const updateField = <K extends keyof Product>(field: K, value: Product[K]) => {
+                        const next = [...products]
+                        if (isNew) next.push({ ...current, [field]: value })
+                        else next[idx] = { ...current, [field]: value }
+                        writeProducts(next)
+                      }
+                      const editInputId = `product-image-${selectedElement.id}`
+                      return (
+                        <div className="property-panel__body product-edit">
+                          <div className="property-panel__field">
+                            <DSFormField title="Name" required size="md" showDescription={false} showHelpText={false}>
+                              <DSInput
+                                value={current.name}
+                                placeholder="Product Name"
+                                onChange={(e) => updateField('name', e.target.value)}
+                              />
+                            </DSFormField>
+                          </div>
+                          <div className="property-panel__field">
+                            <DSFormField title="Price" size="md" showDescription={false} showHelpText={false}>
+                              <div className="product-edit__price">
+                                <DSInput
+                                  className="product-edit__price-input"
+                                  value={current.price}
+                                  placeholder="0.00"
+                                  onChange={(e) => updateField('price', e.target.value)}
+                                />
+                                <DSDropdownSingle
+                                  className="product-edit__currency"
+                                  value={currency}
+                                  onChange={(val) => handlePropertyChange(selectedElement.id, 'Currency', val)}
+                                  options={[
+                                    { value: '$', label: 'USD' },
+                                    { value: '€', label: 'EUR' },
+                                    { value: '£', label: 'GBP' },
+                                    { value: '₺', label: 'TRY' },
+                                    { value: '¥', label: 'JPY' },
+                                  ]}
+                                />
+                              </div>
+                            </DSFormField>
+                          </div>
+                          <div className="property-panel__field">
+                            <DSFormField title="Description" size="md" showDescription={false} showHelpText={false}>
+                              <textarea
+                                className="product-edit__textarea"
+                                value={current.description ?? ''}
+                                placeholder="Please enter a short description"
+                                onChange={(e) => updateField('description', e.target.value)}
+                                rows={4}
+                              />
+                            </DSFormField>
+                          </div>
+                          <div className="property-panel__field">
+                            <DSFormField title="Image" size="md" showDescription={false} showHelpText={false}>
+                              <input
+                                id={editInputId}
+                                type="file"
+                                accept="image/*"
+                                hidden
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0]
+                                  if (!file) return
+                                  const reader = new FileReader()
+                                  reader.onload = () => updateField('image', String(reader.result))
+                                  reader.readAsDataURL(file)
+                                  e.target.value = ''
+                                }}
+                              />
+                              {current.image ? (
+                                <div className="product-edit__image">
+                                  <img src={current.image} alt="" />
+                                  <button
+                                    type="button"
+                                    className="product-edit__image-remove"
+                                    onClick={() => updateField('image', undefined)}
+                                  >
+                                    <Icon name="trash-filled" category="general" size={14} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <label htmlFor={editInputId} className="gallery-images__choose">
+                                  Choose Images
+                                </label>
+                              )}
+                            </DSFormField>
+                          </div>
+                          <div className="property-panel__field">
+                            <div className="product-edit__inline">
+                              <div className="product-edit__inline-text">
+                                <span className="product-edit__inline-title">Auto Scale Images</span>
+                                <span className="product-edit__inline-desc">Scale image to fill available canvas.</span>
+                              </div>
+                              <DSToggle
+                                size="md"
+                                checked={current.autoScale !== false}
+                                onChange={(e) => updateField('autoScale', e.target.checked)}
+                              />
+                            </div>
+                          </div>
+                          <div className="product-edit__footer">
+                            <DSButton
+                              variant="filled"
+                              colorScheme="secondary"
+                              size="lg"
+                              leftIcon={<Icon name="caret-left" category="arrows" size={20} />}
+                              onClick={() => setEditingProductIndex(null)}
+                              className="product-edit__back-btn"
+                            >
+                              Go Back
+                            </DSButton>
+                          </div>
+                        </div>
+                      )
+                    }
+
+                    const filtered = productSearch.trim().length > 0
+                      ? products.map((p, i) => ({ p, i })).filter(({ p }) => p.name.toLowerCase().includes(productSearch.toLowerCase()))
+                      : products.map((p, i) => ({ p, i }))
+
+                    return (
+                      <div className="property-panel__body product-list-panel">
+                        <div className="property-panel__field">
+                          <DSSearchInput
+                            placeholder="Search products"
+                            value={productSearch}
+                            onChange={(e) => setProductSearch(e.target.value)}
+                            onClear={() => setProductSearch('')}
+                          />
+                        </div>
+                        <div className="product-list-rows">
+                          {filtered.map(({ p, i }) => (
+                            <button
+                              key={i}
+                              type="button"
+                              className="product-list-row"
+                              onClick={() => setEditingProductIndex(i)}
+                            >
+                              <Icon name="grid-dots" category="general" size={16} className="product-list-row__handle" />
+                              <div className="product-list-row__card">
+                                <div className="product-list-row__image">
+                                  {p.image ? (
+                                    <img src={p.image} alt="" />
+                                  ) : (
+                                    <Icon name="image-filled" category="media" size={20} />
+                                  )}
+                                </div>
+                                <div className="product-list-row__name">{p.name || 'Untitled'}</div>
+                                <div className="product-list-row__price">
+                                  {p.price && Number(p.price) > 0 ? `${currency}${p.price}` : 'Free'}
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                className="product-list-row__delete"
+                                aria-label="Delete product"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  writeProducts(products.filter((_, idx) => idx !== i))
+                                }}
+                              >
+                                <Icon name="trash-filled" category="general" size={16} />
+                              </button>
+                            </button>
+                          ))}
+                        </div>
+                        <div className="product-list-panel__footer">
+                          <DSButton
+                            variant="filled"
+                            colorScheme="primary"
+                            size="lg"
+                            leftIcon={<Icon name="plus" category="general" size={20} />}
+                            onClick={() => setEditingProductIndex(products.length)}
+                            className="product-list-panel__add-btn"
+                          >
+                            Add Product
+                          </DSButton>
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  // Image General tab — bespoke upload area + alignment/size when image is set.
+                  if (isImage && propertyTab === 'general') {
+                    const imageUrl = String(selectedElement.properties['Image URL'] ?? '')
+                    const imageName = String(selectedElement.properties['Image Name'] ?? '')
+                    const hasImage = imageUrl.length > 0
+                    const inputId = `image-input-${selectedElement.id}`
+
+                    const setImage = (url: string, name: string) => {
+                      handlePropertyChange(selectedElement.id, 'Image URL', url)
+                      handlePropertyChange(selectedElement.id, 'Image Name', name)
+                      handleVariantChange(selectedElement.id, 'Has Image', url ? 'Yes' : 'No')
+                      if (url) {
+                        handlePropertyChange(selectedElement.id, 'Width', '')
+                        handlePropertyChange(selectedElement.id, 'Height', 450)
+                      }
+                    }
+
+                    return (
+                      <div className="property-panel__body">
+                        <div className="property-panel__field">
+                          <DSFormField title="Image" size="md" showDescription={false} showHelpText={false}>
+                            <input
+                              id={inputId}
+                              type="file"
+                              accept="image/*"
+                              hidden
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (!file) return
+                                const reader = new FileReader()
+                                reader.onload = () => setImage(String(reader.result), file.name)
+                                reader.readAsDataURL(file)
+                                e.target.value = ''
+                              }}
+                            />
+                            {hasImage ? (
+                              <div className="image-preview">
+                                <div
+                                  className="image-preview__thumb"
+                                  style={{ backgroundImage: `url(${imageUrl})` }}
+                                />
+                                <span className="image-preview__name" title={imageName}>
+                                  {imageName || 'image'}
+                                </span>
+                                <button
+                                  type="button"
+                                  className="image-preview__remove"
+                                  aria-label="Remove image"
+                                  onClick={() => setImage('', '')}
+                                >
+                                  <Icon name="trash-filled" category="general" size={16} />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="upload-area">
+                                <DSButton
+                                  variant="filled"
+                                  colorScheme="secondary"
+                                  shape="rectangle"
+                                  size="md"
+                                  leftIcon={<Icon name="image-plus-filled" category="media" size={16} />}
+                                  onClick={() => document.getElementById(inputId)?.click()}
+                                >
+                                  Choose File
+                                </DSButton>
+                                <span className="upload-area__hint">OR DRAG AND DROP HERE</span>
+                              </div>
+                            )}
+                          </DSFormField>
+                        </div>
+                        {hasImage && (
+                          <>
+                            <div className="property-panel__field">
+                              <DSFormField title="Size" size="md" showDescription={false} showHelpText={false}>
+                                <div className="image-size">
+                                  <div className="image-size__input">
+                                    <DSNumberInput
+                                      unit="PX"
+                                      showUnit
+                                      min={1}
+                                      max={9999}
+                                      placeholder={canvasElementWidth ? String(canvasElementWidth) : 'Auto'}
+                                      value={Number(selectedElement.properties['Width']) > 0 ? Number(selectedElement.properties['Width']) : undefined}
+                                      onChange={(val) => handlePropertyChange(selectedElement.id, 'Width', val ?? '')}
+                                      description="Width"
+                                    />
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="image-size__lock"
+                                    aria-label="Lock aspect ratio"
+                                    aria-pressed={Boolean(selectedElement.properties['Aspect Locked'])}
+                                    onClick={() => handlePropertyChange(selectedElement.id, 'Aspect Locked', !selectedElement.properties['Aspect Locked'])}
+                                  >
+                                    <Icon name="lock-filled" category="security" size={16} />
+                                  </button>
+                                  <div className="image-size__input">
+                                    <DSNumberInput
+                                      unit="PX"
+                                      showUnit
+                                      min={1}
+                                      max={9999}
+                                      value={Number(selectedElement.properties['Height']) > 0 ? Number(selectedElement.properties['Height']) : undefined}
+                                      onChange={(val) => handlePropertyChange(selectedElement.id, 'Height', val ?? '')}
+                                      description="Height"
+                                    />
+                                  </div>
+                                </div>
+                              </DSFormField>
+                            </div>
+                            <div className="property-panel__field">
+                              <DSFormField
+                                title="Image Alignment"
+                                description="Select how the image is aligned horizontally."
+                                size="md"
+                                showDescription
+                                showHelpText={false}
+                              >
+                                <Segmented
+                                  accent="apps"
+                                  variant="text"
+                                  value={String(selectedElement.variants['Alignment'] ?? 'Center')}
+                                  onChange={(val) => handleVariantChange(selectedElement.id, 'Alignment', val)}
+                                  items={[
+                                    { value: 'Left', label: 'Left' },
+                                    { value: 'Center', label: 'Center' },
+                                    { value: 'Right', label: 'Right' },
+                                  ]}
+                                />
+                              </DSFormField>
+                            </div>
+                            <div className="property-panel__field">
+                              <DSFormField
+                                title="Alternative Text"
+                                description="Shown if the image fails to load."
+                                size="md"
+                                showDescription
+                                showHelpText={false}
+                              >
+                                <DSInput
+                                  placeholder="Description of the image"
+                                  value={String(selectedElement.properties['Alt Text'] ?? '')}
+                                  onChange={(e) => handlePropertyChange(selectedElement.id, 'Alt Text', e.target.value)}
+                                />
+                              </DSFormField>
+                            </div>
+                            <div className="property-panel__field property-panel__field--inline">
+                              <DSFormField
+                                title="Shrink"
+                                description="Make element smaller."
+                                size="md"
+                                showDescription
+                                showHelpText={false}
+                              >
+                                <DSToggle
+                                  size="md"
+                                  checked={Boolean(selectedElement.properties['Shrinked'])}
+                                  onChange={(e) => handlePropertyChange(selectedElement.id, 'Shrinked', e.target.checked)}
+                                />
+                              </DSFormField>
+                            </div>
+                            <div className="property-panel__field">
+                              <DSFormField
+                                title="Duplicate Element"
+                                description="Clone selected elements with all saved properties."
+                                size="md"
+                                showDescription
+                                showHelpText={false}
+                              >
+                                <DSButton
+                                  variant="filled"
+                                  colorScheme="secondary"
+                                  shape="rectangle"
+                                  size="md"
+                                  leftIcon={<Icon name="copy-filled" category="general" size={16} />}
+                                >
+                                  Duplicate
+                                </DSButton>
+                              </DSFormField>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )
+                  }
+
+                  // List General tab — bespoke per Figma (Show Header, Data Source, Field mapping, Filter/Sorting, Items to show).
+                  if (isList && propertyTab === 'general') {
+                    return (
+                      <div className="property-panel__body">
+                        <div className="property-panel__field">
+                          <DSFormField
+                            title="Data Source"
+                            description={
+                              <>
+                                This list shows data from App Tables{' '}
+                                <DSLink
+                                  href="#"
+                                  size="sm"
+                                  rightIcon={<Icon name="arrow-up-right-from-square" category="arrows" size={14} />}
+                                >
+                                  Open
+                                </DSLink>
+                              </>
+                            }
+                            size="md"
+                            showDescription
+                            showHelpText={false}
+                          >
+                            <div className="list-general__data-source">
+                              {(() => {
+                                const dataSource = String(selectedElement.properties['Data Source'] ?? 'New Table')
+                                const checkIcon = <Icon name="check" category="general" size={20} />
+                                return (
+                                  <DSDropdownSingle
+                                    value={dataSource}
+                                    onChange={(val) => handlePropertyChange(selectedElement.id, 'Data Source', val)}
+                                    options={[
+                                      {
+                                        value: 'New Table',
+                                        label: 'New Table',
+                                        leading: <Icon name="table" category="general" size={20} />,
+                                        trailing: dataSource === 'New Table' ? checkIcon : undefined,
+                                      },
+                                      {
+                                        value: 'Our Team',
+                                        label: 'Our Team',
+                                        leading: <Icon name="table" category="general" size={20} />,
+                                        trailing: dataSource === 'Our Team' ? checkIcon : undefined,
+                                      },
+                                      {
+                                        value: 'New app table',
+                                        label: 'New app table',
+                                        leading: <Icon name="plus-circle" category="general" size={20} />,
+                                        divider: true,
+                                      },
+                                    ]}
+                                  />
+                                )
+                              })()}
+                              <DSButton
+                                variant="filled"
+                                colorScheme="secondary"
+                                shape="rectangle"
+                                size="md"
+                                leftIcon={<Icon name="pencil-to-square" category="general" size={16} />}
+                                onClick={() => setEditItemsOpen(true)}
+                              >
+                                Edit Table
+                              </DSButton>
+                            </div>
+                          </DSFormField>
+                        </div>
+                        {(() => {
+                          const fieldOptions = [
+                            { value: 'Title', label: 'Title', icon: 'type-square-filled', iconCategory: 'editor' },
+                            { value: 'Description', label: 'Description', icon: 'type-square-filled', iconCategory: 'editor' },
+                            { value: 'Image', label: 'Image', icon: 'paperclip-diagonal', iconCategory: 'forms-files' },
+                          ]
+                          const labelFor = (val: string) => fieldOptions.find((o) => o.value === val) ?? fieldOptions[0]
+
+                          const readTokens = (propKey: string, defaultLabel: string): FieldToken[] => {
+                            const raw = selectedElement.properties[propKey]
+                            if (typeof raw === 'string' && raw.startsWith('[')) {
+                              try { return JSON.parse(raw) as FieldToken[] } catch { /* fall through */ }
+                            }
+                            const opt = labelFor(defaultLabel)
+                            return [{ type: 'field', value: opt.value, label: opt.label, icon: opt.icon, iconCategory: opt.iconCategory }]
+                          }
+
+                          const writeTokens = (propKey: string, tokens: FieldToken[]) => {
+                            handlePropertyChange(selectedElement.id, propKey, JSON.stringify(tokens))
+                          }
+
+                          const renderComposerRow = (title: string, propKey: string, defaultLabel: string) => {
+                            const tokens = readTokens(propKey, defaultLabel)
+                            return (
+                              <div className="property-panel__field" key={propKey}>
+                                <DSFormField title={title} size="md" showDescription={false} showHelpText={false}>
+                                  <DSFieldComposer
+                                    value={tokens}
+                                    onChange={(t) => writeTokens(propKey, t)}
+                                    options={fieldOptions}
+                                    onCreate={() => {}}
+                                    placeholder="Type or insert a field…"
+                                  />
+                                </DSFormField>
+                              </div>
+                            )
+                          }
+
+                          const renderMapperRow = (title: string, propKey: string, defaultVal: string) => {
+                            const selected = String(selectedElement.properties[propKey] ?? defaultVal)
+                            const opt = labelFor(selected)
+                            return (
+                              <div className="property-panel__field" key={propKey}>
+                                <DSFormField title={title} size="md" showDescription={false} showHelpText={false}>
+                                  <DSFieldMapper
+                                    field={{ label: opt.label, icon: opt.icon, iconCategory: opt.iconCategory }}
+                                    options={fieldOptions}
+                                    value={selected}
+                                    onChange={(val) => handlePropertyChange(selectedElement.id, propKey, val)}
+                                    onCreate={() => {}}
+                                    onAdd={() => {}}
+                                  />
+                                </DSFormField>
+                              </div>
+                            )
+                          }
+
+                          return (
+                            <>
+                              {renderComposerRow('Title', 'Field Title', 'Title')}
+                              {renderComposerRow('Description', 'Field Description', 'Description')}
+                              {renderMapperRow('Image', 'Field Image', 'Image')}
+                            </>
+                          )
+                        })()}
+                        <div className="property-panel__field property-panel__field--inline">
+                          <DSFormField title="Filter" size="md" showDescription={false} showHelpText={false}>
+                            <DSToggle
+                              size="md"
+                              checked={Boolean(selectedElement.properties['Filter'])}
+                              onChange={(e) => handlePropertyChange(selectedElement.id, 'Filter', e.target.checked)}
+                            />
+                          </DSFormField>
+                        </div>
+                        <div className="property-panel__field property-panel__field--inline">
+                          <DSFormField title="Sorting" size="md" showDescription={false} showHelpText={false}>
+                            <DSToggle
+                              size="md"
+                              checked={Boolean(selectedElement.properties['Sorting'])}
+                              onChange={(e) => handlePropertyChange(selectedElement.id, 'Sorting', e.target.checked)}
+                            />
+                          </DSFormField>
+                        </div>
+                        <div className="property-panel__field">
+                          <DSFormField
+                            title="Items to show"
+                            description="How many list items to show at first"
+                            size="md"
+                            showDescription
+                            showHelpText={false}
+                          >
+                            <DSNumberInput
+                              showUnit={false}
+                              min={1}
+                              max={999}
+                              value={Number(selectedElement.properties['Items to show']) || 10}
+                              onChange={(val) => handlePropertyChange(selectedElement.id, 'Items to show', val ?? 10)}
+                            />
+                          </DSFormField>
+                        </div>
+                        <div className="property-panel__field property-panel__field--inline">
+                          <DSFormField
+                            title="Show Header"
+                            description="Display a header above the list items."
+                            size="md"
+                            showDescription
+                            showHelpText={false}
+                          >
+                            <DSToggle
+                              size="md"
+                              checked={Boolean(selectedElement.properties['Show Header'])}
+                              onChange={(e) => handlePropertyChange(selectedElement.id, 'Show Header', e.target.checked)}
+                            />
+                          </DSFormField>
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  // List: Card Actions dropdown + Layout-aware Action variant with nested controls.
+                  if (isList && propertyTab === 'action') {
+                    const cardActionType = String(selectedElement.properties['Card Action'] ?? 'Do Nothing')
+                    const layout = String(selectedElement.variants['Layout'] ?? 'Basic')
+                    const variantKey = layout === 'Card' ? 'Card Action' : 'Action'
+                    const variantConfig = selectedComponent.variants[variantKey]
+                    const actionValue = String(selectedElement.variants[variantKey] ?? 'None')
+                    return (
+                      <div className="property-panel__body">
+                        {renderCardActionsDropdown(selectedElement.id)}
+                        {cardActionType !== 'Do Nothing' && (
+                          <div className="property-panel__field">
+                            <DSFormField title="Action" size="md" showDescription={false} showHelpText={false}>
+                              <Segmented
+                                accent="apps"
+                                variant="text"
+                                value={actionValue}
+                                onChange={(val) => handleVariantChange(selectedElement.id, variantKey, val)}
+                                items={variantConfig.options.map((opt) => ({ value: opt, label: opt }))}
+                              />
+                            </DSFormField>
+                            {actionValue === 'Button' && (
+                              <DSFormField title="Button Label" size="md" showDescription={false} showHelpText={false}>
+                                <DSInput
+                                  value={String(selectedElement.properties['Button Label'] ?? '')}
+                                  onChange={(e) => handlePropertyChange(selectedElement.id, 'Button Label', e.target.value)}
+                                />
+                              </DSFormField>
+                            )}
+                            {actionValue === 'Icon' && (
+                              <DSFormField title="Icon" size="md" showDescription={false} showHelpText={false}>
+                                <IconPropertyField
+                                  value={String(selectedElement.properties['Action Icon'] ?? 'ChevronRight')}
+                                  onChange={(val) => handlePropertyChange(selectedElement.id, 'Action Icon', val)}
+                                />
+                              </DSFormField>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  }
 
                   // Card's Action tab — bespoke: Card Actions dropdown + nested Action variant with Button Label/Icon Filled inside.
                   if (isCard && propertyTab === 'action') {
@@ -2284,16 +3097,26 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                       ? propertyTab === 'style'
                       : isCard
                         ? (propertyTab === 'layout' || propertyTab === 'action')
-                        : propertyTab === 'general'
+                        : isList
+                          ? (propertyTab === 'general' || propertyTab === 'layout')
+                          : propertyTab === 'general'
 
                   const cardTabVariants = propertyTab === 'layout' ? CARD_LAYOUT_VARIANTS : []
                   const cardTabProps = propertyTab === 'layout' ? CARD_LAYOUT_PROPS : []
+
+                  const LIST_ACTION_VARIANTS = ['Action', 'Icon Filled', 'Card Action', 'Card Icon Filled']
+                  const LIST_LAYOUT_VARIANTS = ['Layout', 'Image Style', 'Size', 'Card Image Style', 'Card Layout', 'Card Size']
 
                   const visibleVariants = !showVariants
                     ? []
                     : Object.entries(selectedComponent.variants)
                         .filter(([group]) => {
                           if (isCard) return cardTabVariants.includes(group)
+                          if (isList) {
+                            if (propertyTab === 'layout') return LIST_LAYOUT_VARIANTS.includes(group)
+                            // General: exclude both action and layout variants.
+                            return !LIST_ACTION_VARIANTS.includes(group) && !LIST_LAYOUT_VARIANTS.includes(group)
+                          }
                           return true
                         })
                         .filter(([, config]) => {
@@ -2308,7 +3131,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                         })
 
                   const visibleProps = selectedComponent.properties
-                    .filter((prop) => prop.name !== 'Selected' && prop.name !== 'Skeleton')
+                    .filter((prop) => prop.name !== 'Selected' && prop.name !== 'Skeleton' && prop.name !== 'Skeleton Animation')
                     .filter((prop) => {
                       if (isAppHeader) {
                         // Style tab → everything except Title/Subtitle (general) and Icon (rendered inside Image Style).
@@ -2319,6 +3142,16 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                           return !CARD_LAYOUT_PROPS.includes(prop.name) && !CARD_ACTION_PROPS.includes(prop.name)
                         }
                         return cardTabProps.includes(prop.name)
+                      }
+                      if (isList) {
+                        // Button Label is rendered inside the Action tab; Show Header is rendered bespoke at the top.
+                        if (propertyTab === 'general') return prop.name !== 'Button Label' && prop.name !== 'Show Header'
+                        return false
+                      }
+                      if (isProductList) {
+                        // Products & Currency live in the Products tab; default render shows the rest on General.
+                        if (propertyTab === 'general') return prop.name !== 'Products' && prop.name !== 'Currency'
+                        return false
                       }
                       return propertyTab === 'general'
                     })
@@ -2340,6 +3173,23 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
 
                   return (
                     <div className="property-panel__body">
+                      {isList && propertyTab === 'general' && (
+                        <div className="property-panel__field property-panel__field--inline">
+                          <DSFormField
+                            title="Show Header"
+                            description="Display a header above the list items."
+                            size="md"
+                            showDescription
+                            showHelpText={false}
+                          >
+                            <DSToggle
+                              size="md"
+                              checked={Boolean(selectedElement.properties['Show Header'])}
+                              onChange={(e) => handlePropertyChange(selectedElement.id, 'Show Header', e.target.checked)}
+                            />
+                          </DSFormField>
+                        </div>
+                      )}
                       {isAppHeader && propertyTab === 'style' && (
                         <>
                           <div className="property-panel__field property-panel__field--inline">
@@ -2691,6 +3541,124 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         </div>
       </div>
     </BottomSheet>
+
+    {/* List items editor modal */}
+    {editItemsOpen && selectedComponent?.id === 'list' && selectedElement && (() => {
+      type Item = { id: string; title: string; description: string; image?: string }
+      const readItems = (): Item[] => {
+        const raw = selectedElement.properties['Items']
+        if (typeof raw === 'string' && raw.startsWith('[')) {
+          try {
+            const parsed = JSON.parse(raw) as Item[]
+            if (Array.isArray(parsed)) return parsed
+          } catch { /* fall through */ }
+        }
+        return [
+          { id: 'item-1', title: 'Title 1', description: 'Description 1' },
+          { id: 'item-2', title: 'Title 2', description: 'Description 2' },
+          { id: 'item-3', title: 'Title 3', description: 'Description 3' },
+        ]
+      }
+      const items = readItems()
+      const writeItems = (next: Item[]) => {
+        handlePropertyChange(selectedElement.id, 'Items', JSON.stringify(next))
+      }
+      const updateItem = (idx: number, patch: Partial<Item>) => {
+        const next = items.map((it, i) => i === idx ? { ...it, ...patch } : it)
+        writeItems(next)
+      }
+      const addItem = () => {
+        const n = items.length + 1
+        const id = `item-${Date.now()}`
+        writeItems([
+          ...items,
+          { id, title: `Title ${n}`, description: `Description ${n}` },
+        ])
+      }
+      const removeItem = (idx: number) => {
+        writeItems(items.filter((_, i) => i !== idx))
+      }
+      return (
+        <DSModal
+          open={editItemsOpen}
+          onClose={() => setEditItemsOpen(false)}
+          size="lg"
+          title="Edit list items"
+          description="Add or update each item's title, description, and image."
+          confirmLabel="Done"
+          cancelLabel="Close"
+          onConfirm={() => setEditItemsOpen(false)}
+        >
+          <div className="list-items-editor">
+            <div className="list-items-editor__row list-items-editor__row--header">
+              <span className="list-items-editor__cell list-items-editor__cell--title">Title</span>
+              <span className="list-items-editor__cell list-items-editor__cell--description">Description</span>
+              <span className="list-items-editor__cell list-items-editor__cell--image">Image</span>
+              <span className="list-items-editor__cell list-items-editor__cell--actions" />
+            </div>
+            {items.map((item, idx) => (
+              <div className="list-items-editor__row" key={item.id}>
+                <div className="list-items-editor__cell list-items-editor__cell--title">
+                  <DSInput
+                    value={item.title}
+                    onChange={(e) => updateItem(idx, { title: e.target.value })}
+                  />
+                </div>
+                <div className="list-items-editor__cell list-items-editor__cell--description">
+                  <DSInput
+                    value={item.description}
+                    onChange={(e) => updateItem(idx, { description: e.target.value })}
+                  />
+                </div>
+                <div className="list-items-editor__cell list-items-editor__cell--image">
+                  {item.image ? (
+                    <button
+                      type="button"
+                      className="list-items-editor__image-thumb"
+                      style={{ backgroundImage: `url(${item.image})` }}
+                      onClick={() => updateItem(idx, { image: undefined })}
+                      aria-label="Remove image"
+                    />
+                  ) : (
+                    <label className="list-items-editor__image-upload">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+                          const reader = new FileReader()
+                          reader.onload = () => updateItem(idx, { image: String(reader.result) })
+                          reader.readAsDataURL(file)
+                          e.target.value = ''
+                        }}
+                      />
+                      <Icon name="image-plus-filled" category="media" size={16} />
+                      <span>Choose</span>
+                    </label>
+                  )}
+                </div>
+                <div className="list-items-editor__cell list-items-editor__cell--actions">
+                  <button
+                    type="button"
+                    className="list-items-editor__remove"
+                    aria-label="Remove item"
+                    onClick={() => removeItem(idx)}
+                  >
+                    <Icon name="trash-filled" category="general" size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+            <button type="button" className="list-items-editor__add" onClick={addItem}>
+              <Icon name="plus-circle" category="general" size={16} />
+              <span>Add item</span>
+            </button>
+          </div>
+        </DSModal>
+      )
+    })()}
 
     </>
   )

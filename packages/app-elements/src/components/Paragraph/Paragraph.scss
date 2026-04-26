@@ -18,7 +18,11 @@
 // Editor
 .jf-paragraph__editor {
   width: 100%;
+  max-width: 100%;
   padding: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 
   .jf-paragraph--selected & {
     padding: var(--space-1);

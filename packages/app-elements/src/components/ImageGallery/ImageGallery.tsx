@@ -1,25 +1,19 @@
-import type { FC } from 'react';
+import { useRef, type FC } from 'react';
+import { Icon } from '../Icon/Icon';
+import { Button } from '../Button';
 import './ImageGallery.scss';
 
 export type GalleryLayout = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
 
 export interface ImageGalleryProps {
   layout?: GalleryLayout;
+  images?: string[];
   selected?: boolean;
   shrinked?: boolean;
   skeleton?: boolean;
   skeletonAnimation?: 'pulse' | 'shimmer';
+  onUpload?: (urls: string[]) => void;
 }
-
-// Sample placeholder images with different colors
-const SAMPLE_IMAGES = [
-  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=600&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=600&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&h=400&fit=crop',
-];
 
 // Grid definitions per layout
 const LAYOUT_CONFIG: Record<GalleryLayout, {
@@ -129,11 +123,29 @@ const LAYOUT_CONFIG: Record<GalleryLayout, {
 
 export const ImageGallery: FC<ImageGalleryProps> = ({
   layout = '2',
+  images = [],
   selected = false,
   shrinked = false,
   skeleton = false,
   skeletonAnimation = 'pulse',
+  onUpload,
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFiles = (files: FileList | null) => {
+    if (!files || files.length === 0 || !onUpload) return;
+    const fileArr = Array.from(files);
+    Promise.all(
+      fileArr.map(
+        (file) => new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => reject(reader.error);
+          reader.readAsDataURL(file);
+        })
+      )
+    ).then((urls) => onUpload([...images, ...urls]));
+  };
   const config = LAYOUT_CONFIG[layout];
 
   const rootClasses = [
@@ -170,27 +182,63 @@ export const ImageGallery: FC<ImageGalleryProps> = ({
     );
   }
 
+  // Empty state — no images uploaded yet.
+  if (images.length === 0) {
+    return (
+      <div className="jf-gallery-uploader">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          hidden
+          onChange={(e) => {
+            handleFiles(e.target.files);
+            e.target.value = '';
+          }}
+        />
+        <Icon name="Images" size={32} className="jf-gallery-uploader__icon" />
+        <Button
+          variant="Default"
+          corner="Default"
+          size="Small"
+          label="Upload Images"
+          leftIcon="Upload"
+          rightIcon="none"
+          shrinked
+          onClick={() => fileInputRef.current?.click()}
+        />
+        <span className="jf-gallery-uploader__hint">OR DRAG AND DROP HERE</span>
+      </div>
+    );
+  }
+
   return (
     <div
       className={rootClasses}
       style={gridStyle}
     >
-      {config.cells.map((cell, i) => (
-        <div
-          key={i}
-          className="jf-gallery__cell"
-          style={{
-            gridColumn: cell.col,
-            gridRow: cell.row,
-          }}
-        >
-          <img
-            className="jf-gallery__img"
-            src={SAMPLE_IMAGES[i % SAMPLE_IMAGES.length]}
-            alt={`Gallery image ${i + 1}`}
-          />
-        </div>
-      ))}
+      {config.cells.map((cell, i) => {
+        const src = images[i];
+        return (
+          <div
+            key={i}
+            className="jf-gallery__cell"
+            style={{
+              gridColumn: cell.col,
+              gridRow: cell.row,
+            }}
+          >
+            {src && (
+              <img
+                className="jf-gallery__img"
+                src={src}
+                alt={`Gallery image ${i + 1}`}
+              />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };

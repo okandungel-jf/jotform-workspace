@@ -68,7 +68,7 @@ ComponentRegistry.register({
   properties: [
     { name: 'Title', type: 'text', default: 'List' },
     { name: 'Subtitle', type: 'text', default: '' },
-    { name: 'Show Header', type: 'boolean', default: true },
+    { name: 'Show Header', type: 'boolean', default: false },
     { name: 'Button Label', type: 'text', default: 'Edit' },
     { name: 'Skeleton', type: 'boolean', default: false },
     { name: 'Skeleton Animation', type: 'select', options: ['Pulse', 'Shimmer'], default: 'Pulse' },
@@ -181,9 +181,19 @@ ComponentRegistry.register({
   render(variants: VariantValues, props: PropertyValues, _states: StateValues): React.ReactNode {
     const isCard = variants['Layout'] === 'Card';
 
+    let items: { title: string; description: string; image?: string }[] | undefined;
+    const itemsRaw = props['Items'];
+    if (typeof itemsRaw === 'string' && itemsRaw.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(itemsRaw);
+        if (Array.isArray(parsed) && parsed.length > 0) items = parsed;
+      } catch { /* ignore — fall back to defaults */ }
+    }
+
     return (
       <List
         layout={variants['Layout'] as 'Basic' | 'Card'}
+        items={items}
         title={props['Title'] as string}
         subtitle={props['Subtitle'] as string}
         showHeader={props['Show Header'] as boolean}

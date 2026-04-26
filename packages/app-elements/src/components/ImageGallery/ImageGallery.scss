@@ -36,3 +36,35 @@
   object-fit: cover;
   pointer-events: none;
 }
+
+// =========================================
+// Uploader (empty state)
+// =========================================
+.jf-gallery-uploader {
+  background: var(--bg-fill);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-family);
+  width: 100%;
+  max-width: 100%;
+  min-height: 160px;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.jf-gallery-uploader__icon {
+  color: var(--fg-tertiary);
+}
+
+.jf-gallery-uploader__hint {
+  font-size: var(--font-size-label-sm);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.5px;
+  color: var(--fg-tertiary);
+  text-transform: uppercase;
+}

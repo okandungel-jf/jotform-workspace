@@ -8,7 +8,7 @@ export interface FormFieldProps {
   status?: 'default' | 'error' | 'success' | 'warning';
   disabled?: boolean;
   title?: string;
-  description?: string;
+  description?: ReactNode;
   helpText?: string;
   required?: boolean;
   showTitle?: boolean;

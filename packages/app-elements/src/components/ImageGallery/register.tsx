@@ -18,6 +18,7 @@ ComponentRegistry.register({
   },
 
   properties: [
+    { name: 'Images', type: 'text', default: '[]' },
     { name: 'Selected', type: 'boolean', default: false },
     { name: 'Skeleton', type: 'boolean', default: false },
   ],
@@ -65,12 +66,24 @@ ComponentRegistry.register({
     },
   ],
 
-  render(variants: VariantValues, props: PropertyValues, _states: StateValues): React.ReactNode {
+  render(variants: VariantValues, props: PropertyValues, _states: StateValues, onPropertyChange?: (name: string, value: string | boolean | number) => void): React.ReactNode {
+    let images: string[] = [];
+    try {
+      const raw = props['Images'];
+      if (typeof raw === 'string' && raw.trim().length > 0) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) images = parsed.filter((v) => typeof v === 'string');
+      }
+    } catch (_e) {
+      images = [];
+    }
     return (
       <ImageGallery
         layout={variants['Layout'] as GalleryLayout}
+        images={images}
         selected={props['Selected'] as boolean}
         skeleton={props['Skeleton'] as boolean}
+        onUpload={onPropertyChange ? (urls) => onPropertyChange('Images', JSON.stringify(urls)) : undefined}
       />
     );
   },

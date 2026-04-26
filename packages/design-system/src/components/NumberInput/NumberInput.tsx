@@ -1,4 +1,4 @@
-import { type InputHTMLAttributes, forwardRef, useState, useCallback } from 'react';
+import { type InputHTMLAttributes, type ReactNode, forwardRef, useState, useCallback } from 'react';
 import { Icon } from '../Icon';
 import './NumberInput.scss';
 
@@ -8,6 +8,7 @@ export interface NumberInputProps extends Omit<InputHTMLAttributes<HTMLInputElem
   unit?: string;
   showUnit?: boolean;
   step?: number;
+  description?: ReactNode;
   onChange?: (value: number | undefined) => void;
   onIncrement?: () => void;
   onDecrement?: () => void;
@@ -31,6 +32,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
       placeholder = '0',
       min,
       max,
+      description,
       ...rest
     },
     ref
@@ -85,7 +87,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
       .filter(Boolean)
       .join(' ');
 
-    return (
+    const inputBox = (
       <div className={rootClass}>
         <div className="jf-number-input__field-area">
           <input
@@ -126,6 +128,15 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
             <Icon name="caret-down" category="arrows" size={16} />
           </button>
         </div>
+      </div>
+    );
+
+    if (description == null) return inputBox;
+
+    return (
+      <div className="jf-number-input-group">
+        {inputBox}
+        <p className="jf-number-input-group__description">{description}</p>
       </div>
     );
   }

@@ -110,6 +110,10 @@
   &--circle {
     border-radius: var(--radius-rounded);
   }
+
+  &--has-image {
+    background: transparent;
+  }
 }
 
 // =========================================

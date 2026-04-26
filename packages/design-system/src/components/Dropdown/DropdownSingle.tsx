@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle } from 'react';
+import { Fragment, forwardRef, useImperativeHandle } from 'react';
 import { Icon } from '../Icon/Icon';
 import { DropdownWrapper } from './DropdownWrapper';
 import { DropdownMenuShell } from './DropdownMenuShell';
@@ -132,25 +132,28 @@ export const DropdownSingle = forwardRef<DropdownHandle, DropdownSingleProps>(
                   .filter(Boolean)
                   .join(' ');
                 return (
-                  <div
-                    key={opt.value}
-                    className={itemClass}
-                    role="option"
-                    aria-selected={isSelected}
-                    data-dd-index={i}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      onChange?.(opt.value);
-                      setOpen(false);
-                    }}
-                  >
-                    {opt.leading ?? (showLeadingIcon && (
-                      <span className="jf-dropdown__item-leading">
-                        <Icon name="circle-filled" category="general" size={size === 'lg' ? 24 : 20} />
-                      </span>
-                    ))}
-                    <span className="jf-dropdown__item-label" style={opt.labelStyle}>{opt.label}</span>
-                  </div>
+                  <Fragment key={opt.value}>
+                    {opt.divider && <div className="jf-dropdown__divider" role="separator" />}
+                    <div
+                      className={itemClass}
+                      role="option"
+                      aria-selected={isSelected}
+                      data-dd-index={i}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        onChange?.(opt.value);
+                        setOpen(false);
+                      }}
+                    >
+                      {opt.leading ?? (showLeadingIcon && (
+                        <span className="jf-dropdown__item-leading">
+                          <Icon name="circle-filled" category="general" size={size === 'lg' ? 24 : 20} />
+                        </span>
+                      ))}
+                      <span className="jf-dropdown__item-label" style={opt.labelStyle}>{opt.label}</span>
+                      {opt.trailing && <span className="jf-dropdown__item-trailing">{opt.trailing}</span>}
+                    </div>
+                  </Fragment>
                 );
               })}
             </DropdownMenuShell>

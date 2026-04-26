@@ -1,0 +1,98 @@
+// ============================================
+// JotForm Apps - Image Component
+// ============================================
+
+// =========================================
+// Image (uploaded state)
+// =========================================
+.jf-image {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  font-family: var(--font-family);
+  transition: outline-color 200ms ease;
+
+  &--left {
+    justify-content: flex-start;
+  }
+
+  &--center {
+    justify-content: center;
+  }
+
+  &--right {
+    justify-content: flex-end;
+  }
+
+  &--selected {
+    outline: 2px solid var(--border-info);
+    outline-offset: 4px;
+  }
+
+  &--shrinked {
+    width: 300px;
+
+    @media (max-width: 768px) {
+      width: 100%;
+    }
+  }
+}
+
+.jf-image__media {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+// =========================================
+// Image Builder (upload state)
+// =========================================
+.jf-image-builder {
+  background: var(--bg-fill);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-family);
+  width: 100%;
+  max-width: 100%;
+  min-height: 160px;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  overflow: hidden;
+  transition: background 200ms ease;
+
+  &--active {
+    background: var(--bg-surface-brand);
+    flex-direction: row;
+    gap: var(--space-2);
+  }
+
+  &--selected {
+    outline: 2px solid var(--border-info);
+    outline-offset: 4px;
+  }
+
+  &--shrinked {
+    width: 300px;
+  }
+}
+
+.jf-image-builder__icon {
+  color: var(--fg-tertiary);
+}
+
+.jf-image-builder__drop-icon {
+  color: var(--fg-brand);
+}
+
+.jf-image-builder__hint {
+  font-size: var(--font-size-label-sm);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.5px;
+  color: var(--fg-tertiary);
+  text-transform: uppercase;
+}

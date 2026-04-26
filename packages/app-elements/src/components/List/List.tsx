@@ -13,6 +13,7 @@ export type ListAction = 'None' | 'Icon' | 'Button';
 export interface ListItemData {
   title: string;
   description: string;
+  image?: string;
 }
 
 export type CardSize = 'Small' | 'Medium' | 'Large';
@@ -90,8 +91,17 @@ const BasicListItem: FC<{
   return (
     <div className={`jf-list-item jf-list-item--basic${isCompact ? ' jf-list-item--compact' : ''}`}>
       {hasImage && (
-        <div className={`jf-list-item__image jf-list-item__image--${imageStyle.toLowerCase()}`} style={{ width: imgSize, height: imgSize }}>
-          <ImagePlaceholder size={iconSize} />
+        <div
+          className={`jf-list-item__image jf-list-item__image--${imageStyle.toLowerCase()}${item.image ? ' jf-list-item__image--has-image' : ''}`}
+          style={{
+            width: imgSize,
+            height: imgSize,
+            backgroundImage: item.image ? `url(${item.image})` : undefined,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          {!item.image && <ImagePlaceholder size={iconSize} />}
         </div>
       )}
       <div className="jf-list-item__content">
@@ -173,10 +183,9 @@ const SkeletonCardItem: FC<{ cardImageStyle: CardImageStyle; cardLayout: CardLay
 // List Component
 // ============================================
 const DEFAULT_ITEMS: ListItemData[] = [
-  { title: 'Card Title', description: 'Description' },
-  { title: 'Card Title', description: 'Description' },
-  { title: 'Card Title', description: 'Description' },
-  { title: 'Card Title', description: 'Description' },
+  { title: 'Title 1', description: 'Description 1' },
+  { title: 'Title 2', description: 'Description 2' },
+  { title: 'Title 3', description: 'Description 3' },
 ];
 
 export const List: FC<ListProps> = ({
@@ -258,6 +267,7 @@ export const List: FC<ListProps> = ({
               layout={cardLayout}
               action={cardAction}
               actionIconFilled={cardActionIconFilled}
+              imageUrl={item.image}
               title={item.title}
               description={item.description}
               buttonLabel={cardButtonLabel}

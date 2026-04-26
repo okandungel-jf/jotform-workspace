@@ -25,6 +25,7 @@ import './components/Heading/register';
 import './components/List/register';
 import './components/Document/register';
 import './components/SignDocument/register';
+import './components/Image/register';
 import './components/ImageGallery/register';
 import './components/SocialFollow/register';
 import './components/Form/register';
