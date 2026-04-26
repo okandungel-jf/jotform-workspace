@@ -8,6 +8,9 @@ export type {
   DropdownLanguageOption,
   DropdownLanguageHandle,
 } from './DropdownLanguage';
+export { DropdownMenuShell } from './DropdownMenuShell';
+export { useDropdown } from './useDropdown';
+export type { UseDropdownOptions } from './useDropdown';
 export type {
   DropdownBaseProps,
   DropdownOption,

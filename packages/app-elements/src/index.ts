@@ -66,5 +66,5 @@ export { ProgressIndicator } from './components/ProgressIndicator';
 export { Spacer } from './components/Spacer';
 
 // Layout
-export { AppDesigner, applyDefaultTheme } from './layout/AppDesigner';
+export { AppDesigner, applyDefaultTheme, applyStoredOrDefaultTheme } from './layout/AppDesigner';
 export { BottomSheet } from './layout/components/BottomSheet';

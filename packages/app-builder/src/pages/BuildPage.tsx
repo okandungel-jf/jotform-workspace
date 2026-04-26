@@ -4,7 +4,7 @@ import {
   ComponentRegistry,
   AppHeader,
   AppDesigner,
-  applyDefaultTheme,
+  applyStoredOrDefaultTheme,
   BottomNavigation,
   EmptyState,
   BottomSheet,
@@ -32,6 +32,8 @@ import {
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
 import { pointerOutsideOfPreview } from '@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview'
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element'
+import type { AppPreset, PresetElement } from '../presets/appPresets'
+import { loadSnapshot, saveSnapshot } from '../presets/storage'
 
 interface CanvasElement {
   id: string
@@ -120,6 +122,59 @@ function createCanvasElement(comp: RegisteredComponent, id: string): CanvasEleme
     variants,
     properties,
     states,
+  }
+}
+
+function buildCanvasElementsFromPreset(presetElements: PresetElement[], startId: number): { elements: CanvasElement[]; nextId: number } {
+  const elements: CanvasElement[] = []
+  let id = startId
+  for (const pe of presetElements) {
+    const comp = ComponentRegistry.get(pe.componentId)
+    if (!comp) continue
+    const el = createCanvasElement(comp, `element-${id++}`)
+    if (pe.variants) Object.assign(el.variants, pe.variants)
+    if (pe.properties) Object.assign(el.properties, pe.properties)
+    elements.push(el)
+  }
+  return { elements, nextId: id }
+}
+
+function buildInitialStateFromPreset(preset: AppPreset | undefined): {
+  pages: AppPage[]
+  headerActions: CanvasElement[]
+  activePageId: string
+  appSubtitle: string
+} {
+  if (!preset || preset.pages.length === 0) {
+    return {
+      pages: [{ id: 'page-1', name: 'Home', icon: 'House', elements: [] }],
+      headerActions: [],
+      activePageId: 'page-1',
+      appSubtitle: preset?.appSubtitle ?? '',
+    }
+  }
+  const stored = loadSnapshot(preset.id)
+  if (stored) {
+    const pages = stored.pages as AppPage[]
+    return {
+      pages,
+      headerActions: stored.headerActions as CanvasElement[],
+      activePageId: pages[0]?.id ?? 'page-1',
+      appSubtitle: stored.appSubtitle,
+    }
+  }
+  let nextId = 1
+  const pages: AppPage[] = preset.pages.map((p) => {
+    const built = buildCanvasElementsFromPreset(p.elements, nextId)
+    nextId = built.nextId
+    return { id: p.id, name: p.name, icon: p.icon, elements: built.elements }
+  })
+  const headerBuilt = buildCanvasElementsFromPreset(preset.headerActions, nextId)
+  return {
+    pages,
+    headerActions: headerBuilt.elements,
+    activePageId: pages[0].id,
+    appSubtitle: preset.appSubtitle,
   }
 }
 
@@ -802,16 +857,15 @@ function AddPageDivider({ onClick }: { onClick: () => void }) {
 
 type RightPanelMode = 'preview' | 'designer' | 'properties'
 
-export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Title', onAppTitleChange }: { previewMode?: boolean; appTitle?: string; onAppTitleChange?: (title: string) => void }) {
+export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Title', onAppTitleChange, preset }: { previewMode?: boolean; appTitle?: string; onAppTitleChange?: (title: string) => void; preset?: AppPreset }) {
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
   const [components, setComponents] = useState<RegisteredComponent[]>(ComponentRegistry.getAll())
-  const [pages, setPages] = useState<AppPage[]>([
-    { id: 'page-1', name: 'Home', icon: 'House', elements: [] },
-  ])
-  const [headerActions, setHeaderActions] = useState<CanvasElement[]>([])
+  const initial = useRef(buildInitialStateFromPreset(preset)).current
+  const [pages, setPages] = useState<AppPage[]>(initial.pages)
+  const [headerActions, setHeaderActions] = useState<CanvasElement[]>(initial.headerActions)
   const headerActionsRef = useRef<CanvasElement[]>([])
   useEffect(() => { headerActionsRef.current = headerActions }, [headerActions])
-  const [activePageId, setActivePageId] = useState('page-1')
+  const [activePageId, setActivePageId] = useState(initial.activePageId)
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null)
   const [dragSession, setDragSession] = useState<DragSourceData | null>(null)
   const isDragging = dragSession !== null
@@ -846,7 +900,12 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
 
   const appTitle = appTitleProp
   const setAppTitle = (title: string) => onAppTitleChange?.(title)
-  const [appSubtitle, setAppSubtitle] = useState('')
+  const [appSubtitle, setAppSubtitle] = useState(initial.appSubtitle)
+
+  useEffect(() => {
+    if (!preset) return
+    saveSnapshot(preset.id, { appTitle, appSubtitle, pages, headerActions })
+  }, [preset, appTitle, appSubtitle, pages, headerActions])
   const appHeaderRef = useRef<HTMLDivElement>(null)
   const designBtnRef = useRef<HTMLButtonElement>(null)
   const [designBtnOnHeader, setDesignBtnOnHeader] = useState(true)
@@ -920,8 +979,8 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   }, [])
 
   useEffect(() => {
-    applyDefaultTheme()
-  }, [])
+    applyStoredOrDefaultTheme(preset?.id)
+  }, [preset?.id])
 
   useEffect(() => {
     const builder = document.querySelector('.builder')
@@ -2006,6 +2065,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
               targetSelector=".app-scope"
               isMobile={isMobileView}
               visible={rightPanel === 'designer'}
+              namespace={preset?.id}
               renderIcon={(name, size) => <Icon name={name} category="editor" size={size} />}
               doneButton={<DSButton variant="filled" colorScheme="primary" shape="rectangle" size="md" onClick={handleCloseDesigner}>Done</DSButton>}
             />

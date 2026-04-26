@@ -244,6 +244,14 @@ body {
   color: var(--text-darkest);
 }
 
+.topbar__preset-dropdown {
+  display: inline-flex;
+}
+
+.topbar__preset-menu {
+  min-width: 220px;
+}
+
 .topbar__timestamp {
   font-size: var(--ds-font-size-sm);
   font-weight: var(--ds-font-weight-book);

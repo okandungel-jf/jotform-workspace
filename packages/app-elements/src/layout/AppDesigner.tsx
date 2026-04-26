@@ -295,6 +295,91 @@ export function applyDefaultTheme() {
   document.documentElement.style.setProperty('--font-family-heading', `'${headingFamily}', -apple-system, BlinkMacSystemFont, sans-serif`);
 }
 
+// ── AppDesigner persistence ─────────────────────────────────────────────
+
+const APP_DESIGNER_STORAGE_PREFIX = 'jf-app-designer:';
+
+export interface AppDesignerSnapshot {
+  color: string;
+  tint: number;
+  font: string;
+  headingFont: string;
+  radius: RadiusScale;
+  harmonyOffset: number;
+  activePreset: string;
+  colorMode: 'light' | 'dark';
+  tokenOverrides: Record<string, string>;
+}
+
+function appDesignerKey(namespace: string) {
+  return `${APP_DESIGNER_STORAGE_PREFIX}${namespace}`;
+}
+
+export function loadAppDesignerSnapshot(namespace: string): AppDesignerSnapshot | null {
+  try {
+    const raw = localStorage.getItem(appDesignerKey(namespace));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<AppDesignerSnapshot>;
+    if (
+      typeof parsed.color !== 'string' ||
+      typeof parsed.tint !== 'number' ||
+      typeof parsed.font !== 'string' ||
+      typeof parsed.headingFont !== 'string' ||
+      typeof parsed.radius !== 'string' ||
+      typeof parsed.harmonyOffset !== 'number' ||
+      typeof parsed.activePreset !== 'string' ||
+      (parsed.colorMode !== 'light' && parsed.colorMode !== 'dark') ||
+      !parsed.tokenOverrides ||
+      typeof parsed.tokenOverrides !== 'object'
+    ) return null;
+    return parsed as AppDesignerSnapshot;
+  } catch {
+    return null;
+  }
+}
+
+export function saveAppDesignerSnapshot(namespace: string, snapshot: AppDesignerSnapshot): void {
+  try {
+    localStorage.setItem(appDesignerKey(namespace), JSON.stringify(snapshot));
+  } catch {
+    // Best-effort persistence.
+  }
+}
+
+function applyThemeSnapshot(s: AppDesignerSnapshot, targetSelector = '.app-scope') {
+  if (s.colorMode === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  else document.documentElement.removeAttribute('data-theme');
+
+  const dark = s.colorMode === 'dark';
+  applyPaletteToDOM(generatePalette(s.color, dark), generatePalette(s.color, false));
+  applyNeutralToDOM(generateNeutralPalette(s.color, s.tint, dark), s.color, s.tint);
+
+  loadGoogleFont(s.font);
+  document.documentElement.style.setProperty('--font-family', `'${s.font}', -apple-system, BlinkMacSystemFont, sans-serif`);
+  if (s.headingFont) {
+    loadGoogleFont(s.headingFont);
+    document.documentElement.style.setProperty('--font-family-heading', `'${s.headingFont}', -apple-system, BlinkMacSystemFont, sans-serif`);
+  } else {
+    document.documentElement.style.setProperty('--font-family-heading', `'${s.font}', -apple-system, BlinkMacSystemFont, sans-serif`);
+  }
+
+  applyRadius(s.radius, document.querySelectorAll<HTMLElement>(targetSelector));
+
+  for (const [variable, color] of Object.entries(s.tokenOverrides)) {
+    document.documentElement.style.setProperty(variable, color);
+  }
+}
+
+/**
+ * Apply the stored AppDesigner snapshot for the given namespace, falling back
+ * to the default theme when no snapshot exists.
+ */
+export function applyStoredOrDefaultTheme(namespace?: string, targetSelector = '.app-scope') {
+  const stored = namespace ? loadAppDesignerSnapshot(namespace) : null;
+  if (stored) applyThemeSnapshot(stored, targetSelector);
+  else applyDefaultTheme();
+}
+
 const _tokenCanvas = document.createElement('canvas');
 _tokenCanvas.width = 1;
 _tokenCanvas.height = 1;
@@ -349,22 +434,27 @@ interface AppDesignerProps {
   visible?: boolean;
   renderIcon?: (name: string, size: number) => React.ReactNode;
   doneButton?: React.ReactNode;
+  /** Optional storage namespace for persisting theme state across sessions. */
+  namespace?: string;
 }
 
-export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, renderIcon, doneButton, visible = true }: AppDesignerProps) {
+export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, renderIcon, doneButton, visible = true, namespace }: AppDesignerProps) {
   const { setLibrary: setIconLibrary, setIconStyle } = useIconLibrary();
 
+  const storedSnapshot = namespace ? loadAppDesignerSnapshot(namespace) : null;
+
   // Theme state
-  const [color, setColor] = useState(DEFAULT_COLOR);
-  const [tint, setTint] = useState(DEFAULT_TINT);
-  const [font, setFont] = useState(DEFAULT_FONT);
-  const [headingFont, setHeadingFont] = useState(DEFAULT_HEADING_FONT);
-  const [radius, setRadius] = useState<RadiusScale>(DEFAULT_RADIUS as RadiusScale);
-  const [, setPalette] = useState<PaletteShade[]>(() => generatePalette(DEFAULT_COLOR, isDarkMode()));
-  const [harmonyOffset, setHarmonyOffset] = useState(DEFAULT_HARMONY);
+  const [color, setColor] = useState(storedSnapshot?.color ?? DEFAULT_COLOR);
+  const [tint, setTint] = useState(storedSnapshot?.tint ?? DEFAULT_TINT);
+  const [font, setFont] = useState(storedSnapshot?.font ?? DEFAULT_FONT);
+  const [headingFont, setHeadingFont] = useState(storedSnapshot?.headingFont ?? DEFAULT_HEADING_FONT);
+  const [radius, setRadius] = useState<RadiusScale>((storedSnapshot?.radius ?? DEFAULT_RADIUS) as RadiusScale);
+  const [, setPalette] = useState<PaletteShade[]>(() => generatePalette(storedSnapshot?.color ?? DEFAULT_COLOR, isDarkMode()));
+  const [harmonyOffset, setHarmonyOffset] = useState(storedSnapshot?.harmonyOffset ?? DEFAULT_HARMONY);
   const [secondaryEnabled] = useState(false);
-  const [activePreset, setActivePreset] = useState('Default');
+  const [activePreset, setActivePreset] = useState(storedSnapshot?.activePreset ?? 'Default');
   const [colorMode, setColorMode] = useState<'light' | 'dark'>(() => {
+    if (storedSnapshot) return storedSnapshot.colorMode;
     return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
   });
   const [designerTab, setDesignerTab] = useState<'general' | 'layout'>('general');
@@ -384,7 +474,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
 
   // Token editor state
   const [tokenEditorOpen, setTokenEditorOpen] = useState(false);
-  const [tokenOverrides, setTokenOverrides] = useState<Record<string, string>>({});
+  const [tokenOverrides, setTokenOverrides] = useState<Record<string, string>>(storedSnapshot?.tokenOverrides ?? {});
   const [editingToken, setEditingToken] = useState<string | null>(null);
   const [resolvedTokenColors, setResolvedTokenColors] = useState<Record<string, string>>({});
   const [tokenPickerPos, setTokenPickerPos] = useState({ top: 0, left: 0 });
@@ -426,6 +516,15 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
     setMobileTokenPickerOpen(false);
     setEditingToken(null);
   }, []);
+
+  // Persist theme state per namespace.
+  useEffect(() => {
+    if (!namespace) return;
+    saveAppDesignerSnapshot(namespace, {
+      color, tint, font, headingFont, radius,
+      harmonyOffset, activePreset, colorMode, tokenOverrides,
+    });
+  }, [namespace, color, tint, font, headingFont, radius, harmonyOffset, activePreset, colorMode, tokenOverrides]);
 
   // ── Target element for radius ──
 

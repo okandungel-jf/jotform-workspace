@@ -321,6 +321,12 @@
     bottom: calc(100% + 4px);
   }
 
+  // Portal mode: menu is fixed-positioned via inline style; reset stretching defaults.
+  &--portal {
+    left: auto;
+    right: auto;
+  }
+
   // ===== Mobile bottom-sheet =====
   &--sheet {
     position: fixed;
