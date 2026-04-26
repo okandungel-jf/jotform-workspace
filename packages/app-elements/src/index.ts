@@ -32,6 +32,8 @@ import './components/Table/register';
 import './components/Testimonial/register';
 import './components/DailyTaskManager/register';
 import './components/ColorPicker/register';
+export { ColorPicker as TokenColorPicker } from './components/ColorPicker/ColorPicker';
+export type { ColorPickerProps as TokenColorPickerProps } from './components/ColorPicker/ColorPicker';
 import './components/EmptyState/register';
 import './components/Chart/register';
 import './components/AppHeader/register';

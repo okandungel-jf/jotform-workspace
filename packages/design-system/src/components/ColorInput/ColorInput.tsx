@@ -1,4 +1,4 @@
-import { type InputHTMLAttributes, forwardRef, useState } from 'react';
+import { type InputHTMLAttributes, type MouseEvent, forwardRef, useState } from 'react';
 import './ColorInput.scss';
 
 export interface ColorInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
@@ -6,6 +6,8 @@ export interface ColorInputProps extends Omit<InputHTMLAttributes<HTMLInputEleme
   status?: 'default' | 'error' | 'success' | 'warning' | 'readonly';
   color?: string;
   onColorChange?: (color: string) => void;
+  /** Called when the swatch is clicked. When omitted, the swatch is non-interactive. */
+  onSwatchClick?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
 export const ColorInput = forwardRef<HTMLInputElement, ColorInputProps>(
@@ -15,6 +17,7 @@ export const ColorInput = forwardRef<HTMLInputElement, ColorInputProps>(
       status = 'default',
       color,
       onColorChange,
+      onSwatchClick,
       disabled,
       readOnly,
       className,
@@ -46,6 +49,8 @@ export const ColorInput = forwardRef<HTMLInputElement, ColorInputProps>(
       .filter(Boolean)
       .join(' ');
 
+    const swatchInteractive = !!onSwatchClick && !disabled && resolvedStatus !== 'readonly';
+
     return (
       <div className={rootClass}>
         <input
@@ -58,20 +63,20 @@ export const ColorInput = forwardRef<HTMLInputElement, ColorInputProps>(
           readOnly={readOnly || resolvedStatus === 'readonly'}
           {...rest}
         />
-        <div className="jf-color-input__swatch-wrapper">
-          <div
+        <button
+          type="button"
+          className="jf-color-input__swatch-wrapper"
+          style={swatchInteractive ? undefined : { cursor: 'default' }}
+          onClick={swatchInteractive ? onSwatchClick : undefined}
+          tabIndex={swatchInteractive ? 0 : -1}
+          aria-label="Open color picker"
+          disabled={disabled || resolvedStatus === 'readonly'}
+        >
+          <span
             className="jf-color-input__swatch"
             style={{ backgroundColor: currentColor }}
           />
-          <input
-            type="color"
-            className="jf-color-input__picker"
-            value={currentColor}
-            onChange={handleChange}
-            disabled={disabled || resolvedStatus === 'readonly'}
-            tabIndex={-1}
-          />
-        </div>
+        </button>
       </div>
     );
   }

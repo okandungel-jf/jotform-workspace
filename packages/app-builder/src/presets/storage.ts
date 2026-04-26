@@ -5,7 +5,16 @@ export interface PresetSnapshot {
   appSubtitle: string
   pages: unknown
   headerActions: unknown
-  appHeader?: { layout: string; icon: string; skeleton: boolean }
+  appHeader?: {
+    layout: string
+    icon: string
+    skeleton: boolean
+    show?: boolean
+    imageStyle?: 'Image' | 'Icon' | 'None'
+    imageUrl?: string | null
+    imageName?: string | null
+    textColor?: string
+  }
 }
 
 function key(presetId: string) {

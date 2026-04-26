@@ -13,7 +13,7 @@ import {
   type PropertyValues,
   type StateValues,
 } from '@jf/app-elements'
-import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput, FormField as DSFormField } from '@jf/design-system'
+import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput, FormField as DSFormField, TextArea as DSTextArea, ColorInput as DSColorInput } from '@jf/design-system'
 import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
@@ -34,6 +34,7 @@ import { pointerOutsideOfPreview } from '@atlaskit/pragmatic-drag-and-drop/eleme
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element'
 import type { AppPreset, PresetElement } from '../presets/appPresets'
 import { IconPropertyField } from '../components/IconPropertyField'
+import { ColorInputWithPicker } from '../components/ColorInputWithPicker'
 import { loadSnapshot, saveSnapshot } from '../presets/storage'
 
 interface CanvasElement {
@@ -159,12 +160,22 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
   const stored = loadSnapshot(preset.id)
   if (stored) {
     const pages = stored.pages as AppPage[]
+    const storedHeader = stored.appHeader ?? {}
     return {
       pages,
       headerActions: stored.headerActions as CanvasElement[],
       activePageId: pages[0]?.id ?? 'page-1',
       appSubtitle: stored.appSubtitle,
-      appHeader: stored.appHeader ?? { ...APP_HEADER_DEFAULTS },
+      appHeader: {
+        layout: storedHeader.layout ?? APP_HEADER_DEFAULTS.layout,
+        icon: storedHeader.icon ?? APP_HEADER_DEFAULTS.icon,
+        skeleton: storedHeader.skeleton ?? APP_HEADER_DEFAULTS.skeleton,
+        show: typeof storedHeader.show === 'boolean' ? storedHeader.show : APP_HEADER_DEFAULTS.show,
+        imageStyle: (storedHeader.imageStyle as AppHeaderImageStyle | undefined) ?? APP_HEADER_DEFAULTS.imageStyle,
+        imageUrl: storedHeader.imageUrl ?? APP_HEADER_DEFAULTS.imageUrl,
+        imageName: storedHeader.imageName ?? APP_HEADER_DEFAULTS.imageName,
+        textColor: storedHeader.textColor ?? APP_HEADER_DEFAULTS.textColor,
+      },
     }
   }
   let nextId = 1
@@ -191,12 +202,27 @@ function nextElementId(pages: AppPage[], headerActions: CanvasElement[] = []): s
 }
 
 const APP_HEADER_ID = 'app-header'
+type AppHeaderImageStyle = 'Image' | 'Icon' | 'None'
 interface AppHeaderState {
   layout: string
   icon: string
   skeleton: boolean
+  show: boolean
+  imageStyle: AppHeaderImageStyle
+  imageUrl: string | null
+  imageName: string | null
+  textColor: string
 }
-const APP_HEADER_DEFAULTS: AppHeaderState = { layout: 'Center', icon: 'Leaf', skeleton: false }
+const APP_HEADER_DEFAULTS: AppHeaderState = {
+  layout: 'Center',
+  icon: 'Leaf',
+  skeleton: false,
+  show: true,
+  imageStyle: 'Icon',
+  imageUrl: null,
+  imageName: null,
+  textColor: '#FFFFFF',
+}
 
 const HEADER_ACTION_ALLOWED = ['button', 'social-follow']
 const HEADER_ACTIONS_MAX = 3
@@ -873,6 +899,7 @@ type RightPanelMode = 'preview' | 'designer' | 'properties'
 export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Title', onAppTitleChange, preset }: { previewMode?: boolean; appTitle?: string; onAppTitleChange?: (title: string) => void; preset?: AppPreset }) {
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
   const [propertyTab, setPropertyTab] = useState<string>('general')
+  const appHeaderImageInputRef = useRef<HTMLInputElement>(null)
   const [selectedElementId, _setSelectedElementId] = useState<string | null>(null)
   const setSelectedElementId = useCallback((next: React.SetStateAction<string | null>) => {
     _setSelectedElementId(next)
@@ -1753,9 +1780,12 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
           <div className="app-scope">
             <div className="themes-view__device">
               <div ref={appHeaderRef}>
-                <AppHeader
+                {appHeaderState.show && <AppHeader
                   layout={appHeaderState.layout as 'Center' | 'Left' | 'Right'}
                   icon={appHeaderState.icon}
+                  imageStyle={appHeaderState.imageStyle}
+                  imageUrl={appHeaderState.imageUrl}
+                  textColor={appHeaderState.textColor}
                   skeleton={appHeaderState.skeleton}
                   title={appTitle}
                   subtitle={appSubtitle}
@@ -1806,7 +1836,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                       <CanvasDropLine target={headerDropTarget} containerRef={headerActionsSlotRef} />
                     </DropEdgeContext.Provider>
                   }
-                />
+                />}
               </div>
 
               {pages.map((page, pageIndex) => (
@@ -1961,84 +1991,249 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                   />
                 </div>
 
-                {propertyTab === 'general' ? (
-                  <div className="property-panel__body">
-                    {/* Variants */}
-                    {Object.entries(selectedComponent.variants)
-                      .filter(([, config]) => {
+                {(() => {
+                  const isAppHeader = selectedComponent.id === 'app-header'
+
+                  // AppHeader's General tab is bespoke (Show toggle + App Title + App Description).
+                  if (isAppHeader && propertyTab === 'general') {
+                    return (
+                      <div className="property-panel__body">
+                        <div className="property-panel__field property-panel__field--inline">
+                          <DSFormField
+                            title="Show App Header"
+                            description="Display the header banner on the first page."
+                            size="md"
+                            showDescription
+                            showHelpText={false}
+                          >
+                            <DSToggle
+                              size="md"
+                              checked={appHeaderState.show}
+                              onChange={(e) => setAppHeaderState((s) => ({ ...s, show: e.target.checked }))}
+                            />
+                          </DSFormField>
+                        </div>
+                        <div className="property-panel__field">
+                          <DSFormField title="App Title" size="md" showDescription={false} showHelpText={false}>
+                            <DSInput
+                              value={appTitle}
+                              onChange={(e) => setAppTitle(e.target.value)}
+                            />
+                          </DSFormField>
+                        </div>
+                        <div className="property-panel__field">
+                          <DSFormField title="App Description" size="md" showDescription={false} showHelpText={false}>
+                            <DSTextArea
+                              size="md"
+                              maxLength={240}
+                              showCount
+                              showDrag={false}
+                              placeholder="Add description"
+                              value={appSubtitle}
+                              onChange={(e) => setAppSubtitle(e.target.value)}
+                            />
+                          </DSFormField>
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  const showVariants = !isAppHeader || propertyTab === 'style'
+
+                  const visibleVariants = !showVariants
+                    ? []
+                    : Object.entries(selectedComponent.variants).filter(([, config]) => {
                         if (!config.showWhen) return true
                         return Object.entries(config.showWhen).every(
                           ([key, val]) => selectedElement.variants[key] === val
                         )
                       })
-                      .map(([group, config]) => (
-                      <div key={group} className="property-panel__field">
-                        <DSFormField title={group} size="md" showDescription={false} showHelpText={false}>
-                          <Segmented
-                            accent="apps"
-                            variant="text"
-                            value={String(selectedElement.variants[group] ?? '')}
-                            onChange={(val) => handleVariantChange(selectedElement.id, group, val)}
-                            items={config.options.map((opt) => ({ value: opt, label: opt }))}
-                          />
-                        </DSFormField>
-                      </div>
-                    ))}
 
-                    {/* Properties */}
-                    {selectedComponent.properties
-                      .filter((prop) => prop.name !== 'Selected' && prop.name !== 'Skeleton')
-                      .filter((prop) => {
-                        if (!prop.showWhen) return true
-                        return Object.entries(prop.showWhen).every(
-                          ([key, val]) => selectedElement.variants[key] === val || selectedElement.properties[key] === val
-                        )
-                      })
-                      .map((prop) => (
-                      <div key={prop.name} className="property-panel__field">
-                        <DSFormField title={prop.name} size="md" showDescription={false} showHelpText={false}>
-                          {prop.type === 'boolean' ? (
-                            <DSToggle
-                              checked={Boolean(selectedElement.properties[prop.name])}
-                              onChange={(e) =>
-                                handlePropertyChange(selectedElement.id, prop.name, e.target.checked)
-                              }
-                            />
-                          ) : prop.type === 'number' ? (
-                            <DSNumberInput
-                              showUnit={false}
-                              min={prop.min ?? 0}
-                              max={prop.max ?? 200}
-                              value={Number(selectedElement.properties[prop.name]) || 0}
-                              onChange={(val) =>
-                                handlePropertyChange(selectedElement.id, prop.name, val ?? 0)
-                              }
-                            />
-                          ) : prop.type === 'icon' ? (
-                            <IconPropertyField
-                              value={String(selectedElement.properties[prop.name] || '')}
-                              onChange={(val) =>
-                                handlePropertyChange(selectedElement.id, prop.name, val)
-                              }
-                            />
-                          ) : (
-                            <DSInput
-                              value={String(selectedElement.properties[prop.name] || '')}
-                              onChange={(e) =>
-                                handlePropertyChange(selectedElement.id, prop.name, e.target.value)
-                              }
-                            />
-                          )}
-                        </DSFormField>
+                  const visibleProps = selectedComponent.properties
+                    .filter((prop) => prop.name !== 'Selected' && prop.name !== 'Skeleton')
+                    .filter((prop) => {
+                      if (isAppHeader) {
+                        // Style tab → everything except Title/Subtitle (general) and Icon (rendered inside Image Style).
+                        return prop.name !== 'Title' && prop.name !== 'Subtitle' && prop.name !== 'Icon'
+                      }
+                      return propertyTab === 'general'
+                    })
+                    .filter((prop) => {
+                      if (!prop.showWhen) return true
+                      return Object.entries(prop.showWhen).every(
+                        ([key, val]) => selectedElement.variants[key] === val || selectedElement.properties[key] === val
+                      )
+                    })
+
+                  if (visibleVariants.length === 0 && visibleProps.length === 0) {
+                    return (
+                      <div className="property-panel__empty">
+                        <Icon name="info-circle" category="general" size={20} />
+                        <span>Coming soon</span>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="property-panel__empty">
-                    <Icon name="info-circle" category="general" size={20} />
-                    <span>Coming soon</span>
-                  </div>
-                )}
+                    )
+                  }
+
+                  return (
+                    <div className="property-panel__body">
+                      {isAppHeader && propertyTab === 'style' && (
+                        <>
+                          <div className="property-panel__field property-panel__field--inline">
+                            <DSFormField
+                              title="Show Background"
+                              description="Show a colored background behind the header."
+                              size="md"
+                              showDescription
+                              showHelpText={false}
+                            >
+                              <DSToggle size="md" defaultChecked />
+                            </DSFormField>
+                          </div>
+                          <div className="property-panel__field">
+                            <DSFormField title="Text Color" size="md" showDescription={false} showHelpText={false}>
+                              <ColorInputWithPicker
+                                size="md"
+                                color={appHeaderState.textColor}
+                                onColorChange={(val) => setAppHeaderState((s) => ({ ...s, textColor: val }))}
+                              />
+                            </DSFormField>
+                          </div>
+                          <div className="property-panel__field">
+                            <DSFormField title="Image Style" size="md" showDescription={false} showHelpText={false}>
+                              <Segmented
+                                accent="apps"
+                                variant="text"
+                                value={appHeaderState.imageStyle}
+                                onChange={(val) => setAppHeaderState((s) => ({ ...s, imageStyle: val as AppHeaderImageStyle }))}
+                                items={[
+                                  { value: 'Image', label: 'Image' },
+                                  { value: 'Icon', label: 'Icon' },
+                                  { value: 'None', label: 'None' },
+                                ]}
+                              />
+                            </DSFormField>
+                            {appHeaderState.imageStyle === 'Icon' && (
+                              <IconPropertyField
+                                value={appHeaderState.icon}
+                                onChange={(val) => setAppHeaderState((s) => ({ ...s, icon: val }))}
+                              />
+                            )}
+                            {appHeaderState.imageStyle === 'Image' && (
+                              <>
+                                <input
+                                  ref={appHeaderImageInputRef}
+                                  type="file"
+                                  accept="image/*"
+                                  hidden
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0]
+                                    if (!file) return
+                                    const reader = new FileReader()
+                                    reader.onload = () => {
+                                      setAppHeaderState((s) => ({
+                                        ...s,
+                                        imageUrl: String(reader.result),
+                                        imageName: file.name,
+                                      }))
+                                    }
+                                    reader.readAsDataURL(file)
+                                    // Allow re-selecting the same file later.
+                                    e.target.value = ''
+                                  }}
+                                />
+                                {appHeaderState.imageUrl ? (
+                                  <div className="image-preview">
+                                    <div
+                                      className="image-preview__thumb"
+                                      style={{ backgroundImage: `url(${appHeaderState.imageUrl})` }}
+                                    />
+                                    <span className="image-preview__name" title={appHeaderState.imageName ?? ''}>
+                                      {appHeaderState.imageName ?? 'image'}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      className="image-preview__remove"
+                                      aria-label="Remove image"
+                                      onClick={() => setAppHeaderState((s) => ({ ...s, imageUrl: null, imageName: null }))}
+                                    >
+                                      <Icon name="trash-filled" category="general" size={16} />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="upload-area">
+                                    <DSButton
+                                      variant="filled"
+                                      colorScheme="secondary"
+                                      shape="rectangle"
+                                      size="md"
+                                      leftIcon={<Icon name="image-plus-filled" category="media" size={16} />}
+                                      onClick={() => appHeaderImageInputRef.current?.click()}
+                                    >
+                                      Choose File
+                                    </DSButton>
+                                    <span className="upload-area__hint">OR DRAG AND DROP HERE</span>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </>
+                      )}
+                      {visibleVariants.map(([group, config]) => (
+                        <div key={group} className="property-panel__field">
+                          <DSFormField title={group} size="md" showDescription={false} showHelpText={false}>
+                            <Segmented
+                              accent="apps"
+                              variant="text"
+                              value={String(selectedElement.variants[group] ?? '')}
+                              onChange={(val) => handleVariantChange(selectedElement.id, group, val)}
+                              items={config.options.map((opt) => ({ value: opt, label: opt }))}
+                            />
+                          </DSFormField>
+                        </div>
+                      ))}
+
+                      {visibleProps.map((prop) => (
+                        <div key={prop.name} className="property-panel__field">
+                          <DSFormField title={prop.name} size="md" showDescription={false} showHelpText={false}>
+                            {prop.type === 'boolean' ? (
+                              <DSToggle
+                                checked={Boolean(selectedElement.properties[prop.name])}
+                                onChange={(e) =>
+                                  handlePropertyChange(selectedElement.id, prop.name, e.target.checked)
+                                }
+                              />
+                            ) : prop.type === 'number' ? (
+                              <DSNumberInput
+                                showUnit={false}
+                                min={prop.min ?? 0}
+                                max={prop.max ?? 200}
+                                value={Number(selectedElement.properties[prop.name]) || 0}
+                                onChange={(val) =>
+                                  handlePropertyChange(selectedElement.id, prop.name, val ?? 0)
+                                }
+                              />
+                            ) : prop.type === 'icon' ? (
+                              <IconPropertyField
+                                value={String(selectedElement.properties[prop.name] || '')}
+                                onChange={(val) =>
+                                  handlePropertyChange(selectedElement.id, prop.name, val)
+                                }
+                              />
+                            ) : (
+                              <DSInput
+                                value={String(selectedElement.properties[prop.name] || '')}
+                                onChange={(e) =>
+                                  handlePropertyChange(selectedElement.id, prop.name, e.target.value)
+                                }
+                              />
+                            )}
+                          </DSFormField>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })()}
               </div>
             ) : (
               <div className="live-preview">
@@ -2075,10 +2270,13 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                             const isFirstPage = activePage?.id === pages[0]?.id
                             return activePage ? (
                               <>
-                              {isFirstPage && (
+                              {isFirstPage && appHeaderState.show && (
                                 <AppHeader
                                   layout={appHeaderState.layout as 'Center' | 'Left' | 'Right'}
                                   icon={appHeaderState.icon}
+                                  imageStyle={appHeaderState.imageStyle}
+                                  imageUrl={appHeaderState.imageUrl}
+                                  textColor={appHeaderState.textColor}
                                   skeleton={appHeaderState.skeleton}
                                   title={appTitle}
                                   subtitle={appSubtitle}

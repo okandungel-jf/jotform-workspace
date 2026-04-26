@@ -1647,6 +1647,109 @@ body {
   flex-direction: column;
 }
 
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  padding: var(--spacing-2xl);
+  background: var(--gray-500);
+  border: 1.5px dashed var(--gray-300);
+  border-radius: var(--radius-sm);
+}
+
+.upload-area__hint {
+  font-family: var(--font-family-circular);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--gray-200);
+}
+
+.color-input-popover {
+  width: 272px;
+
+  // Match AppDesigner's color picker palette (lighter surface than the panel).
+  .color-picker {
+    background: var(--gray-500);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .color-picker__input-row {
+    background: var(--gray-600);
+    border-color: var(--gray-700);
+  }
+
+  .color-picker__eyedropper {
+    border-color: var(--gray-600);
+    color: var(--core-white);
+
+    &:hover {
+      background: var(--gray-400);
+    }
+  }
+}
+
+.image-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-xs);
+  background: var(--gray-500);
+  border: 1px solid var(--gray-700);
+  border-radius: var(--radius-sm);
+}
+
+.image-preview__thumb {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-xs);
+  background-color: transparent;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-200);
+}
+
+.image-preview__name {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-family-circular);
+  font-size: var(--font-size-sm);
+  color: var(--core-white);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-preview__remove {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-rounded);
+  color: var(--gray-200);
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+
+  &:hover {
+    background: var(--gray-700);
+    color: var(--core-white);
+  }
+}
+
 .property-panel__field {
   display: flex;
   flex-direction: column;
@@ -1656,6 +1759,26 @@ body {
 
   &:last-child {
     border-bottom: none;
+  }
+
+  // Inline layout: label and control on the same row (e.g. toggle rows).
+  &--inline {
+    .jf-form-field {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-md);
+    }
+
+    .jf-form-field__label {
+      width: auto;
+      flex: 1;
+    }
+
+    .jf-form-field__input {
+      width: auto;
+      flex: 0 0 auto;
+    }
   }
 }
 

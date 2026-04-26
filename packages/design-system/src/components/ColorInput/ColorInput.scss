@@ -53,6 +53,23 @@
   &__swatch-wrapper {
     position: relative;
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+
+    &:disabled {
+      cursor: default;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent-default);
+      outline-offset: 2px;
+      border-radius: var(--radius-sm);
+    }
   }
 
   &__swatch {
