@@ -2563,16 +2563,24 @@ body {
 // ============================================
 .icon-picker-popover {
   position: fixed;
-  transform: translate(-50%, -100%) translateY(calc(var(--ds-space-md) * -1));
   width: 320px;
   height: 400px;
   display: flex;
   flex-direction: column;
-  background: var(--gray-600);
+  background: var(--gray-700);
+  border: 1px solid var(--gray-500);
   border-radius: 8px;
   box-shadow: var(--shadow-xl);
   z-index: 10000;
   overflow: hidden;
+
+  &--top-center {
+    transform: translate(-50%, -100%) translateY(calc(var(--ds-space-md) * -1));
+  }
+
+  &--bottom-left {
+    transform: none;
+  }
 
   &__search {
     padding: var(--ds-space-sm);

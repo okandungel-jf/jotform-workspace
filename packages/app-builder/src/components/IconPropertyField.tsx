@@ -10,6 +10,7 @@ interface IconPropertyFieldProps {
 export function IconPropertyField({ value, onChange }: IconPropertyFieldProps) {
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0 })
+  const [width, setWidth] = useState<number | undefined>()
   const triggerRef = useRef<HTMLButtonElement>(null)
 
   const handleOpen = () => {
@@ -17,6 +18,7 @@ export function IconPropertyField({ value, onChange }: IconPropertyFieldProps) {
     if (!el) return
     const rect = el.getBoundingClientRect()
     setPos({ top: rect.bottom + 4, left: rect.left })
+    setWidth(rect.width)
     setOpen(true)
   }
 
@@ -48,6 +50,9 @@ export function IconPropertyField({ value, onChange }: IconPropertyFieldProps) {
         <IconPickerPopover
           value={value}
           anchorPos={pos}
+          placement="bottom-left"
+          width={width}
+          hideHeader
           onSelect={(name) => {
             onChange(name)
             setOpen(false)

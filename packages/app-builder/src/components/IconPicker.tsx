@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, type FC } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect, useMemo, type FC } from 'react'
 import { createPortal } from 'react-dom'
 import { SearchInput } from '@jf/design-system'
 import { icons as lucideIcons } from 'lucide-react'
@@ -57,11 +57,17 @@ const OVERSCAN = 2 // extra rows above/below viewport
 export interface IconPickerPopoverProps {
   value: string
   anchorPos: { top: number; left: number }
+  /** Default 'top-center' — shifts popover above the anchor. Set 'bottom-left' to render below, left-aligned. */
+  placement?: 'top-center' | 'bottom-left'
+  /** Override the popover width (defaults to 320px). */
+  width?: number
+  /** Hide the "Select Icon" header (with title + close button). Default false. */
+  hideHeader?: boolean
   onSelect: (icon: string) => void
   onClose: () => void
 }
 
-export function IconPickerPopover({ value, anchorPos, onSelect, onClose }: IconPickerPopoverProps) {
+export function IconPickerPopover({ value, anchorPos, placement = 'top-center', width, hideHeader, onSelect, onClose }: IconPickerPopoverProps) {
   const [search, setSearch] = useState('')
   const [tooltip, setTooltip] = useState<{ name: string; top: number; left: number } | null>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
@@ -69,6 +75,7 @@ export function IconPickerPopover({ value, anchorPos, onSelect, onClose }: IconP
   const tooltipTimer = useRef<ReturnType<typeof setTimeout>>(null)
   const [scrollTop, setScrollTop] = useState(0)
   const [cols, setCols] = useState(7)
+  const [availableWidth, setAvailableWidth] = useState(0)
 
   const filtered = useMemo(() => {
     const popularSet = new Set(POPULAR_ICONS)
@@ -85,12 +92,14 @@ export function IconPickerPopover({ value, anchorPos, onSelect, onClose }: IconP
     return icons
   }, [search, value])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = gridRef.current
     if (!el) return
     const measure = () => {
-      const width = el.clientWidth - GRID_PADDING * 2
-      setCols(Math.max(1, Math.floor(width / ITEM_SIZE)))
+      const w = el.getBoundingClientRect().width - GRID_PADDING * 2
+      if (w <= 0) return
+      setAvailableWidth(w)
+      setCols(Math.max(1, Math.floor(w / ITEM_SIZE)))
     }
     measure()
     const observer = new ResizeObserver(measure)
@@ -137,16 +146,18 @@ export function IconPickerPopover({ value, anchorPos, onSelect, onClose }: IconP
     {createPortal(
     <div
       ref={popoverRef}
-      className="icon-picker-popover"
+      className={`icon-picker-popover icon-picker-popover--${placement}`}
       data-theme="dark"
-      style={{ top: anchorPos.top, left: anchorPos.left }}
+      style={{ top: anchorPos.top, left: anchorPos.left, ...(width ? { width } : null) }}
     >
-      <div className="icon-picker-popover__header">
-        <h2>Select Icon</h2>
-        <button className="icon-picker-popover__close" onClick={onClose}>
-          <LucideIcon name="X" size={18} />
-        </button>
-      </div>
+      {!hideHeader && (
+        <div className="icon-picker-popover__header">
+          <h2>Select Icon</h2>
+          <button className="icon-picker-popover__close" onClick={onClose}>
+            <LucideIcon name="X" size={18} />
+          </button>
+        </div>
+      )}
       <div className="icon-picker-popover__search">
         <SearchInput
           size="md"
@@ -174,8 +185,8 @@ export function IconPickerPopover({ value, anchorPos, onSelect, onClose }: IconP
                 style={{
                   position: 'absolute',
                   top: row * ITEM_SIZE,
-                  left: col * ITEM_SIZE,
-                  width: ITEM_SIZE - 2,
+                  left: cols > 0 ? col * (availableWidth / cols) : 0,
+                  width: cols > 0 ? availableWidth / cols - 2 : ITEM_SIZE - 2,
                   height: ITEM_SIZE - 2,
                 }}
                 onClick={() => onSelect(name)}

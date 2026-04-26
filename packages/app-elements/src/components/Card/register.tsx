@@ -178,6 +178,7 @@ ComponentRegistry.register({
         action={variants['Action'] as CardAction}
         actionIconFilled={variants['Icon Filled'] === 'Yes'}
         iconName={props['Icon'] as string}
+        imageUrl={props['Image URL'] as string | undefined}
         title={props['Title'] as string}
         description={props['Description'] as string}
         buttonLabel={props['Button Label'] as string}

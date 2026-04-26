@@ -14,11 +14,14 @@ export function App() {
   const [previewMode, setPreviewMode] = useState(true)
   const [activePresetId, setActivePresetId] = useState<string>(EMPTY_PRESET_ID)
   const preset = useMemo(() => getPresetById(activePresetId), [activePresetId])
-  const [appTitle, setAppTitle] = useState(() => loadStoredAppTitle(EMPTY_PRESET_ID) ?? preset.appTitle)
+  // Empty App is a sandbox — never restore from storage.
+  const titleForPreset = (id: string) =>
+    id === EMPTY_PRESET_ID ? getPresetById(id).appTitle : (loadStoredAppTitle(id) ?? getPresetById(id).appTitle)
+  const [appTitle, setAppTitle] = useState(() => titleForPreset(EMPTY_PRESET_ID))
 
   const handlePresetChange = (id: string) => {
     setActivePresetId(id)
-    setAppTitle(loadStoredAppTitle(id) ?? getPresetById(id).appTitle)
+    setAppTitle(titleForPreset(id))
   }
 
   return (
@@ -34,6 +37,8 @@ export function App() {
           if (p.id === activePresetId) {
             return { id: p.id, name: appTitle === p.appTitle ? p.name : appTitle }
           }
+          // Empty App never reads from storage — always show its preset name.
+          if (p.id === EMPTY_PRESET_ID) return { id: p.id, name: p.name }
           const storedTitle = loadStoredAppTitle(p.id)
           return { id: p.id, name: storedTitle && storedTitle !== p.appTitle ? storedTitle : p.name }
         })}

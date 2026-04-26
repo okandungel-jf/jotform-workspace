@@ -157,7 +157,8 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
       appHeader: { ...APP_HEADER_DEFAULTS },
     }
   }
-  const stored = loadSnapshot(preset.id)
+  // Empty App always starts from defaults — skip stored snapshot.
+  const stored = preset.id === 'empty' ? null : loadSnapshot(preset.id)
   if (stored) {
     const pages = stored.pages as AppPage[]
     const storedHeader = stored.appHeader ?? {}
@@ -950,6 +951,8 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
 
   useEffect(() => {
     if (!preset) return
+    // Empty App is a sandbox — never persist its state.
+    if (preset.id === 'empty') return
     saveSnapshot(preset.id, {
       appTitle, appSubtitle, pages, headerActions, appHeader: appHeaderState,
     })
@@ -1027,7 +1030,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   }, [])
 
   useEffect(() => {
-    applyStoredOrDefaultTheme(preset?.id)
+    applyStoredOrDefaultTheme(preset?.id === 'empty' ? undefined : preset?.id)
   }, [preset?.id])
 
   useEffect(() => {
@@ -1979,15 +1982,24 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                     accent="apps"
                     value={propertyTab}
                     onChange={setPropertyTab}
-                    items={selectedComponent.id === 'app-header'
-                      ? [
-                          { value: 'general', label: 'General' },
-                          { value: 'style', label: 'Style' },
-                        ]
-                      : [
-                          { value: 'general', label: 'General' },
-                          { value: 'condition', label: 'Condition' },
-                        ]}
+                    items={
+                      selectedComponent.id === 'app-header'
+                        ? [
+                            { value: 'general', label: 'General' },
+                            { value: 'style', label: 'Style' },
+                          ]
+                        : selectedComponent.id === 'card'
+                          ? [
+                              { value: 'general', label: 'General' },
+                              { value: 'layout', label: 'Layout' },
+                              { value: 'action', label: 'Action' },
+                              { value: 'condition', label: 'Condition' },
+                            ]
+                          : [
+                              { value: 'general', label: 'General' },
+                              { value: 'condition', label: 'Condition' },
+                            ]
+                    }
                   />
                 </div>
 
@@ -2038,16 +2050,207 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                     )
                   }
 
-                  const showVariants = !isAppHeader || propertyTab === 'style'
+                  const isCard = selectedComponent.id === 'card'
+                  const CARD_LAYOUT_VARIANTS = ['Layout', 'Image Style']
+                  const CARD_LAYOUT_PROPS = ['Icon']
+                  const CARD_ACTION_VARIANTS = ['Action', 'Icon Filled']
+                  const CARD_ACTION_PROPS = ['Button Label']
+
+                  // Card's Layout tab is bespoke — Layout segment + Image Style segment + conditional Icon/Image upload.
+                  if (isCard && propertyTab === 'layout') {
+                    const imageStyle = String(selectedElement.variants['Image Style'] ?? 'Square')
+                    const layoutVariant = selectedComponent.variants['Layout']
+                    const imageStyleVariant = selectedComponent.variants['Image Style']
+                    const cardImageUrl = String(selectedElement.properties['Image URL'] ?? '')
+                    const cardImageName = String(selectedElement.properties['Image Name'] ?? '')
+                    const cardImageInputId = `card-image-input-${selectedElement.id}`
+                    return (
+                      <div className="property-panel__body">
+                        <div className="property-panel__field">
+                          <DSFormField title="Layout" size="md" showDescription={false} showHelpText={false}>
+                            <Segmented
+                              accent="apps"
+                              variant="text"
+                              value={String(selectedElement.variants['Layout'] ?? 'Horizontal')}
+                              onChange={(val) => handleVariantChange(selectedElement.id, 'Layout', val)}
+                              items={layoutVariant.options.map((opt) => ({ value: opt, label: opt }))}
+                            />
+                          </DSFormField>
+                        </div>
+                        <div className="property-panel__field">
+                          <DSFormField title="Image Style" size="md" showDescription={false} showHelpText={false}>
+                            <Segmented
+                              accent="apps"
+                              variant="text"
+                              value={imageStyle}
+                              onChange={(val) => handleVariantChange(selectedElement.id, 'Image Style', val)}
+                              items={imageStyleVariant.options.map((opt) => ({ value: opt, label: opt }))}
+                            />
+                          </DSFormField>
+                          {imageStyle === 'Icon' && (
+                            <IconPropertyField
+                              value={String(selectedElement.properties['Icon'] ?? '')}
+                              onChange={(val) => handlePropertyChange(selectedElement.id, 'Icon', val)}
+                            />
+                          )}
+                          {(imageStyle === 'Square' || imageStyle === 'Circle') && (
+                            <>
+                              <input
+                                id={cardImageInputId}
+                                type="file"
+                                accept="image/*"
+                                hidden
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0]
+                                  if (!file) return
+                                  const reader = new FileReader()
+                                  reader.onload = () => {
+                                    handlePropertyChange(selectedElement.id, 'Image URL', String(reader.result))
+                                    handlePropertyChange(selectedElement.id, 'Image Name', file.name)
+                                  }
+                                  reader.readAsDataURL(file)
+                                  e.target.value = ''
+                                }}
+                              />
+                              {cardImageUrl ? (
+                                <div className="image-preview">
+                                  <div
+                                    className="image-preview__thumb"
+                                    style={{ backgroundImage: `url(${cardImageUrl})` }}
+                                  />
+                                  <span className="image-preview__name" title={cardImageName}>
+                                    {cardImageName || 'image'}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    className="image-preview__remove"
+                                    aria-label="Remove image"
+                                    onClick={() => {
+                                      handlePropertyChange(selectedElement.id, 'Image URL', '')
+                                      handlePropertyChange(selectedElement.id, 'Image Name', '')
+                                    }}
+                                  >
+                                    <Icon name="trash-filled" category="general" size={16} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="upload-area">
+                                  <DSButton
+                                    variant="filled"
+                                    colorScheme="secondary"
+                                    shape="rectangle"
+                                    size="md"
+                                    leftIcon={<Icon name="image-plus-filled" category="media" size={16} />}
+                                    onClick={() => document.getElementById(cardImageInputId)?.click()}
+                                  >
+                                    Choose File
+                                  </DSButton>
+                                  <span className="upload-area__hint">OR DRAG AND DROP HERE</span>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  // Card's General tab is bespoke — Title / Description / Shrink / Duplicate placeholder.
+                  if (isCard && propertyTab === 'general') {
+                    return (
+                      <div className="property-panel__body">
+                        <div className="property-panel__field">
+                          <DSFormField title="Title" size="md" showDescription={false} showHelpText={false}>
+                            <DSInput
+                              value={String(selectedElement.properties['Title'] ?? '')}
+                              onChange={(e) => handlePropertyChange(selectedElement.id, 'Title', e.target.value)}
+                            />
+                          </DSFormField>
+                        </div>
+                        <div className="property-panel__field">
+                          <DSFormField title="Description" size="md" showDescription={false} showHelpText={false}>
+                            <DSTextArea
+                              size="md"
+                              maxLength={240}
+                              showCount
+                              showDrag={false}
+                              placeholder="Add description"
+                              value={String(selectedElement.properties['Description'] ?? '')}
+                              onChange={(e) => handlePropertyChange(selectedElement.id, 'Description', e.target.value)}
+                            />
+                          </DSFormField>
+                        </div>
+                        <div className="property-panel__field property-panel__field--inline">
+                          <DSFormField
+                            title="Shrink"
+                            description="Make element smaller."
+                            size="md"
+                            showDescription
+                            showHelpText={false}
+                          >
+                            <DSToggle
+                              size="md"
+                              checked={Boolean(selectedElement.properties['Shrinked'])}
+                              onChange={(e) => handlePropertyChange(selectedElement.id, 'Shrinked', e.target.checked)}
+                            />
+                          </DSFormField>
+                        </div>
+                        <div className="property-panel__field">
+                          <DSFormField
+                            title="Duplicate Element"
+                            description="Clone selected elements with all saved properties."
+                            size="md"
+                            showDescription
+                            showHelpText={false}
+                          >
+                            <DSButton
+                              variant="filled"
+                              colorScheme="secondary"
+                              shape="rectangle"
+                              size="md"
+                              leftIcon={<Icon name="copy-filled" category="general" size={16} />}
+                            >
+                              Duplicate
+                            </DSButton>
+                          </DSFormField>
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  const showVariants =
+                    isAppHeader
+                      ? propertyTab === 'style'
+                      : isCard
+                        ? (propertyTab === 'layout' || propertyTab === 'action')
+                        : propertyTab === 'general'
+
+                  const cardTabVariants =
+                    propertyTab === 'layout' ? CARD_LAYOUT_VARIANTS
+                    : propertyTab === 'action' ? CARD_ACTION_VARIANTS
+                    : []
+                  const cardTabProps =
+                    propertyTab === 'layout' ? CARD_LAYOUT_PROPS
+                    : propertyTab === 'action' ? CARD_ACTION_PROPS
+                    : []
 
                   const visibleVariants = !showVariants
                     ? []
-                    : Object.entries(selectedComponent.variants).filter(([, config]) => {
-                        if (!config.showWhen) return true
-                        return Object.entries(config.showWhen).every(
-                          ([key, val]) => selectedElement.variants[key] === val
-                        )
-                      })
+                    : Object.entries(selectedComponent.variants)
+                        .filter(([group]) => {
+                          if (isCard) return cardTabVariants.includes(group)
+                          return true
+                        })
+                        .filter(([, config]) => {
+                          if (!config.showWhen) return true
+                          return Object.entries(config.showWhen).every(
+                            ([key, val]) => selectedElement.variants[key] === val
+                          )
+                        })
+                        .sort(([a], [b]) => {
+                          if (!isCard) return 0
+                          return cardTabVariants.indexOf(a) - cardTabVariants.indexOf(b)
+                        })
 
                   const visibleProps = selectedComponent.properties
                     .filter((prop) => prop.name !== 'Selected' && prop.name !== 'Skeleton')
@@ -2055,6 +2258,12 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                       if (isAppHeader) {
                         // Style tab → everything except Title/Subtitle (general) and Icon (rendered inside Image Style).
                         return prop.name !== 'Title' && prop.name !== 'Subtitle' && prop.name !== 'Icon'
+                      }
+                      if (isCard) {
+                        if (propertyTab === 'general') {
+                          return !CARD_LAYOUT_PROPS.includes(prop.name) && !CARD_ACTION_PROPS.includes(prop.name)
+                        }
+                        return cardTabProps.includes(prop.name)
                       }
                       return propertyTab === 'general'
                     })
@@ -2345,7 +2554,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
               targetSelector=".app-scope"
               isMobile={isMobileView}
               visible={rightPanel === 'designer'}
-              namespace={preset?.id}
+              namespace={preset?.id === 'empty' ? undefined : preset?.id}
               renderIcon={(name, size) => <Icon name={name} category="editor" size={size} />}
               doneButton={<DSButton variant="filled" colorScheme="primary" shape="rectangle" size="md" onClick={handleCloseDesigner}>Done</DSButton>}
             />

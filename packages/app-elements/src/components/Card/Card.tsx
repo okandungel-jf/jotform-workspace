@@ -16,6 +16,7 @@ export interface CardProps {
   action?: CardAction;
   actionIconFilled?: boolean;
   iconName?: string;
+  imageUrl?: string;
   title?: string;
   description?: string;
   buttonLabel?: string;
@@ -46,14 +47,19 @@ interface CardImageProps {
   imageStyle: CardImageStyle;
   layout: CardLayout;
   iconName: string;
+  imageUrl?: string;
 }
 
-const CardImage: React.FC<CardImageProps> = ({ imageStyle, layout, iconName }) => {
+const CardImage: React.FC<CardImageProps> = ({ imageStyle, layout, iconName, imageUrl }) => {
   if (imageStyle === 'None') return null;
+
+  const showUploadedImage = imageUrl && (imageStyle === 'Square' || imageStyle === 'Circle');
 
   const iconContent = imageStyle === 'Icon'
     ? <div className="jf-card__image-icon"><DynamicCardIcon name={iconName} /></div>
-    : <div className="jf-card__image-icon"><ImagePlaceholder /></div>;
+    : showUploadedImage
+      ? <img src={imageUrl} alt="" className="jf-card__image-img" />
+      : <div className="jf-card__image-icon"><ImagePlaceholder /></div>;
 
   if (layout === 'Horizontal') {
     const modClass = imageStyle === 'Square' ? 'square'
@@ -131,6 +137,7 @@ export const Card: React.FC<CardProps> = ({
   action = 'None',
   actionIconFilled = true,
   iconName = 'Heart',
+  imageUrl,
   title = 'Card Title',
   description = 'Card description',
   buttonLabel = 'Edit',
@@ -195,7 +202,7 @@ export const Card: React.FC<CardProps> = ({
   if (layout === 'Horizontal') {
     return (
       <div className={classes}>
-        <CardImage imageStyle={imageStyle} layout={layout} iconName={iconName} />
+        <CardImage imageStyle={imageStyle} layout={layout} iconName={iconName} imageUrl={imageUrl} />
         <CardContent title={title} description={description} />
         <CardAction action={action} actionIconFilled={actionIconFilled} buttonLabel={buttonLabel} />
       </div>
@@ -205,7 +212,7 @@ export const Card: React.FC<CardProps> = ({
   if (imageStyle === 'Square') {
     return (
       <div className={classes}>
-        <CardImage imageStyle={imageStyle} layout={layout} iconName={iconName} />
+        <CardImage imageStyle={imageStyle} layout={layout} iconName={iconName} imageUrl={imageUrl} />
         {action === 'None' ? (
           <div className="jf-card__body">
             <CardContent title={title} description={description} />
@@ -227,7 +234,7 @@ export const Card: React.FC<CardProps> = ({
 
   return (
     <div className={classes}>
-      <CardImage imageStyle={imageStyle} layout={layout} iconName={iconName} />
+      <CardImage imageStyle={imageStyle} layout={layout} iconName={iconName} imageUrl={imageUrl} />
       {action === 'Icon' ? (
         <div className="jf-card__body jf-card__body--row">
           <CardContent title={title} description={description} centered={isCentered} />
