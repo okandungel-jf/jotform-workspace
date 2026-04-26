@@ -15,6 +15,8 @@ export { Toggle } from './components/Toggle';
 export type { ToggleProps, ToggleSize } from './components/Toggle';
 export { Input } from './components/Input';
 export type { InputProps } from './components/Input';
+export { FormField } from './components/FormField';
+export type { FormFieldProps } from './components/FormField';
 export { NumberInput } from './components/NumberInput';
 export type { NumberInputProps } from './components/NumberInput';
 export { Modal } from './components/Modal';

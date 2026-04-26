@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Tabs as DSTabs, DropdownSingle, Segmented } from '@jf/design-system';
+import { Tabs as DSTabs, DropdownSingle, Segmented, FormField as DSFormField } from '@jf/design-system';
 import { Icon } from '../components/Icon/Icon';
 import { useIconLibrary, type IconLibrary } from '../context/IconLibraryContext';
 import { loadLibrary } from '../utils/iconRegistry';
@@ -986,30 +986,32 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
         <BottomSheet open={activeTab === 'style'} onClose={() => setActiveTab(null)} title="Style" noOverlay dark renderCloseButton={sheetCloseButton}>
           <div className="themes-sheet-content v2-sheet">
             <div className="themes-sheet-content__section">
-              <h3 className="v2-section__title">Color Mode</h3>
-              <Segmented
-                variant="iconText"
-                value={colorMode}
-                onChange={(v) => handleColorModeChange(v as 'light' | 'dark')}
-                items={[
-                  { value: 'light', label: 'Light', iconContent: LightModeIcon },
-                  { value: 'dark', label: 'Dark', iconContent: DarkModeIcon },
-                ]}
-              />
+              <DSFormField title="Color Mode" size="md" showDescription={false} showHelpText={false}>
+                <Segmented
+                  variant="iconText"
+                  value={colorMode}
+                  onChange={(v) => handleColorModeChange(v as 'light' | 'dark')}
+                  items={[
+                    { value: 'light', label: 'Light', iconContent: LightModeIcon },
+                    { value: 'dark', label: 'Dark', iconContent: DarkModeIcon },
+                  ]}
+                />
+              </DSFormField>
             </div>
             <div className="themes-sheet-content__section">
-              <h3 className="v2-section__title">Corner Style</h3>
-              <Segmented
-                variant="icon"
-                value={radius}
-                onChange={(v) => handleRadiusChange(v as RadiusScale)}
-                items={RADIUS_OPTIONS.map(({ scale, iconName }) => ({
-                  value: scale,
-                  ariaLabel: scale,
-                  icon: iconName,
-                  iconCategory: 'layout',
-                }))}
-              />
+              <DSFormField title="Corner Style" size="md" showDescription={false} showHelpText={false}>
+                <Segmented
+                  variant="icon"
+                  value={radius}
+                  onChange={(v) => handleRadiusChange(v as RadiusScale)}
+                  items={RADIUS_OPTIONS.map(({ scale, iconName }) => ({
+                    value: scale,
+                    ariaLabel: scale,
+                    icon: iconName,
+                    iconCategory: 'layout',
+                  }))}
+                />
+              </DSFormField>
             </div>
           </div>
         </BottomSheet>
@@ -1018,18 +1020,20 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
         <BottomSheet open={activeTab === 'font' && !mobileFontSheet} onClose={() => setActiveTab(null)} title="Font" noOverlay dark renderCloseButton={sheetCloseButton}>
           <div className="themes-sheet-content v2-sheet">
             <div className="themes-sheet-content__section">
-              <h3 className="v2-section__title">Heading Font</h3>
-              <button className="themes-sheet-content__font-trigger" onClick={() => setMobileFontSheet('heading')}>
-                <span className="font-preview" style={{ fontFamily: `'${headingFont || font}', sans-serif` }}>{headingFont || font}</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
-              </button>
+              <DSFormField title="Heading Font" size="md" showDescription={false} showHelpText={false}>
+                <button className="themes-sheet-content__font-trigger" onClick={() => setMobileFontSheet('heading')}>
+                  <span className="font-preview" style={{ fontFamily: `'${headingFont || font}', sans-serif` }}>{headingFont || font}</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+              </DSFormField>
             </div>
             <div className="themes-sheet-content__section">
-              <h3 className="v2-section__title">Body Font</h3>
-              <button className="themes-sheet-content__font-trigger" onClick={() => setMobileFontSheet('body')}>
-                <span className="font-preview" style={{ fontFamily: `'${font}', sans-serif` }}>{font}</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
-              </button>
+              <DSFormField title="Body Font" size="md" showDescription={false} showHelpText={false}>
+                <button className="themes-sheet-content__font-trigger" onClick={() => setMobileFontSheet('body')}>
+                  <span className="font-preview" style={{ fontFamily: `'${font}', sans-serif` }}>{font}</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+              </DSFormField>
             </div>
           </div>
         </BottomSheet>
@@ -1259,62 +1263,66 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
 
       {/* Color Mode */}
       <div className="v2-section v2-section--color-mode">
-        <h3 className="v2-section__title">Color Mode</h3>
-        <Segmented
-          variant="iconText"
-          value={colorMode}
-          onChange={(v) => handleColorModeChange(v as 'light' | 'dark')}
-          items={[
-            { value: 'light', label: 'Light', iconContent: LightModeIcon },
-            { value: 'dark', label: 'Dark', iconContent: DarkModeIcon },
-          ]}
-        />
+        <DSFormField title="Color Mode" size="md" showDescription={false} showHelpText={false}>
+          <Segmented
+            variant="iconText"
+            value={colorMode}
+            onChange={(v) => handleColorModeChange(v as 'light' | 'dark')}
+            items={[
+              { value: 'light', label: 'Light', iconContent: LightModeIcon },
+              { value: 'dark', label: 'Dark', iconContent: DarkModeIcon },
+            ]}
+          />
+        </DSFormField>
       </div>
 
       {/* Corners */}
       <div className="v2-section v2-section--corners">
-        <h3 className="v2-section__title">Corner Style</h3>
-        <Segmented
-          variant="icon"
-          value={radius}
-          onChange={(v) => handleRadiusChange(v as RadiusScale)}
-          items={RADIUS_OPTIONS.map(({ scale, iconName }) => ({
-            value: scale,
-            ariaLabel: scale,
-            icon: iconName,
-            iconCategory: 'layout',
-          }))}
-        />
+        <DSFormField title="Corner Style" size="md" showDescription={false} showHelpText={false}>
+          <Segmented
+            variant="icon"
+            value={radius}
+            onChange={(v) => handleRadiusChange(v as RadiusScale)}
+            items={RADIUS_OPTIONS.map(({ scale, iconName }) => ({
+              value: scale,
+              ariaLabel: scale,
+              icon: iconName,
+              iconCategory: 'layout',
+            }))}
+          />
+        </DSFormField>
       </div>
 
       {/* Heading Font */}
       <div className="v2-section v2-section--heading-font">
-        <h3 className="v2-section__title">Heading Font</h3>
-        <DropdownSingle
-          showLeadingIcon={false}
-          value={headingFont || font}
-          onChange={handleHeadingFontChange}
-          options={HEADING_FONT_OPTIONS.map((f) => ({
-            value: f,
-            label: f,
-            labelStyle: { fontFamily: `'${f}', sans-serif` },
-          }))}
-        />
+        <DSFormField title="Heading Font" size="md" showDescription={false} showHelpText={false}>
+          <DropdownSingle
+            showLeadingIcon={false}
+            value={headingFont || font}
+            onChange={handleHeadingFontChange}
+            options={HEADING_FONT_OPTIONS.map((f) => ({
+              value: f,
+              label: f,
+              labelStyle: { fontFamily: `'${f}', sans-serif` },
+            }))}
+          />
+        </DSFormField>
       </div>
 
       {/* Body Font */}
       <div className="v2-section v2-section--body-font">
-        <h3 className="v2-section__title">Body Font</h3>
-        <DropdownSingle
-          showLeadingIcon={false}
-          value={font}
-          onChange={handleFontChange}
-          options={FONT_OPTIONS.map((f) => ({
-            value: f,
-            label: f,
-            labelStyle: { fontFamily: `'${f}', sans-serif` },
-          }))}
-        />
+        <DSFormField title="Body Font" size="md" showDescription={false} showHelpText={false}>
+          <DropdownSingle
+            showLeadingIcon={false}
+            value={font}
+            onChange={handleFontChange}
+            options={FONT_OPTIONS.map((f) => ({
+              value: f,
+              label: f,
+              labelStyle: { fontFamily: `'${f}', sans-serif` },
+            }))}
+          />
+        </DSFormField>
       </div>
 
       </div>{/* end Slide 1 */}

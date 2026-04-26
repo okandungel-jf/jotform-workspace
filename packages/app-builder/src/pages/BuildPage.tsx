@@ -13,7 +13,7 @@ import {
   type PropertyValues,
   type StateValues,
 } from '@jf/app-elements'
-import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput } from '@jf/design-system'
+import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput, FormField as DSFormField } from '@jf/design-system'
 import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
@@ -1973,14 +1973,15 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                       })
                       .map(([group, config]) => (
                       <div key={group} className="property-panel__field">
-                        <label className="property-panel__label">{group}</label>
-                        <Segmented
-                          accent="apps"
-                          variant="text"
-                          value={String(selectedElement.variants[group] ?? '')}
-                          onChange={(val) => handleVariantChange(selectedElement.id, group, val)}
-                          items={config.options.map((opt) => ({ value: opt, label: opt }))}
-                        />
+                        <DSFormField title={group} size="md" showDescription={false} showHelpText={false}>
+                          <Segmented
+                            accent="apps"
+                            variant="text"
+                            value={String(selectedElement.variants[group] ?? '')}
+                            onChange={(val) => handleVariantChange(selectedElement.id, group, val)}
+                            items={config.options.map((opt) => ({ value: opt, label: opt }))}
+                          />
+                        </DSFormField>
                       </div>
                     ))}
 
@@ -1995,39 +1996,40 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                       })
                       .map((prop) => (
                       <div key={prop.name} className="property-panel__field">
-                        <label className="property-panel__label">{prop.name}</label>
-                        {prop.type === 'boolean' ? (
-                          <DSToggle
-                            checked={Boolean(selectedElement.properties[prop.name])}
-                            onChange={(e) =>
-                              handlePropertyChange(selectedElement.id, prop.name, e.target.checked)
-                            }
-                          />
-                        ) : prop.type === 'number' ? (
-                          <DSNumberInput
-                            showUnit={false}
-                            min={prop.min ?? 0}
-                            max={prop.max ?? 200}
-                            value={Number(selectedElement.properties[prop.name]) || 0}
-                            onChange={(val) =>
-                              handlePropertyChange(selectedElement.id, prop.name, val ?? 0)
-                            }
-                          />
-                        ) : prop.type === 'icon' ? (
-                          <IconPropertyField
-                            value={String(selectedElement.properties[prop.name] || '')}
-                            onChange={(val) =>
-                              handlePropertyChange(selectedElement.id, prop.name, val)
-                            }
-                          />
-                        ) : (
-                          <DSInput
-                            value={String(selectedElement.properties[prop.name] || '')}
-                            onChange={(e) =>
-                              handlePropertyChange(selectedElement.id, prop.name, e.target.value)
-                            }
-                          />
-                        )}
+                        <DSFormField title={prop.name} size="md" showDescription={false} showHelpText={false}>
+                          {prop.type === 'boolean' ? (
+                            <DSToggle
+                              checked={Boolean(selectedElement.properties[prop.name])}
+                              onChange={(e) =>
+                                handlePropertyChange(selectedElement.id, prop.name, e.target.checked)
+                              }
+                            />
+                          ) : prop.type === 'number' ? (
+                            <DSNumberInput
+                              showUnit={false}
+                              min={prop.min ?? 0}
+                              max={prop.max ?? 200}
+                              value={Number(selectedElement.properties[prop.name]) || 0}
+                              onChange={(val) =>
+                                handlePropertyChange(selectedElement.id, prop.name, val ?? 0)
+                              }
+                            />
+                          ) : prop.type === 'icon' ? (
+                            <IconPropertyField
+                              value={String(selectedElement.properties[prop.name] || '')}
+                              onChange={(val) =>
+                                handlePropertyChange(selectedElement.id, prop.name, val)
+                              }
+                            />
+                          ) : (
+                            <DSInput
+                              value={String(selectedElement.properties[prop.name] || '')}
+                              onChange={(e) =>
+                                handlePropertyChange(selectedElement.id, prop.name, e.target.value)
+                              }
+                            />
+                          )}
+                        </DSFormField>
                       </div>
                     ))}
                   </div>

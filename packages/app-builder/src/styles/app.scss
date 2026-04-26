@@ -1608,9 +1608,10 @@ body {
 }
 
 .property-panel__title {
-  font-size: 18px;
-  font-weight: var(--ds-font-weight-medium);
-  letter-spacing: -0.25px;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-md);
+  letter-spacing: -0.176px;
   color: var(--ds-text-dark);
 }
 
@@ -1618,11 +1619,11 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: var(--spacing-2xl);
+  height: var(--spacing-2xl);
   background: transparent;
   border: none;
-  border-radius: 40px;
+  border-radius: var(--radius-rounded);
   color: var(--ds-text-medium);
   cursor: pointer;
   transition: background 150ms ease, color 150ms ease;
@@ -1642,24 +1643,20 @@ body {
 .property-panel__body {
   flex: 1;
   overflow-y: auto;
-  padding: var(--ds-space-md);
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-md);
 }
 
 .property-panel__field {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-2xs);
-}
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--gray-700);
 
-.property-panel__label {
-  font-size: var(--ds-font-size-xs);
-  font-weight: var(--ds-font-weight-medium);
-  letter-spacing: var(--letter-spacing-md);
-  color: var(--ds-text-medium);
-  text-transform: uppercase;
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .property-panel__empty {
@@ -1679,8 +1676,8 @@ body {
 
 [data-theme='dark'] {
   .property-panel__header {
-    background: #33384A;
-    border-bottom: 1px solid #2A2D3B;
+    background: var(--secondary-background-medium);
+    border-bottom: 1px solid var(--gray-700);
 
     // No bottom border when tab bar follows — keeps the seam clean.
     &:has(+ .property-panel__tabs) {
@@ -1689,25 +1686,20 @@ body {
   }
 
   .property-panel__title {
-    color: #FFFFFF;
+    color: var(--core-white);
   }
 
   .property-panel__close {
-    color: #FFFFFF;
+    color: var(--core-white);
 
     &:hover {
-      background: #434A60;
+      background: var(--gray-700);
     }
-  }
-
-  .property-panel__label {
-    color: var(--secondary-text-light);
   }
 
   .property-panel__empty {
     color: var(--secondary-text-light);
   }
-
 }
 
 // ============================================

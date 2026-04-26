@@ -12,7 +12,7 @@ ComponentRegistry.register({
 
   variants: {
     Layout: {
-      options: ['Center', 'Left', 'Right'],
+      options: ['Left', 'Center', 'Right'],
       default: 'Center',
     },
   },
