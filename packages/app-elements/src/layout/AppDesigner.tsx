@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Tabs as DSTabs, DropdownSingle } from '@jf/design-system';
+import { Tabs as DSTabs, DropdownSingle, Segmented } from '@jf/design-system';
 import { Icon } from '../components/Icon/Icon';
 import { useIconLibrary, type IconLibrary } from '../context/IconLibraryContext';
 import { loadLibrary } from '../utils/iconRegistry';
@@ -398,6 +398,26 @@ function resolveTokenColor(variable: string): string {
   const [r, g, b] = _tokenCtx.getImageData(0, 0, 1, 1).data;
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase();
 }
+
+const LightModeIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <circle cx="12" cy="12" r="5" />
+    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+  </svg>
+);
+
+const DarkModeIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
+
+const RADIUS_OPTIONS: { scale: RadiusScale; iconName: string }[] = [
+  { scale: 'Small', iconName: 'corner-radius-sm' },
+  { scale: 'Medium', iconName: 'corner-radius-md' },
+  { scale: 'Large', iconName: 'corner-radius-lg' },
+  { scale: 'XLarge', iconName: 'corner-radius-xl' },
+];
 
 // ── Sub-components ─────────────────────────────────────────────────────
 
@@ -967,48 +987,29 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
           <div className="themes-sheet-content v2-sheet">
             <div className="themes-sheet-content__section">
               <h3 className="v2-section__title">Color Mode</h3>
-              <div className="v2-segmented">
-                <button
-                  className={`v2-segmented__btn${colorMode === 'light' ? ' v2-segmented__btn--active' : ''}`}
-                  onClick={() => handleColorModeChange('light')}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                  </svg>
-                  <span>Light</span>
-                </button>
-                <button
-                  className={`v2-segmented__btn${colorMode === 'dark' ? ' v2-segmented__btn--active' : ''}`}
-                  onClick={() => handleColorModeChange('dark')}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                  </svg>
-                  <span>Dark</span>
-                </button>
-              </div>
+              <Segmented
+                variant="iconText"
+                value={colorMode}
+                onChange={(v) => handleColorModeChange(v as 'light' | 'dark')}
+                items={[
+                  { value: 'light', label: 'Light', iconContent: LightModeIcon },
+                  { value: 'dark', label: 'Dark', iconContent: DarkModeIcon },
+                ]}
+              />
             </div>
             <div className="themes-sheet-content__section">
               <h3 className="v2-section__title">Corner Style</h3>
-              <div className="v2-segmented">
-                {([
-                  { scale: 'Small' as RadiusScale, r: 6 },
-                  { scale: 'Medium' as RadiusScale, r: 12 },
-                  { scale: 'Large' as RadiusScale, r: 16 },
-                  { scale: 'XLarge' as RadiusScale, r: 24 },
-                ]).map(({ scale, r }) => (
-                  <button
-                    key={scale}
-                    className={`v2-segmented__btn${radius === scale ? ' v2-segmented__btn--active' : ''}`}
-                    onClick={() => handleRadiusChange(scale)}
-                    title={scale}
-                  >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d={`M4 24 V${r} Q4 4 ${r} 4 H24`} strokeLinecap="round" />
-                    </svg>
-                  </button>
-                ))}
-              </div>
+              <Segmented
+                variant="icon"
+                value={radius}
+                onChange={(v) => handleRadiusChange(v as RadiusScale)}
+                items={RADIUS_OPTIONS.map(({ scale, iconName }) => ({
+                  value: scale,
+                  ariaLabel: scale,
+                  icon: iconName,
+                  iconCategory: 'layout',
+                }))}
+              />
             </div>
           </div>
         </BottomSheet>
@@ -1259,50 +1260,31 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
       {/* Color Mode */}
       <div className="v2-section v2-section--color-mode">
         <h3 className="v2-section__title">Color Mode</h3>
-        <div className="v2-segmented">
-          <button
-            className={`v2-segmented__btn${colorMode === 'light' ? ' v2-segmented__btn--active' : ''}`}
-            onClick={() => handleColorModeChange('light')}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-            </svg>
-            <span>Light</span>
-          </button>
-          <button
-            className={`v2-segmented__btn${colorMode === 'dark' ? ' v2-segmented__btn--active' : ''}`}
-            onClick={() => handleColorModeChange('dark')}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
-            <span>Dark</span>
-          </button>
-        </div>
+        <Segmented
+          variant="iconText"
+          value={colorMode}
+          onChange={(v) => handleColorModeChange(v as 'light' | 'dark')}
+          items={[
+            { value: 'light', label: 'Light', iconContent: LightModeIcon },
+            { value: 'dark', label: 'Dark', iconContent: DarkModeIcon },
+          ]}
+        />
       </div>
 
       {/* Corners */}
       <div className="v2-section v2-section--corners">
         <h3 className="v2-section__title">Corner Style</h3>
-        <div className="v2-segmented">
-          {([
-            { scale: 'Small' as RadiusScale, r: 6 },
-            { scale: 'Medium' as RadiusScale, r: 12 },
-            { scale: 'Large' as RadiusScale, r: 16 },
-            { scale: 'XLarge' as RadiusScale, r: 24 },
-          ]).map(({ scale, r }) => (
-            <button
-              key={scale}
-              className={`v2-segmented__btn${radius === scale ? ' v2-segmented__btn--active' : ''}`}
-              onClick={() => handleRadiusChange(scale)}
-              title={scale}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d={`M4 24 V${r} Q4 4 ${r} 4 H24`} strokeLinecap="round" />
-              </svg>
-            </button>
-          ))}
-        </div>
+        <Segmented
+          variant="icon"
+          value={radius}
+          onChange={(v) => handleRadiusChange(v as RadiusScale)}
+          items={RADIUS_OPTIONS.map(({ scale, iconName }) => ({
+            value: scale,
+            ariaLabel: scale,
+            icon: iconName,
+            iconCategory: 'layout',
+          }))}
+        />
       </div>
 
       {/* Heading Font */}

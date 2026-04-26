@@ -30,7 +30,13 @@ export function App() {
         previewMode={previewMode}
         onPreviewToggle={() => setPreviewMode(!previewMode)}
         appName={appTitle}
-        presets={APP_PRESETS.map((p) => ({ id: p.id, name: p.name }))}
+        presets={APP_PRESETS.map((p) => {
+          if (p.id === activePresetId) {
+            return { id: p.id, name: appTitle === p.appTitle ? p.name : appTitle }
+          }
+          const storedTitle = loadStoredAppTitle(p.id)
+          return { id: p.id, name: storedTitle && storedTitle !== p.appTitle ? storedTitle : p.name }
+        })}
         activePresetId={activePresetId}
         onPresetChange={handlePresetChange}
       />

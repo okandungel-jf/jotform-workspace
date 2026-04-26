@@ -5,6 +5,7 @@ export interface PresetSnapshot {
   appSubtitle: string
   pages: unknown
   headerActions: unknown
+  appHeader?: { layout: string; icon: string; skeleton: boolean }
 }
 
 function key(presetId: string) {

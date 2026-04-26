@@ -13,7 +13,7 @@ import {
   type PropertyValues,
   type StateValues,
 } from '@jf/app-elements'
-import { Icon, Button as DSButton, Tabs as DSTabs } from '@jf/design-system'
+import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput } from '@jf/design-system'
 import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
@@ -33,6 +33,7 @@ import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/el
 import { pointerOutsideOfPreview } from '@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview'
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element'
 import type { AppPreset, PresetElement } from '../presets/appPresets'
+import { IconPropertyField } from '../components/IconPropertyField'
 import { loadSnapshot, saveSnapshot } from '../presets/storage'
 
 interface CanvasElement {
@@ -144,6 +145,7 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
   headerActions: CanvasElement[]
   activePageId: string
   appSubtitle: string
+  appHeader: AppHeaderState
 } {
   if (!preset || preset.pages.length === 0) {
     return {
@@ -151,6 +153,7 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
       headerActions: [],
       activePageId: 'page-1',
       appSubtitle: preset?.appSubtitle ?? '',
+      appHeader: { ...APP_HEADER_DEFAULTS },
     }
   }
   const stored = loadSnapshot(preset.id)
@@ -161,6 +164,7 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
       headerActions: stored.headerActions as CanvasElement[],
       activePageId: pages[0]?.id ?? 'page-1',
       appSubtitle: stored.appSubtitle,
+      appHeader: stored.appHeader ?? { ...APP_HEADER_DEFAULTS },
     }
   }
   let nextId = 1
@@ -175,6 +179,7 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
     headerActions: headerBuilt.elements,
     activePageId: pages[0].id,
     appSubtitle: preset.appSubtitle,
+    appHeader: { ...APP_HEADER_DEFAULTS },
   }
 }
 
@@ -184,6 +189,14 @@ function nextElementId(pages: AppPage[], headerActions: CanvasElement[] = []): s
     ...headerActions.map((el) => el.id),
   ])
 }
+
+const APP_HEADER_ID = 'app-header'
+interface AppHeaderState {
+  layout: string
+  icon: string
+  skeleton: boolean
+}
+const APP_HEADER_DEFAULTS: AppHeaderState = { layout: 'Center', icon: 'Leaf', skeleton: false }
 
 const HEADER_ACTION_ALLOWED = ['button', 'social-follow']
 const HEADER_ACTIONS_MAX = 3
@@ -859,6 +872,12 @@ type RightPanelMode = 'preview' | 'designer' | 'properties'
 
 export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Title', onAppTitleChange, preset }: { previewMode?: boolean; appTitle?: string; onAppTitleChange?: (title: string) => void; preset?: AppPreset }) {
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
+  const [propertyTab, setPropertyTab] = useState<string>('general')
+  const [selectedElementId, _setSelectedElementId] = useState<string | null>(null)
+  const setSelectedElementId = useCallback((next: React.SetStateAction<string | null>) => {
+    _setSelectedElementId(next)
+    setPropertyTab('general')
+  }, [])
   const [components, setComponents] = useState<RegisteredComponent[]>(ComponentRegistry.getAll())
   const initial = useRef(buildInitialStateFromPreset(preset)).current
   const [pages, setPages] = useState<AppPage[]>(initial.pages)
@@ -866,7 +885,6 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const headerActionsRef = useRef<CanvasElement[]>([])
   useEffect(() => { headerActionsRef.current = headerActions }, [headerActions])
   const [activePageId, setActivePageId] = useState(initial.activePageId)
-  const [selectedElementId, setSelectedElementId] = useState<string | null>(null)
   const [dragSession, setDragSession] = useState<DragSourceData | null>(null)
   const isDragging = dragSession !== null
   const draggedCanvasId = dragSession?.type === 'canvas' ? dragSession.elementId : null
@@ -901,11 +919,14 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const appTitle = appTitleProp
   const setAppTitle = (title: string) => onAppTitleChange?.(title)
   const [appSubtitle, setAppSubtitle] = useState(initial.appSubtitle)
+  const [appHeaderState, setAppHeaderState] = useState<AppHeaderState>(initial.appHeader)
 
   useEffect(() => {
     if (!preset) return
-    saveSnapshot(preset.id, { appTitle, appSubtitle, pages, headerActions })
-  }, [preset, appTitle, appSubtitle, pages, headerActions])
+    saveSnapshot(preset.id, {
+      appTitle, appSubtitle, pages, headerActions, appHeader: appHeaderState,
+    })
+  }, [preset, appTitle, appSubtitle, pages, headerActions, appHeaderState])
   const appHeaderRef = useRef<HTMLDivElement>(null)
   const designBtnRef = useRef<HTMLButtonElement>(null)
   const [designBtnOnHeader, setDesignBtnOnHeader] = useState(true)
@@ -1241,6 +1262,13 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   }, [selectedElementId, handleRemoveElement])
 
   const handlePropertyChange = useCallback((elementId: string, name: string, value: string | boolean | number) => {
+    if (elementId === APP_HEADER_ID) {
+      if (name === 'Title') setAppTitle(String(value))
+      else if (name === 'Subtitle') setAppSubtitle(String(value))
+      else if (name === 'Icon') setAppHeaderState((s) => ({ ...s, icon: String(value) }))
+      else if (name === 'Skeleton') setAppHeaderState((s) => ({ ...s, skeleton: Boolean(value) }))
+      return
+    }
     setPages((prev) =>
       prev.map((page) => ({
         ...page,
@@ -1258,9 +1286,13 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
           : el
       )
     )
-  }, [])
+  }, [onAppTitleChange])
 
   const handleVariantChange = useCallback((elementId: string, group: string, value: string) => {
+    if (elementId === APP_HEADER_ID) {
+      if (group === 'Layout') setAppHeaderState((s) => ({ ...s, layout: value }))
+      return
+    }
     setPages((prev) =>
       prev.map((page) => ({
         ...page,
@@ -1606,7 +1638,25 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
 
   let selectedElement: CanvasElement | null = null
   let selectedComponent: RegisteredComponent | null = null
+  if (selectedElementId === APP_HEADER_ID) {
+    selectedComponent = ComponentRegistry.get('app-header') || null
+    if (selectedComponent) {
+      selectedElement = {
+        id: APP_HEADER_ID,
+        componentId: 'app-header',
+        variants: { Layout: appHeaderState.layout },
+        properties: {
+          Icon: appHeaderState.icon,
+          Title: appTitle,
+          Subtitle: appSubtitle,
+          Skeleton: appHeaderState.skeleton,
+        },
+        states: {},
+      }
+    }
+  }
   for (const page of pages) {
+    if (selectedElement) break
     const found = page.elements.find((el) => el.id === selectedElementId)
     if (found) {
       selectedElement = found
@@ -1704,9 +1754,17 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
             <div className="themes-view__device">
               <div ref={appHeaderRef}>
                 <AppHeader
-                  layout="Center"
+                  layout={appHeaderState.layout as 'Center' | 'Left' | 'Right'}
+                  icon={appHeaderState.icon}
+                  skeleton={appHeaderState.skeleton}
                   title={appTitle}
                   subtitle={appSubtitle}
+                  iconSelected={selectedElementId === APP_HEADER_ID}
+                  onIconClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedElementId(APP_HEADER_ID)
+                    setRightPanel('properties')
+                  }}
                   actionsSlotRef={headerActionsSlotRef}
                   actions={
                     <DropEdgeContext.Provider value={handleHeaderDropEdgeChange}>
@@ -1871,94 +1929,114 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
           <div className="build-page__right-slide">
             {/* Properties Panel */}
             {rightPanel === 'properties' && selectedElement && selectedComponent ? (
-              <div className="build-page__properties">
-                <div className="build-page__panel-header">
-                  <h2>{selectedComponent.name}</h2>
+              <div className="build-page__properties" data-theme="dark">
+                <div className="property-panel__header">
+                  <span className="property-panel__title">{selectedComponent.name}</span>
                   <button
-                    className="build-page__panel-close"
+                    className="property-panel__close"
                     onClick={() => {
                       setRightPanel('preview')
                       setSelectedElementId(null)
                     }}
+                    aria-label="Close"
                   >
-                    &times;
+                    <Icon name="xmark" size={20} />
                   </button>
                 </div>
 
-                {/* Variants */}
-                {Object.entries(selectedComponent.variants)
-                  .filter(([, config]) => {
-                    if (!config.showWhen) return true
-                    return Object.entries(config.showWhen).every(
-                      ([key, val]) => selectedElement.variants[key] === val
-                    )
-                  })
-                  .map(([group, config]) => (
-                  <div key={group} className="build-page__prop-group">
-                    <label className="build-page__prop-label">{group}</label>
-                    <div className="build-page__prop-options">
-                      {config.options.map((opt) => (
-                        <button
-                          key={opt}
-                          className={`build-page__prop-option ${selectedElement.variants[group] === opt ? 'build-page__prop-option--active' : ''}`}
-                          onClick={() => handleVariantChange(selectedElement.id, group, opt)}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                <div className="property-panel__tabs">
+                  <DSTabs
+                    accent="apps"
+                    value={propertyTab}
+                    onChange={setPropertyTab}
+                    items={selectedComponent.id === 'app-header'
+                      ? [
+                          { value: 'general', label: 'General' },
+                          { value: 'style', label: 'Style' },
+                        ]
+                      : [
+                          { value: 'general', label: 'General' },
+                          { value: 'condition', label: 'Condition' },
+                        ]}
+                  />
+                </div>
 
-                {/* Properties */}
-                {selectedComponent.properties
-                  .filter((prop) => prop.name !== 'Selected' && prop.name !== 'Skeleton')
-                  .filter((prop) => {
-                    if (!prop.showWhen) return true
-                    return Object.entries(prop.showWhen).every(
-                      ([key, val]) => selectedElement.variants[key] === val || selectedElement.properties[key] === val
-                    )
-                  })
-                  .map((prop) => (
-                  <div key={prop.name} className="build-page__prop-group">
-                    <label className="build-page__prop-label">{prop.name}</label>
-                    {prop.type === 'boolean' ? (
-                      <label className="build-page__prop-toggle">
-                        <input
-                          type="checkbox"
-                          checked={selectedElement.properties[prop.name] as boolean}
-                          onChange={(e) =>
-                            handlePropertyChange(selectedElement.id, prop.name, e.target.checked)
-                          }
+                {propertyTab === 'general' ? (
+                  <div className="property-panel__body">
+                    {/* Variants */}
+                    {Object.entries(selectedComponent.variants)
+                      .filter(([, config]) => {
+                        if (!config.showWhen) return true
+                        return Object.entries(config.showWhen).every(
+                          ([key, val]) => selectedElement.variants[key] === val
+                        )
+                      })
+                      .map(([group, config]) => (
+                      <div key={group} className="property-panel__field">
+                        <label className="property-panel__label">{group}</label>
+                        <Segmented
+                          accent="apps"
+                          variant="text"
+                          value={String(selectedElement.variants[group] ?? '')}
+                          onChange={(val) => handleVariantChange(selectedElement.id, group, val)}
+                          items={config.options.map((opt) => ({ value: opt, label: opt }))}
                         />
-                        <span>{selectedElement.properties[prop.name] ? 'On' : 'Off'}</span>
-                      </label>
-                    ) : prop.type === 'number' ? (
-                      <div className="build-page__prop-number-wrap">
-                        <input
-                          type="number"
-                          className="build-page__prop-number"
-                          min={prop.min ?? 0}
-                          max={prop.max ?? 200}
-                          value={Number(selectedElement.properties[prop.name]) || 0}
-                          onChange={(e) =>
-                            handlePropertyChange(selectedElement.id, prop.name, Number(e.target.value))
-                          }
-                        />
-                        <span className="build-page__prop-unit">px</span>
                       </div>
-                    ) : (
-                      <input
-                        type="text"
-                        className="build-page__prop-input"
-                        value={String(selectedElement.properties[prop.name] || '')}
-                        onChange={(e) =>
-                          handlePropertyChange(selectedElement.id, prop.name, e.target.value)
-                        }
-                      />
-                    )}
+                    ))}
+
+                    {/* Properties */}
+                    {selectedComponent.properties
+                      .filter((prop) => prop.name !== 'Selected' && prop.name !== 'Skeleton')
+                      .filter((prop) => {
+                        if (!prop.showWhen) return true
+                        return Object.entries(prop.showWhen).every(
+                          ([key, val]) => selectedElement.variants[key] === val || selectedElement.properties[key] === val
+                        )
+                      })
+                      .map((prop) => (
+                      <div key={prop.name} className="property-panel__field">
+                        <label className="property-panel__label">{prop.name}</label>
+                        {prop.type === 'boolean' ? (
+                          <DSToggle
+                            checked={Boolean(selectedElement.properties[prop.name])}
+                            onChange={(e) =>
+                              handlePropertyChange(selectedElement.id, prop.name, e.target.checked)
+                            }
+                          />
+                        ) : prop.type === 'number' ? (
+                          <DSNumberInput
+                            showUnit={false}
+                            min={prop.min ?? 0}
+                            max={prop.max ?? 200}
+                            value={Number(selectedElement.properties[prop.name]) || 0}
+                            onChange={(val) =>
+                              handlePropertyChange(selectedElement.id, prop.name, val ?? 0)
+                            }
+                          />
+                        ) : prop.type === 'icon' ? (
+                          <IconPropertyField
+                            value={String(selectedElement.properties[prop.name] || '')}
+                            onChange={(val) =>
+                              handlePropertyChange(selectedElement.id, prop.name, val)
+                            }
+                          />
+                        ) : (
+                          <DSInput
+                            value={String(selectedElement.properties[prop.name] || '')}
+                            onChange={(e) =>
+                              handlePropertyChange(selectedElement.id, prop.name, e.target.value)
+                            }
+                          />
+                        )}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                ) : (
+                  <div className="property-panel__empty">
+                    <Icon name="info-circle" category="general" size={20} />
+                    <span>Coming soon</span>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="live-preview">
@@ -1997,7 +2075,9 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                               <>
                               {isFirstPage && (
                                 <AppHeader
-                                  layout="Center"
+                                  layout={appHeaderState.layout as 'Center' | 'Left' | 'Right'}
+                                  icon={appHeaderState.icon}
+                                  skeleton={appHeaderState.skeleton}
                                   title={appTitle}
                                   subtitle={appSubtitle}
                                   actions={headerActions.map((el) => {

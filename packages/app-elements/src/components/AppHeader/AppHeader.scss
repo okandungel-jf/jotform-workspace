@@ -56,6 +56,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: outline-color 150ms ease;
+
+  &--interactive {
+    cursor: pointer;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+
+  &--interactive:hover {
+    outline-color: color-mix(in srgb, var(--fg-inverse) 40%, transparent);
+  }
+
+  &--selected {
+    outline-color: var(--fg-inverse);
+  }
 }
 
 // Skeleton

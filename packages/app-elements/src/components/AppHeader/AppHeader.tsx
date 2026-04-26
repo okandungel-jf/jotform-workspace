@@ -13,6 +13,8 @@ export interface AppHeaderProps {
   skeletonAnimation?: 'pulse' | 'shimmer';
   actions?: React.ReactNode;
   actionsSlotRef?: React.RefObject<HTMLDivElement | null>;
+  onIconClick?: (e: React.MouseEvent) => void;
+  iconSelected?: boolean;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
@@ -24,6 +26,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   skeletonAnimation = 'pulse',
   actions,
   actionsSlotRef,
+  onIconClick,
+  iconSelected,
 }) => {
   const animClass = skeletonAnimation === 'shimmer' ? 'animate-shimmer' : 'animate-pulse';
 
@@ -41,10 +45,22 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
     );
   }
 
+  const iconClass = [
+    'jf-app-header__icon',
+    onIconClick && 'jf-app-header__icon--interactive',
+    iconSelected && 'jf-app-header__icon--selected',
+  ].filter(Boolean).join(' ');
+
   return (
     <div className={`jf-app-header jf-app-header--${layout.toLowerCase()}`}>
       <div className="jf-app-header__inner">
-        <div className="jf-app-header__icon">
+        <div
+          className={iconClass}
+          onClick={onIconClick}
+          role={onIconClick ? 'button' : undefined}
+          tabIndex={onIconClick ? 0 : undefined}
+          onKeyDown={onIconClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onIconClick(e as unknown as React.MouseEvent); } } : undefined}
+        >
           <Icon name={icon} size={48} />
         </div>
         <div className="jf-app-header__text">
