@@ -48,6 +48,19 @@ ComponentRegistry.register({
 
 <Image hasImage imageUrl="..." alignment="Center" size="Normal" />`,
 
+  propDocs: [
+    { name: 'hasImage', type: 'boolean', default: 'false', description: 'When true, renders the uploaded image; otherwise shows the upload state.' },
+    { name: 'imageUrl', type: 'string', default: '""', description: 'URL or data URL of the image to display.' },
+    { name: 'altText', type: 'string', default: '""', description: 'Alt text for the rendered image.' },
+    { name: 'alignment', type: '"Left" | "Center" | "Right"', default: '"Left"', description: 'Horizontal alignment of the image within its container.' },
+    { name: 'size', type: '"Normal" | "Large"', default: '"Normal"', description: 'Size variant for the rendered image.' },
+    { name: 'width', type: 'number', default: 'undefined', description: 'Explicit pixel width. When omitted, height (if set) caps via max-height.' },
+    { name: 'height', type: 'number', default: 'undefined', description: 'Explicit pixel height. When set without width, applied as max-height.' },
+    { name: 'selected', type: 'boolean', default: 'false', description: 'Outline shown when selected on the canvas.' },
+    { name: 'shrinked', type: 'boolean', default: 'false', description: 'Constrains the element to a smaller width.' },
+    { name: 'skeleton', type: 'boolean', default: 'false', description: 'Renders a skeleton placeholder.' },
+  ],
+
   render(variants: VariantValues, props: PropertyValues, _states: StateValues): React.ReactNode {
     const hasImage = variants['Has Image'] === 'Yes';
     const widthValue = Number(props['Width']);
