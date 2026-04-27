@@ -71,3 +71,6 @@ export { Spacer } from './components/Spacer';
 // Layout
 export { AppDesigner, applyDefaultTheme, applyStoredOrDefaultTheme } from './layout/AppDesigner';
 export { BottomSheet } from './layout/components/BottomSheet';
+
+// Icon
+export { Icon as AppIcon } from './components/Icon/Icon';

@@ -8,6 +8,7 @@ import {
   BottomNavigation,
   EmptyState,
   BottomSheet,
+  AppIcon,
   type RegisteredComponent,
   type VariantValues,
   type PropertyValues,
@@ -15,6 +16,7 @@ import {
 } from '@jf/app-elements'
 import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput, FormField as DSFormField, TextArea as DSTextArea, DropdownSingle as DSDropdownSingle, FieldMapper as DSFieldMapper, FieldComposer as DSFieldComposer, type FieldToken, Link as DSLink, Modal as DSModal, SearchInput as DSSearchInput } from '@jf/design-system'
 import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
+import previewUserAvatar from '../assets/preview-user-avatar.jpg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
 import { MobileBottomBar } from '../components/MobileBottomBar'
@@ -977,6 +979,28 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const appHeaderRef = useRef<HTMLDivElement>(null)
   const designBtnRef = useRef<HTMLButtonElement>(null)
   const [designBtnOnHeader, setDesignBtnOnHeader] = useState(true)
+
+  // Live preview: detect when the in-canvas AppHeader scrolls out of view so the
+  // top-header chrome can collapse to show its icon + title (iOS large-title pattern).
+  const [previewAppHeaderEl, setPreviewAppHeaderEl] = useState<HTMLDivElement | null>(null)
+  const [previewContentScalerEl, setPreviewContentScalerEl] = useState<HTMLDivElement | null>(null)
+  const [isPreviewAppHeaderVisible, setIsPreviewAppHeaderVisible] = useState(true)
+  useEffect(() => {
+    if (!previewAppHeaderEl || !previewContentScalerEl) {
+      setIsPreviewAppHeaderVisible(true)
+      return
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsPreviewAppHeaderVisible(entry.isIntersecting),
+      // Status bar (54px) + top-header (48px) = 102px chrome at the top of the
+      // scroll container. Negative top rootMargin treats that area as outside
+      // the viewport so the compact title appears the moment AppHeader passes
+      // behind the chrome.
+      { root: previewContentScalerEl, rootMargin: '-102px 0px 0px 0px', threshold: 0 }
+    )
+    observer.observe(previewAppHeaderEl)
+    return () => observer.disconnect()
+  }, [previewAppHeaderEl, previewContentScalerEl])
 
   useEffect(() => {
     return ComponentRegistry.subscribe(() => {
@@ -3376,7 +3400,44 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                     <div className="live-preview__phone-screen">
                       <div className={`live-preview__status-bar-bg app-scope${activePageId === pages[0]?.id ? ' live-preview__status-bar-bg--header' : ''}`} />
                       <PhoneStatusBar className={`live-preview__status-bar app-scope${activePageId === pages[0]?.id ? ' live-preview__status-bar--header' : ''}`} style={{ color: activePageId === pages[0]?.id ? 'var(--fg-inverse)' : 'var(--fg-primary, #000)' }} />
-                      <div className="live-preview__content-scaler app-scope">
+                      <div className={`live-preview__top-header app-scope${activePageId === pages[0]?.id ? ' live-preview__top-header--brand' : ''}`}>
+                        {(() => {
+                          const isFirstPage = activePageId === pages[0]?.id
+                          const showCompact = isFirstPage && appHeaderState.show && !isPreviewAppHeaderVisible
+                          if (showCompact) {
+                            return (
+                              <div className="live-preview__top-header-compact">
+                                {appHeaderState.imageStyle !== 'None' && (
+                                  <div className="live-preview__top-header-compact-icon">
+                                    {appHeaderState.imageStyle === 'Image' && appHeaderState.imageUrl ? (
+                                      <img src={appHeaderState.imageUrl} alt="" />
+                                    ) : (
+                                      <AppIcon name={appHeaderState.icon} size={24} />
+                                    )}
+                                  </div>
+                                )}
+                                <span className="live-preview__top-header-compact-title">{appTitle}</span>
+                              </div>
+                            )
+                          }
+                          return pages.length > 0 ? (
+                            <button type="button" className="live-preview__top-header-btn" aria-label="Menu">
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                              </svg>
+                            </button>
+                          ) : (
+                            <span className="live-preview__top-header-btn" aria-hidden="true" />
+                          )
+                        })()}
+                        <img
+                          className="live-preview__top-header-avatar"
+                          src={previewUserAvatar}
+                          alt=""
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <div ref={setPreviewContentScalerEl} className="live-preview__content-scaler app-scope">
                         <div className="live-preview__content app-scope">
                           {(() => {
                             const activePage = pages.find((p) => p.id === activePageId) || pages[0]
@@ -3384,6 +3445,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                             return activePage ? (
                               <>
                               {isFirstPage && appHeaderState.show && (
+                                <div ref={setPreviewAppHeaderEl}>
                                 <AppHeader
                                   layout={appHeaderState.layout as 'Center' | 'Left' | 'Right'}
                                   icon={appHeaderState.icon}
@@ -3407,6 +3469,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                                     )
                                   })}
                                 />
+                                </div>
                               )}
                               <div className={`themes-view__canvas${isFirstPage ? ' themes-view__canvas--first' : ''}`}>
                                 <div className="themes-view__app">
