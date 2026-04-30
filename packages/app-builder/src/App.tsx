@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useSyncExternalStore } from 'react'
 import { IconLibraryProvider } from '@jf/app-elements'
 import { TopBar } from './shell/TopBar.tsx'
 import { BuildPage } from './pages/BuildPage.tsx'
@@ -9,15 +9,66 @@ import { loadStoredAppTitle } from './presets/storage.ts'
 
 type Page = 'build' | 'settings' | 'publish'
 
+// Subscribe to URL changes — covers history navigation (popstate), fragment
+// updates (hashchange), and tab refocus after a `window.open`/`open` from
+// outside the app (focus). The capture flow opens new URLs in an existing
+// browser tab; without these listeners React keeps reading the URL params
+// captured at module load and ignores the new ?preset/?page values.
+function subscribeUrl(callback: () => void): () => void {
+  window.addEventListener('popstate', callback)
+  window.addEventListener('hashchange', callback)
+  window.addEventListener('focus', callback)
+  return () => {
+    window.removeEventListener('popstate', callback)
+    window.removeEventListener('hashchange', callback)
+    window.removeEventListener('focus', callback)
+  }
+}
+
+function getUrlSearch(): string {
+  return window.location.search
+}
+
+function useUrlSearch(): string {
+  return useSyncExternalStore(subscribeUrl, getUrlSearch, getUrlSearch)
+}
+
 export function App() {
+  const search = useUrlSearch()
+  const { urlPreset, urlPage, urlFullscreen } = useMemo(() => {
+    const p = new URLSearchParams(search)
+    return {
+      urlPreset: p.get('preset'),
+      urlPage: p.get('page'),
+      urlFullscreen: p.get('fullscreen') === 'phone',
+    }
+  }, [search])
+
   const [activePage, setActivePage] = useState<Page>('build')
   const [previewMode, setPreviewMode] = useState(true)
-  const [activePresetId, setActivePresetId] = useState<string>(EMPTY_PRESET_ID)
+  const [activePresetId, setActivePresetId] = useState<string>(urlPreset ?? EMPTY_PRESET_ID)
   const preset = useMemo(() => getPresetById(activePresetId), [activePresetId])
   // Empty App is a sandbox — never restore from storage.
   const titleForPreset = (id: string) =>
     id === EMPTY_PRESET_ID ? getPresetById(id).appTitle : (loadStoredAppTitle(id) ?? getPresetById(id).appTitle)
-  const [appTitle, setAppTitle] = useState(() => titleForPreset(EMPTY_PRESET_ID))
+  const [appTitle, setAppTitle] = useState(() => titleForPreset(urlPreset ?? EMPTY_PRESET_ID))
+
+  // Sync activePresetId/appTitle whenever the URL preset changes (capture flow
+  // opens different presets in the same tab without a full reload).
+  useEffect(() => {
+    if (!urlPreset) return
+    setActivePresetId((prev) => (prev === urlPreset ? prev : urlPreset))
+    setAppTitle(titleForPreset(urlPreset))
+    // titleForPreset is stable enough here; intentionally omitted from deps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlPreset])
+
+  useEffect(() => {
+    if (urlFullscreen) {
+      document.body.classList.add('builder--phone-only')
+      return () => { document.body.classList.remove('builder--phone-only') }
+    }
+  }, [urlFullscreen])
 
   const handlePresetChange = (id: string) => {
     setActivePresetId(id)
@@ -48,11 +99,15 @@ export function App() {
       <div className="builder__content">
         {activePage === 'build' && (
           <BuildPage
-            key={activePresetId}
+            // Bumping the key on URL preset/page changes forces a remount so
+            // BuildPage re-derives its initial state from the new URL params.
+            key={`${activePresetId}:${urlPage ?? ''}`}
             preset={preset}
             previewMode={previewMode}
             appTitle={appTitle}
             onAppTitleChange={setAppTitle}
+            initialPageId={urlPage ?? undefined}
+            chromeless={urlFullscreen}
           />
         )}
         {activePage === 'settings' && <SettingsPage />}

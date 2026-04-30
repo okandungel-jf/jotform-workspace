@@ -1708,6 +1708,12 @@ body {
   color: var(--ds-text-dark);
 }
 
+.property-panel__header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
 .property-panel__close {
   display: inline-flex;
   align-items: center;
@@ -2831,6 +2837,81 @@ body {
 // Expose bar height on .builder so canvas padding can reserve space below the bar
 .builder {
   --mobile-bottom-bar-height: 0px;
+}
+
+// Phone-only fullscreen mode: hide builder chrome, render just the iPhone mockup
+// at native size, used for headless capture (e.g. generate_figma_design)
+body.builder--phone-only {
+  background: transparent;
+  margin: 0;
+  padding: 0;
+
+  .topbar,
+  .build-page__left,
+  .build-page__canvas-wrapper,
+  .build-page__canvas,
+  .build-page__right-slide--designer,
+  .property-panel__header,
+  .property-panel__tabs,
+  .property-panel__content,
+  .build-page__right-slide:not(:has(.live-preview)) {
+    display: none !important;
+  }
+
+  .builder__content,
+  .build-page,
+  .build-page__main,
+  .build-page__right,
+  .build-page__right-slider,
+  .build-page__right-slide {
+    display: block !important;
+    width: 461px !important;
+    height: 965px !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    overflow: visible !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .live-preview {
+    width: 461px !important;
+    height: 965px !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .live-preview__header,
+  .live-preview__bottom-nav-wrapper {
+    display: none !important;
+  }
+
+  .live-preview__body {
+    padding: 0 !important;
+    height: 100% !important;
+  }
+
+  .live-preview__phone {
+    // Phone width chosen so the post-padding text container width is the same
+    // as the live preview's (372px scaled by 0.9 → 330px text width). Without
+    // scale we need a wider phone to produce the same 330px container at native
+    // pixel sizes. (410 - 32 phone bezel - 48 content padding = 330.)
+    // This keeps text wrapping identical to live preview while emitting whole-
+    // pixel sizes (16px, not 14.4px) into the capture.
+    width: 410px !important;
+    height: 858px !important;
+    aspect-ratio: auto !important;
+  }
+
+  // Disable the 0.9 zoom-out scale + width hack. Render content at the phone
+  // screen's actual width with no transform — capture sees native integer sizes
+  // (font, padding, margins) instead of post-transform fractional values.
+  .live-preview__content {
+    width: 100% !important;
+    transform: none !important;
+  }
 }
 
 @media (max-width: 768px) {

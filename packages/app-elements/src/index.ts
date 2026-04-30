@@ -72,5 +72,14 @@ export { Spacer } from './components/Spacer';
 export { AppDesigner, applyDefaultTheme, applyStoredOrDefaultTheme } from './layout/AppDesigner';
 export { BottomSheet } from './layout/components/BottomSheet';
 
+// Runtime (collections + form sheet for dynamic preset flows)
+export { CollectionsProvider, useCollections } from './runtime/CollectionsContext';
+export type { FormField, FormSchema, CollectionItem, CollectionsContextValue } from './runtime/CollectionsContext';
+export { FormSheet } from './runtime/FormSheet';
+
 // Icon
 export { Icon as AppIcon } from './components/Icon/Icon';
+
+// Utils
+export { compressImageFile, compressImageFiles } from './utils/compressImage';
+export type { CompressImageOptions } from './utils/compressImage';

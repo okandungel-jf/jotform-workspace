@@ -1,9 +1,54 @@
+import type { ComponentProps } from 'react';
 import { ComponentRegistry } from '../../types/registry';
 import { List } from './List';
 import type { ListImageStyle, ListSize, ListAction, CardSize } from './List';
 import type { CardImageStyle, CardLayout, CardAction } from '../Card';
 import type { VariantValues, PropertyValues, StateValues } from '../../types/component';
 import listScss from './List.scss?raw';
+import { useCollections } from '../../runtime/CollectionsContext';
+
+type ListItemData = { title: string; description: string; image?: string };
+
+interface ListWithSourceProps extends ComponentProps<typeof List> {
+  source?: string;
+  titleField?: string;
+  descriptionField?: string;
+  imageField?: string;
+  emptyTitle?: string;
+  emptyDescription?: string;
+}
+
+function ListWithSource({
+  source,
+  titleField,
+  descriptionField,
+  imageField,
+  emptyTitle,
+  emptyDescription,
+  items: staticItems,
+  ...rest
+}: ListWithSourceProps) {
+  const ctx = useCollections();
+  const sourceItems = source && ctx ? ctx.get(source) : null;
+
+  let items = staticItems;
+  if (sourceItems !== null) {
+    if (sourceItems.length === 0) {
+      items = [{
+        title: emptyTitle || 'No items yet',
+        description: emptyDescription || 'Tap the button above to add your first one.',
+      }];
+    } else {
+      items = sourceItems.map((row): ListItemData => ({
+        title: (titleField && row[titleField]) || row['name'] || row['title'] || '',
+        description: (descriptionField && row[descriptionField]) || row['description'] || '',
+        image: imageField ? row[imageField] : undefined,
+      }));
+    }
+  }
+
+  return <List {...rest} items={items} />;
+}
 
 ComponentRegistry.register({
   id: 'list',
@@ -73,6 +118,12 @@ ComponentRegistry.register({
     { name: 'Skeleton', type: 'boolean', default: false },
     { name: 'Skeleton Animation', type: 'select', options: ['Pulse', 'Shimmer'], default: 'Pulse' },
     { name: 'Selected', type: 'boolean', default: false },
+    { name: 'Source', type: 'text', default: '' },
+    { name: 'Title Field', type: 'text', default: '' },
+    { name: 'Description Field', type: 'text', default: '' },
+    { name: 'Image Field', type: 'text', default: '' },
+    { name: 'Empty Title', type: 'text', default: '' },
+    { name: 'Empty Description', type: 'text', default: '' },
   ],
 
   states: [],
@@ -191,7 +242,13 @@ ComponentRegistry.register({
     }
 
     return (
-      <List
+      <ListWithSource
+        source={(props['Source'] as string) || undefined}
+        titleField={(props['Title Field'] as string) || undefined}
+        descriptionField={(props['Description Field'] as string) || undefined}
+        imageField={(props['Image Field'] as string) || undefined}
+        emptyTitle={(props['Empty Title'] as string) || undefined}
+        emptyDescription={(props['Empty Description'] as string) || undefined}
         layout={variants['Layout'] as 'Basic' | 'Card'}
         items={items}
         title={props['Title'] as string}

@@ -1,6 +1,7 @@
 import { useRef, type FC } from 'react';
 import { Icon } from '../Icon/Icon';
 import { Button } from '../Button';
+import { compressImageFiles } from '../../utils/compressImage';
 import './ImageGallery.scss';
 
 export type GalleryLayout = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
@@ -134,17 +135,7 @@ export const ImageGallery: FC<ImageGalleryProps> = ({
 
   const handleFiles = (files: FileList | null) => {
     if (!files || files.length === 0 || !onUpload) return;
-    const fileArr = Array.from(files);
-    Promise.all(
-      fileArr.map(
-        (file) => new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result));
-          reader.onerror = () => reject(reader.error);
-          reader.readAsDataURL(file);
-        })
-      )
-    ).then((urls) => onUpload([...images, ...urls]));
+    compressImageFiles(files).then((urls) => onUpload([...images, ...urls]));
   };
   const config = LAYOUT_CONFIG[layout];
 

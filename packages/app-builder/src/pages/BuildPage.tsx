@@ -9,6 +9,10 @@ import {
   EmptyState,
   BottomSheet,
   AppIcon,
+  CollectionsProvider,
+  FormSheet,
+  compressImageFile,
+  compressImageFiles,
   type RegisteredComponent,
   type VariantValues,
   type PropertyValues,
@@ -900,7 +904,7 @@ function AddPageDivider({ onClick }: { onClick: () => void }) {
 
 type RightPanelMode = 'preview' | 'designer' | 'properties'
 
-export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Title', onAppTitleChange, preset }: { previewMode?: boolean; appTitle?: string; onAppTitleChange?: (title: string) => void; preset?: AppPreset }) {
+export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Title', onAppTitleChange, preset, initialPageId, chromeless = false }: { previewMode?: boolean; appTitle?: string; onAppTitleChange?: (title: string) => void; preset?: AppPreset; initialPageId?: string; chromeless?: boolean }) {
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
   const [propertyTab, setPropertyTab] = useState<string>('general')
   const appHeaderImageInputRef = useRef<HTMLInputElement>(null)
@@ -931,7 +935,21 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [headerActions, setHeaderActions] = useState<CanvasElement[]>(initial.headerActions)
   const headerActionsRef = useRef<CanvasElement[]>([])
   useEffect(() => { headerActionsRef.current = headerActions }, [headerActions])
-  const [activePageId, setActivePageId] = useState(initial.activePageId)
+  const [activePageId, setActivePageId] = useState(() => {
+    // Resolve initialPageId against the user's actual stored pages. Accepts:
+    //   1. an exact page ID match (e.g. "page-3")
+    //   2. a 1-based index ("3" → pages[2]) — robust when stored page IDs
+    //      drift from the preset (custom IDs after add/delete) so capture
+    //      URLs stay stable.
+    if (initialPageId) {
+      if (initial.pages.some((p: AppPage) => p.id === initialPageId)) return initialPageId
+      const idx = Number.parseInt(initialPageId, 10) - 1
+      if (Number.isFinite(idx) && idx >= 0 && idx < initial.pages.length) {
+        return initial.pages[idx].id
+      }
+    }
+    return initial.activePageId
+  })
   const [dragSession, setDragSession] = useState<DragSourceData | null>(null)
   const isDragging = dragSession !== null
   const draggedCanvasId = dragSession?.type === 'canvas' ? dragSession.elementId : null
@@ -1747,6 +1765,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
     <>
     <div className="build-page">
       {/* Left Panel - App Elements */}
+      {!chromeless && (
       <aside className={`build-page__left${leftPanelOpen ? '' : ' build-page__left--hidden'}`}>
         <div className="build-page__left-header">
           <h2>App Elements</h2>
@@ -1799,8 +1818,10 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
           })}
         </div>
       </aside>
+      )}
 
-      {/* Canvas - App Preview */}
+      {/* Canvas - App Preview (skipped in chromeless mode for capture flows) */}
+      {!chromeless && (
       <div className={`build-page__canvas-wrapper${isDragging ? ' build-page__canvas--dragging' : ''}`}>
       <main ref={canvasRef} className="build-page__canvas" onClick={() => {
         setSelectedElementId(null)
@@ -1992,6 +2013,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
         />
       )}
       </div>
+      )}
 
       {/* Right Panel - Designer/Properties or Live Preview */}
       <aside className={`build-page__right ${previewMode || rightPanel === 'designer' ? '' : 'build-page__right--hidden'}`}>
@@ -2006,16 +2028,28 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
               <div className="build-page__properties" data-theme="dark">
                 <div className="property-panel__header">
                   <span className="property-panel__title">{selectedComponent.name}</span>
-                  <button
-                    className="property-panel__close"
-                    onClick={() => {
-                      setRightPanel('preview')
-                      setSelectedElementId(null)
-                    }}
-                    aria-label="Close"
-                  >
-                    <Icon name="xmark" size={20} />
-                  </button>
+                  <div className="property-panel__header-actions">
+                    {selectedElement.id !== APP_HEADER_ID && (
+                      <button
+                        className="property-panel__close"
+                        onClick={() => handleRemoveElement(selectedElement.id)}
+                        aria-label="Delete element"
+                        title="Delete element"
+                      >
+                        <Icon name="trash-filled" category="general" size={18} />
+                      </button>
+                    )}
+                    <button
+                      className="property-panel__close"
+                      onClick={() => {
+                        setRightPanel('preview')
+                        setSelectedElementId(null)
+                      }}
+                      aria-label="Close"
+                    >
+                      <Icon name="xmark" size={20} />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="property-panel__tabs">
@@ -2222,17 +2256,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                           const inputId = `gallery-input-${selectedElement.id}`
                           const handleFiles = (files: FileList | null) => {
                             if (!files || files.length === 0) return
-                            const fileArr = Array.from(files)
-                            Promise.all(
-                              fileArr.map(
-                                (file) => new Promise<string>((resolve, reject) => {
-                                  const reader = new FileReader()
-                                  reader.onload = () => resolve(String(reader.result))
-                                  reader.onerror = () => reject(reader.error)
-                                  reader.readAsDataURL(file)
-                                })
-                              )
-                            ).then((urls) => writeImages([...galleryImages, ...urls]))
+                            compressImageFiles(files).then((urls) => writeImages([...galleryImages, ...urls]))
                           }
                           return (
                             <div className="property-panel__field">
@@ -2358,9 +2382,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                                 onChange={(e) => {
                                   const file = e.target.files?.[0]
                                   if (!file) return
-                                  const reader = new FileReader()
-                                  reader.onload = () => updateField('image', String(reader.result))
-                                  reader.readAsDataURL(file)
+                                  compressImageFile(file).then((url) => updateField('image', url))
                                   e.target.value = ''
                                 }}
                               />
@@ -2506,9 +2528,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                               onChange={(e) => {
                                 const file = e.target.files?.[0]
                                 if (!file) return
-                                const reader = new FileReader()
-                                reader.onload = () => setImage(String(reader.result), file.name)
-                                reader.readAsDataURL(file)
+                                compressImageFile(file).then((url) => setImage(url, file.name))
                                 e.target.value = ''
                               }}
                             />
@@ -3000,12 +3020,10 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                                 onChange={(e) => {
                                   const file = e.target.files?.[0]
                                   if (!file) return
-                                  const reader = new FileReader()
-                                  reader.onload = () => {
-                                    handlePropertyChange(selectedElement.id, 'Image URL', String(reader.result))
+                                  compressImageFile(file).then((url) => {
+                                    handlePropertyChange(selectedElement.id, 'Image URL', url)
                                     handlePropertyChange(selectedElement.id, 'Image Name', file.name)
-                                  }
-                                  reader.readAsDataURL(file)
+                                  })
                                   e.target.value = ''
                                 }}
                               />
@@ -3265,15 +3283,13 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                                   onChange={(e) => {
                                     const file = e.target.files?.[0]
                                     if (!file) return
-                                    const reader = new FileReader()
-                                    reader.onload = () => {
+                                    compressImageFile(file).then((url) => {
                                       setAppHeaderState((s) => ({
                                         ...s,
-                                        imageUrl: String(reader.result),
+                                        imageUrl: url,
                                         imageName: file.name,
                                       }))
-                                    }
-                                    reader.readAsDataURL(file)
+                                    })
                                     // Allow re-selecting the same file later.
                                     e.target.value = ''
                                   }}
@@ -3373,6 +3389,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                 })()}
               </div>
             ) : (
+              <CollectionsProvider>
               <div className="live-preview">
                 <div className="live-preview__header">
                   <span className="live-preview__title">Live Preview</span>
@@ -3507,10 +3524,12 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                         </div>
                       )}
                       <img src={phoneHomeIndicator} alt="" className="live-preview__home-indicator" />
+                      <FormSheet />
                     </div>
                   </div>
                 </div>
               </div>
+              </CollectionsProvider>
             )}
           </div>
 
@@ -3690,9 +3709,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                         onChange={(e) => {
                           const file = e.target.files?.[0]
                           if (!file) return
-                          const reader = new FileReader()
-                          reader.onload = () => updateItem(idx, { image: String(reader.result) })
-                          reader.readAsDataURL(file)
+                          compressImageFile(file).then((url) => updateItem(idx, { image: url }))
                           e.target.value = ''
                         }}
                       />

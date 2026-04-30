@@ -1,8 +1,62 @@
 import { ComponentRegistry } from '../../types/registry';
 import { Button } from './Button';
-import type { ButtonVariant, ButtonCorner, ButtonState, ButtonSize } from './Button';
+import type { ButtonVariant, ButtonCorner, ButtonState, ButtonSize, ButtonProps } from './Button';
 import type { VariantValues, PropertyValues, StateValues } from '../../types/component';
 import buttonScss from './Button.scss?raw';
+import { useCollections, type FormField, type FormSchema } from '../../runtime/CollectionsContext';
+
+interface ButtonActionExtras {
+  action?: string;
+  formTitle?: string;
+  formDescription?: string;
+  formSubmitLabel?: string;
+  formFields?: string;
+  submitsTo?: string;
+}
+
+function parseFields(raw?: string): FormField[] {
+  if (!raw) return [];
+  const trimmed = raw.trim();
+  if (!trimmed) return [];
+  if (trimmed.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) return parsed as FormField[];
+    } catch {
+      /* fall through */
+    }
+  }
+  // Fallback: comma-separated names → text fields
+  return trimmed.split(',').map((part) => {
+    const name = part.trim();
+    return { name, label: name, type: 'text' as const };
+  }).filter((f) => f.name);
+}
+
+function ButtonWithAction({
+  action,
+  formTitle,
+  formDescription,
+  formSubmitLabel,
+  formFields,
+  submitsTo,
+  ...rest
+}: ButtonProps & ButtonActionExtras) {
+  const ctx = useCollections();
+  const interactive = Boolean(ctx) && action === 'Open Form';
+  const handleClick = () => {
+    if (!ctx) return;
+    const schema: FormSchema = {
+      title: formTitle || 'Add new item',
+      description: formDescription || undefined,
+      submitButtonLabel: formSubmitLabel || 'Submit',
+      submitsTo: submitsTo || '',
+      fields: parseFields(formFields),
+    };
+    ctx.openForm(schema);
+  };
+  return <Button {...rest} onClick={interactive ? handleClick : undefined} />;
+}
 
 ComponentRegistry.register({
   id: 'button',
@@ -43,6 +97,12 @@ ComponentRegistry.register({
     { name: 'Icon', type: 'icon', default: 'Plus', showWhen: { Type: 'Icon Only' } },
     { name: 'Shrinked', type: 'boolean', default: false, showWhen: { Type: 'Standard' } },
     { name: 'Full Width', type: 'boolean', default: false, showWhen: { Type: 'Standard' } },
+    { name: 'Action', type: 'select', options: ['None', 'Open Form'], default: 'None' },
+    { name: 'Form Title', type: 'text', default: 'Add new item', showWhen: { Action: 'Open Form' } },
+    { name: 'Form Description', type: 'text', default: '', showWhen: { Action: 'Open Form' } },
+    { name: 'Form Submit Label', type: 'text', default: 'Submit', showWhen: { Action: 'Open Form' } },
+    { name: 'Form Fields', type: 'text', default: '', showWhen: { Action: 'Open Form' } },
+    { name: 'Submits To', type: 'text', default: '', showWhen: { Action: 'Open Form' } },
   ],
 
   states: [
@@ -209,7 +269,7 @@ ComponentRegistry.register({
     const isIconOnly = variants['Type'] === 'Icon Only';
 
     return (
-      <Button
+      <ButtonWithAction
         variant={variants['Variant'] as ButtonVariant}
         corner={variants['Corner'] as ButtonCorner}
         size={variants['Size'] as ButtonSize}
@@ -222,6 +282,12 @@ ComponentRegistry.register({
         iconOnlyFilled={variants['Filled'] === 'Yes'}
         shrinked={props['Shrinked'] as boolean}
         fullWidth={props['Full Width'] as boolean}
+        action={props['Action'] as string}
+        formTitle={props['Form Title'] as string}
+        formDescription={props['Form Description'] as string}
+        formSubmitLabel={props['Form Submit Label'] as string}
+        formFields={props['Form Fields'] as string}
+        submitsTo={props['Submits To'] as string}
       />
     );
   },

@@ -31,6 +31,7 @@ ComponentRegistry.register({
     { name: 'Label', type: 'text', default: 'Form', showWhen: { 'Layout Type': 'Card' } },
     { name: 'Description', type: 'text', default: 'Type a description', showWhen: { 'Layout Type': 'Card' } },
     { name: 'Show Icon', type: 'boolean', default: true, showWhen: { 'Layout Type': 'Card' } },
+    { name: 'Icon', type: 'icon', default: 'ClipboardList', showWhen: { 'Layout Type': 'Card' } },
     { name: 'Required', type: 'boolean', default: true, showWhen: { 'Layout Type': 'Card' } },
     { name: 'Selected', type: 'boolean', default: false, showWhen: { 'Layout Type': 'Card' } },
     { name: 'Shrinked', type: 'boolean', default: false, showWhen: { 'Layout Type': 'Card' } },
@@ -136,6 +137,7 @@ ComponentRegistry.register({
         label={props['Label'] as string}
         description={props['Description'] as string}
         showIcon={props['Show Icon'] as boolean}
+        icon={props['Icon'] as string}
         required={props['Required'] as boolean}
         selected={props['Selected'] as boolean}
         shrinked={props['Shrinked'] as boolean}

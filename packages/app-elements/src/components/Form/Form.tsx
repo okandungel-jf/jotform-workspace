@@ -12,6 +12,7 @@ export interface FormProps {
   label?: string;
   description?: string;
   showIcon?: boolean;
+  icon?: string;
   required?: boolean;
   selected?: boolean;
   shrinked?: boolean;
@@ -27,6 +28,7 @@ export const Form: FC<FormProps> = ({
   label = 'Form',
   description = 'Type a description',
   showIcon = true,
+  icon = 'ClipboardList',
   required = true,
   selected = false,
   shrinked = false,
@@ -176,7 +178,7 @@ export const Form: FC<FormProps> = ({
     <div className={rootClasses}>
       {showIcon && (
         <div className="jf-form__icon" style={{ width: iconSize, height: iconSize }}>
-          <Icon name="ClipboardList" size={iconInner} />
+          <Icon name={icon} size={iconInner} />
         </div>
       )}
       <div className="jf-form__content">
