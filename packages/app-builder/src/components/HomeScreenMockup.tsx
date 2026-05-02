@@ -53,6 +53,7 @@ export function HomeScreenMockup({ iconName, iconColor, iconBg, appName }: HomeS
         <div className="home-mockup__slot" />
         <div className="home-mockup__slot" />
       </div>
+
     </div>
   )
 }

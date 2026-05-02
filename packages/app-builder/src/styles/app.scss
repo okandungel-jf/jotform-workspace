@@ -2617,33 +2617,44 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(160deg, #d4b8ff 0%, #b794f6 50%, #9776d8 100%);
+  background:
+    radial-gradient(
+      ellipse 110% 90% at 50% 55%,
+      color-mix(in srgb, var(--neutral-400) 25%, transparent) 0%,
+      transparent 100%
+    ),
+    var(--neutral-700);
   color: var(--brand-white);
   font-family: var(--ds-font-family);
   overflow: hidden;
 
-  // Subtle radial highlight (iOS wallpaper feel)
+  // Top-left light blob — same-hue highlight (glass-orb shine)
   &::before {
     content: '';
     position: absolute;
-    top: -30%;
-    right: -30%;
-    width: 90%;
+    top: -20%;
+    left: -25%;
+    width: 80%;
     aspect-ratio: 1;
     border-radius: 50%;
-    background: radial-gradient(circle, rgb(255 255 255 / 0.18) 0%, rgb(255 255 255 / 0) 70%);
+    background: var(--neutral-200);
+    opacity: 0.55;
+    filter: blur(55px);
     pointer-events: none;
   }
 
+  // Bottom-right dark blob — deep-hue shadow for vertical depth
   &::after {
     content: '';
     position: absolute;
-    bottom: -20%;
-    left: -20%;
-    width: 70%;
+    bottom: -25%;
+    right: -25%;
+    width: 95%;
     aspect-ratio: 1;
     border-radius: 50%;
-    background: radial-gradient(circle, rgb(151 118 216 / 0.4) 0%, rgb(151 118 216 / 0) 70%);
+    background: var(--neutral-900);
+    opacity: 0.4;
+    filter: blur(75px);
     pointer-events: none;
   }
 }
@@ -2683,10 +2694,16 @@ body {
 .home-mockup__grid--dock {
   padding: 8px;
   margin: 0 12px 14px;
-  background: rgb(255 255 255 / 0.16);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgb(255 255 255 / 0.08);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-radius: 22px;
+
+  .home-mockup__slot {
+    background: rgb(255 255 255 / 0.12);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 .home-mockup__spacer {
@@ -2717,9 +2734,11 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 22.5%;
+  // iOS-style layered drop shadow — small contact + soft ambient + diffuse halo
   box-shadow:
-    0 2px 8px rgb(0 0 0 / 0.18),
-    inset 0 0 0 0.5px rgb(255 255 255 / 0.2);
+    0 1px 2px rgb(0 0 0 / 0.10),
+    0 4px 10px rgb(0 0 0 / 0.14),
+    0 14px 28px rgb(0 0 0 / 0.18);
 }
 
 .home-mockup__app-label {

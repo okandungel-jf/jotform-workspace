@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import {
   Button,
   DropdownLanguage,
@@ -8,6 +8,7 @@ import {
   Input,
   Toggle,
 } from '@jf/design-system'
+import { applyStoredOrDefaultTheme } from '@jf/app-elements'
 import { BasicPhonePreview } from '../components/BasicPhonePreview'
 import { ColorInputWithPicker } from '../components/ColorInputWithPicker'
 import { HomeScreenMockup } from '../components/HomeScreenMockup'
@@ -269,6 +270,12 @@ interface SettingsPageProps {
 
 export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
   const [activeId, setActiveId] = useState('app-settings')
+
+  // Apply the brand-derived theme (palette + neutrals + fonts) so the mockups
+  // pick up the same dynamic --neutral-* / --primary-* tokens as the canvas.
+  useEffect(() => {
+    applyStoredOrDefaultTheme(presetId === 'empty' ? undefined : presetId)
+  }, [presetId])
 
   // Read the AppHeader's currently selected icon from the preset snapshot.
   // The icon shown in the App Icon and Splash mockups always mirrors what's
