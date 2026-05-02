@@ -1151,10 +1151,6 @@ body {
   height: 54px;
   z-index: 1;
   background: var(--bg-surface);
-
-  &--header {
-    background: var(--bg-fill-brand);
-  }
 }
 
 .live-preview__status-bar {
@@ -1166,7 +1162,7 @@ body {
   display: block;
   width: 100%;
   height: auto;
-  color: var(--fg-inverse);
+  color: var(--fg-primary);
 }
 
 // ---- Top Header (iOS nav bar) ----
@@ -1183,11 +1179,7 @@ body {
   padding: 0 12px;
   background: var(--bg-surface);
   color: var(--fg-primary);
-
-  &--brand {
-    background: var(--bg-fill-brand);
-    color: var(--fg-inverse);
-  }
+  box-shadow: var(--shadow-sm);
 }
 
 .live-preview__top-header-btn {

@@ -183,6 +183,8 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
         imageUrl: storedHeader.imageUrl ?? APP_HEADER_DEFAULTS.imageUrl,
         imageName: storedHeader.imageName ?? APP_HEADER_DEFAULTS.imageName,
         textColor: storedHeader.textColor ?? APP_HEADER_DEFAULTS.textColor,
+        backgroundImageUrl: storedHeader.backgroundImageUrl ?? APP_HEADER_DEFAULTS.backgroundImageUrl,
+        backgroundImageName: storedHeader.backgroundImageName ?? APP_HEADER_DEFAULTS.backgroundImageName,
       },
     }
   }
@@ -220,6 +222,8 @@ interface AppHeaderState {
   imageUrl: string | null
   imageName: string | null
   textColor: string
+  backgroundImageUrl: string | null
+  backgroundImageName: string | null
 }
 const APP_HEADER_DEFAULTS: AppHeaderState = {
   layout: 'Center',
@@ -230,6 +234,8 @@ const APP_HEADER_DEFAULTS: AppHeaderState = {
   imageUrl: null,
   imageName: null,
   textColor: '#FFFFFF',
+  backgroundImageUrl: null,
+  backgroundImageName: null,
 }
 
 const HEADER_ACTION_ALLOWED = ['button', 'social-follow']
@@ -908,6 +914,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
   const [propertyTab, setPropertyTab] = useState<string>('general')
   const appHeaderImageInputRef = useRef<HTMLInputElement>(null)
+  const appHeaderBgImageInputRef = useRef<HTMLInputElement>(null)
   const [editItemsOpen, setEditItemsOpen] = useState(false)
   const [selectedElementId, _setSelectedElementId] = useState<string | null>(null)
   const setSelectedElementId = useCallback((next: React.SetStateAction<string | null>) => {
@@ -1851,6 +1858,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                   imageStyle={appHeaderState.imageStyle}
                   imageUrl={appHeaderState.imageUrl}
                   textColor={appHeaderState.textColor}
+                  backgroundImageUrl={appHeaderState.backgroundImageUrl}
                   skeleton={appHeaderState.skeleton}
                   title={appTitle}
                   subtitle={appSubtitle}
@@ -3245,6 +3253,61 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                             </DSFormField>
                           </div>
                           <div className="property-panel__field">
+                            <DSFormField title="Background Image" size="md" showDescription={false} showHelpText={false}>
+                              <input
+                                ref={appHeaderBgImageInputRef}
+                                type="file"
+                                accept="image/*"
+                                hidden
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0]
+                                  if (!file) return
+                                  compressImageFile(file).then((url) => {
+                                    setAppHeaderState((s) => ({
+                                      ...s,
+                                      backgroundImageUrl: url,
+                                      backgroundImageName: file.name,
+                                    }))
+                                  })
+                                  e.target.value = ''
+                                }}
+                              />
+                              {appHeaderState.backgroundImageUrl ? (
+                                <div className="image-preview">
+                                  <div
+                                    className="image-preview__thumb"
+                                    style={{ backgroundImage: `url(${appHeaderState.backgroundImageUrl})` }}
+                                  />
+                                  <span className="image-preview__name" title={appHeaderState.backgroundImageName ?? ''}>
+                                    {appHeaderState.backgroundImageName ?? 'image'}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    className="image-preview__remove"
+                                    aria-label="Remove image"
+                                    onClick={() => setAppHeaderState((s) => ({ ...s, backgroundImageUrl: null, backgroundImageName: null }))}
+                                  >
+                                    <Icon name="trash-filled" category="general" size={16} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="upload-area">
+                                  <DSButton
+                                    variant="filled"
+                                    colorScheme="secondary"
+                                    shape="rectangle"
+                                    size="md"
+                                    leftIcon={<Icon name="image-plus-filled" category="media" size={16} />}
+                                    onClick={() => appHeaderBgImageInputRef.current?.click()}
+                                  >
+                                    Choose File
+                                  </DSButton>
+                                  <span className="upload-area__hint">OR DRAG AND DROP HERE</span>
+                                </div>
+                              )}
+                            </DSFormField>
+                          </div>
+                          <div className="property-panel__field">
                             <DSFormField title="Text Color" size="md" showDescription={false} showHelpText={false}>
                               <ColorInputWithPicker
                                 size="md"
@@ -3415,9 +3478,9 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                     <div className="live-preview__phone-bezel" />
                     {/* Layer 4: Screen */}
                     <div className="live-preview__phone-screen">
-                      <div className={`live-preview__status-bar-bg app-scope${activePageId === pages[0]?.id ? ' live-preview__status-bar-bg--header' : ''}`} />
-                      <PhoneStatusBar className={`live-preview__status-bar app-scope${activePageId === pages[0]?.id ? ' live-preview__status-bar--header' : ''}`} style={{ color: activePageId === pages[0]?.id ? 'var(--fg-inverse)' : 'var(--fg-primary, #000)' }} />
-                      <div className={`live-preview__top-header app-scope${activePageId === pages[0]?.id ? ' live-preview__top-header--brand' : ''}`}>
+                      <div className="live-preview__status-bar-bg app-scope" />
+                      <PhoneStatusBar className="live-preview__status-bar app-scope" style={{ color: 'var(--fg-primary, #000)' }} />
+                      <div className="live-preview__top-header app-scope">
                         {(() => {
                           const isFirstPage = activePageId === pages[0]?.id
                           const showCompact = isFirstPage && appHeaderState.show && !isPreviewAppHeaderVisible
@@ -3469,6 +3532,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                                   imageStyle={appHeaderState.imageStyle}
                                   imageUrl={appHeaderState.imageUrl}
                                   textColor={appHeaderState.textColor}
+                                  backgroundImageUrl={appHeaderState.backgroundImageUrl}
                                   skeleton={appHeaderState.skeleton}
                                   title={appTitle}
                                   subtitle={appSubtitle}

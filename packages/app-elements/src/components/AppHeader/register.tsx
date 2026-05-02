@@ -82,6 +82,12 @@ ComponentRegistry.register({
       default: '"Istanbul\'s Rare Plant Haven"',
       description: 'Secondary text below the title. Rendered with Label/Large/Regular typography, fg-inverse color at 50% opacity. Pass an empty string to hide.',
     },
+    {
+      name: 'backgroundImageUrl',
+      type: 'string | null',
+      default: 'null',
+      description: 'Optional full-width background image. When set, replaces the brand background and renders with a 40% black overlay so title and subtitle stay readable.',
+    },
   ],
 
   render(variants: VariantValues, props: PropertyValues, _states: StateValues): React.ReactNode {

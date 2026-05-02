@@ -14,6 +14,7 @@ export interface AppHeaderProps {
   title?: string;
   subtitle?: string;
   textColor?: string;
+  backgroundImageUrl?: string | null;
   skeleton?: boolean;
   skeletonAnimation?: 'pulse' | 'shimmer';
   actions?: React.ReactNode;
@@ -30,6 +31,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   title = 'Urban Jungle',
   subtitle = "Istanbul's Rare Plant Haven",
   textColor,
+  backgroundImageUrl,
   skeleton = false,
   skeletonAnimation = 'pulse',
   actions,
@@ -60,8 +62,12 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
     iconSelected && 'jf-app-header__icon--selected',
   ].filter(Boolean).join(' ');
 
+  const rootStyle: React.CSSProperties | undefined = backgroundImageUrl
+    ? { background: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${backgroundImageUrl}) center/cover no-repeat` }
+    : undefined;
+
   return (
-    <div className={`jf-app-header jf-app-header--${layout.toLowerCase()}`}>
+    <div className={`jf-app-header jf-app-header--${layout.toLowerCase()}`} style={rootStyle}>
       <div className="jf-app-header__inner">
         {imageStyle !== 'None' && (
           <div

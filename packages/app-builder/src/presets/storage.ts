@@ -30,6 +30,8 @@ export interface PresetSnapshot {
     imageUrl?: string | null
     imageName?: string | null
     textColor?: string
+    backgroundImageUrl?: string | null
+    backgroundImageName?: string | null
   }
 }
 
