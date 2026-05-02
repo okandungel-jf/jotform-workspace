@@ -15,7 +15,7 @@ import { HomeScreenMockup, type IconStyle } from '../components/HomeScreenMockup
 import { PanelHeader } from '../components/PanelHeader'
 import { QuickPreview } from '../components/QuickPreview'
 import { SideNav, type SideNavItem } from '../components/SideNav'
-import { SplashScreenMockup, type SplashStyle } from '../components/SplashScreenMockup'
+import { SplashScreenMockup, type SplashAnimation, type SplashStyle } from '../components/SplashScreenMockup'
 import { useCssVar } from '../hooks/useCssVar'
 import { loadStoredAppHeaderIcon } from '../presets/storage'
 
@@ -259,6 +259,13 @@ const SPLASH_STYLE_OPTIONS = [
   { value: 'mesh', label: 'Mesh' },
 ]
 
+const SPLASH_ANIMATION_OPTIONS = [
+  { value: 'none', label: 'None' },
+  { value: 'fade', label: 'Fade' },
+  { value: 'scale', label: 'Scale' },
+  { value: 'slide', label: 'Slide Up' },
+]
+
 interface SplashScreenPanelProps {
   state: SplashState
   onChange: (patch: Partial<SplashState>) => void
@@ -266,6 +273,8 @@ interface SplashScreenPanelProps {
   setBgColor: (value: string) => void
   bgStyle: SplashStyle
   setBgStyle: (value: SplashStyle) => void
+  animation: SplashAnimation
+  setAnimation: (value: SplashAnimation) => void
 }
 
 function SplashScreenPanel({
@@ -275,6 +284,8 @@ function SplashScreenPanel({
   setBgColor,
   bgStyle,
   setBgStyle,
+  animation,
+  setAnimation,
 }: SplashScreenPanelProps) {
   return (
     <section className="settings-panel__card">
@@ -314,6 +325,21 @@ function SplashScreenPanel({
           />
         </FormField>
       </div>
+      <div className="settings-panel__row">
+        <FormField
+          title="Animation"
+          description="Choose an opening animation for the splash."
+          showHelpText={false}
+        >
+          <DropdownSingle
+            showLeadingIcon={false}
+            showHelpText={false}
+            options={SPLASH_ANIMATION_OPTIONS}
+            value={animation}
+            onChange={(value) => setAnimation(value as SplashAnimation)}
+          />
+        </FormField>
+      </div>
     </section>
   )
 }
@@ -343,6 +369,7 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
   const [appName, setAppName] = useState(appTitle)
   const [iconStyle, setIconStyle] = useState<IconStyle>('flat')
   const [splashBgStyle, setSplashBgStyle] = useState<SplashStyle>('flat')
+  const [splashAnimation, setSplashAnimation] = useState<SplashAnimation>('none')
 
   const [splashState, setSplashState] = useState<SplashState>({
     fontColor: '#FFFFFF',
@@ -395,6 +422,8 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
               setBgColor={setHeaderBg}
               bgStyle={splashBgStyle}
               setBgStyle={setSplashBgStyle}
+              animation={splashAnimation}
+              setAnimation={setSplashAnimation}
             />
           )}
         </div>
@@ -420,6 +449,7 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
                     iconColor={brandColor}
                     iconBg={inverseColor}
                     appName={appName}
+                    animation={splashAnimation}
                   />
                 )}
               </BasicPhonePreview>

@@ -2825,6 +2825,67 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 16px;
+
+  // ── Opening animations — icon and label animate independently with a
+  // staggered timing so they don't move as a single block. Each demo loops. ──
+  &--anim-fade {
+    .splash-mockup__icon { animation: splash-fade-icon 2.6s ease-out infinite; }
+    .splash-mockup__label { animation: splash-fade-label 2.6s ease-out infinite; }
+  }
+  &--anim-scale {
+    .splash-mockup__icon {
+      animation: splash-scale-icon 2.6s cubic-bezier(0.2, 0.7, 0.2, 1.05) infinite;
+    }
+    .splash-mockup__label {
+      animation: splash-scale-label 2.6s ease-out infinite;
+    }
+  }
+  &--anim-slide {
+    .splash-mockup__icon {
+      animation: splash-slide-icon 2.6s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+    }
+    .splash-mockup__label {
+      animation: splash-slide-label 2.6s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+    }
+  }
+}
+
+// ── FADE — icon first, label fades in slightly later
+@keyframes splash-fade-icon {
+  0%, 8% { opacity: 0; }
+  30%, 80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes splash-fade-label {
+  0%, 22% { opacity: 0; }
+  45%, 80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+// ── SCALE — icon scales+fades with overshoot then settles BEFORE the label
+// fades in, so the user doesn't see the icon scaling down at the same time.
+@keyframes splash-scale-icon {
+  0%, 8% { opacity: 0; transform: scale(0.55); }
+  22% { opacity: 1; transform: scale(1.04); }
+  32%, 80% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.55); }
+}
+@keyframes splash-scale-label {
+  0%, 36% { opacity: 0; transform: translateY(6px); }
+  55%, 80% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(0); }
+}
+
+// ── SLIDE — icon rises from far below, label rises from less, with delay
+@keyframes splash-slide-icon {
+  0%, 8% { opacity: 0; transform: translateY(38px); }
+  32%, 80% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-12px); }
+}
+@keyframes splash-slide-label {
+  0%, 22% { opacity: 0; transform: translateY(18px); }
+  46%, 80% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-6px); }
 }
 
 .splash-mockup__icon {
