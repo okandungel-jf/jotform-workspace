@@ -6,6 +6,9 @@ export interface SideNavItem {
   iconCategory: string
   title: string
   description: string
+  headerTitle?: string
+  headerDescription?: string
+  iconBg?: string
 }
 
 interface SideNavProps {

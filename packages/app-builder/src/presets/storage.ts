@@ -147,3 +147,7 @@ export function clearSnapshot(presetId: string): void {
 export function loadStoredAppTitle(presetId: string): string | null {
   return cache.get(presetId)?.appTitle ?? null
 }
+
+export function loadStoredAppHeaderIcon(presetId: string): string | null {
+  return cache.get(presetId)?.appHeader?.icon ?? null
+}

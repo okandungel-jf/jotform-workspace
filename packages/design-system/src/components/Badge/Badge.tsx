@@ -3,7 +3,7 @@ import './Badge.scss';
 
 export type BadgeSize = 'sm' | 'md' | 'lg';
 export type BadgeShape = 'rounded' | 'rectangle';
-export type BadgeEmphasis = 'subtle' | 'bold';
+export type BadgeEmphasis = 'subtle' | 'bold' | 'outlined';
 export type BadgeStatus = 'success' | 'error' | 'warning' | 'information' | 'neutral';
 
 export interface BadgeProps {

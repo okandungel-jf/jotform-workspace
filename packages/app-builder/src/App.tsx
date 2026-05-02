@@ -110,7 +110,7 @@ export function App() {
             chromeless={urlFullscreen}
           />
         )}
-        {activePage === 'settings' && <SettingsPage />}
+        {activePage === 'settings' && <SettingsPage presetId={activePresetId} appTitle={appTitle} />}
         {activePage === 'publish' && <PublishPage />}
       </div>
     </div>

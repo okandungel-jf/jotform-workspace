@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { PanelHeader } from '../components/PanelHeader'
+import { QuickSharePanel } from '../components/QuickSharePanel'
 import { SideNav, type SideNavItem } from '../components/SideNav'
 
 const NAV_ITEMS: SideNavItem[] = [
@@ -8,6 +10,9 @@ const NAV_ITEMS: SideNavItem[] = [
     iconCategory: 'general',
     title: 'QUICK SHARE',
     description: 'Direct app link',
+    headerTitle: 'PUBLISH',
+    headerDescription: 'Share all of your forms in one place.',
+    iconBg: 'var(--accent-default)',
   },
   {
     id: 'embed',
@@ -15,6 +20,8 @@ const NAV_ITEMS: SideNavItem[] = [
     iconCategory: 'arrows',
     title: 'EMBED',
     description: 'Get embed code',
+    headerDescription: 'Embed your app easily with one click.',
+    iconBg: 'var(--product-reports-default)',
   },
   {
     id: 'app-users',
@@ -22,6 +29,8 @@ const NAV_ITEMS: SideNavItem[] = [
     iconCategory: 'users',
     title: 'APP USERS',
     description: 'Manage app users',
+    headerDescription: 'Manage users who have access to your app.',
+    iconBg: 'var(--red-300)',
   },
 ]
 
@@ -33,8 +42,14 @@ export function PublishPage() {
     <div className="publish-page">
       <SideNav items={NAV_ITEMS} activeId={activeId} onChange={setActiveId} />
       <main className="publish-page__content">
-        <h1>{active.title}</h1>
-        <p>{active.description}</p>
+        <PanelHeader
+          icon={active.icon}
+          iconCategory={active.iconCategory}
+          title={active.headerTitle ?? active.title}
+          description={active.headerDescription ?? active.description}
+          iconBg={active.iconBg}
+        />
+        {activeId === 'quick-share' && <QuickSharePanel />}
       </main>
     </div>
   )

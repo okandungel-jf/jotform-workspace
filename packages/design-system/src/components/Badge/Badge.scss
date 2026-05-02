@@ -89,6 +89,40 @@
     &.jf-badge--information { background: var(--accent-default); }
     &.jf-badge--neutral { background: var(--text-medium); }
   }
+
+  // ===== Outlined (lightest bg + 1px border + dark bold text) =====
+  // Always 12px bold text — chip pattern, paired with size variant for height/icon.
+  &--outlined {
+    border: 1px solid;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xs);
+
+    &.jf-badge--success {
+      background: var(--success-lightest);
+      border-color: var(--success-default);
+      color: var(--success-dark);
+    }
+    &.jf-badge--error {
+      background: var(--error-lightest);
+      border-color: var(--error-default);
+      color: var(--error-dark);
+    }
+    &.jf-badge--warning {
+      background: color-mix(in srgb, var(--yellow-500) 16%, transparent);
+      border-color: var(--yellow-500);
+      color: var(--yellow-600);
+    }
+    &.jf-badge--information {
+      background: var(--accent-lightest);
+      border-color: var(--accent-default);
+      color: var(--accent-dark);
+    }
+    &.jf-badge--neutral {
+      background: var(--background-lightest);
+      border-color: var(--border-medium);
+      color: var(--text-dark);
+    }
+  }
 }
 
 // ============================================

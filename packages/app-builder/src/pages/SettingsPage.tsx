@@ -1,5 +1,22 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
+import {
+  Button,
+  DropdownLanguage,
+  DropdownSingle,
+  FormField,
+  Icon,
+  Input,
+  Toggle,
+} from '@jf/design-system'
+import { BasicPhonePreview } from '../components/BasicPhonePreview'
+import { ColorInputWithPicker } from '../components/ColorInputWithPicker'
+import { HomeScreenMockup } from '../components/HomeScreenMockup'
+import { PanelHeader } from '../components/PanelHeader'
+import { QuickPreview } from '../components/QuickPreview'
 import { SideNav, type SideNavItem } from '../components/SideNav'
+import { SplashScreenMockup } from '../components/SplashScreenMockup'
+import { useCssVar } from '../hooks/useCssVar'
+import { loadStoredAppHeaderIcon } from '../presets/storage'
 
 const NAV_ITEMS: SideNavItem[] = [
   {
@@ -8,6 +25,7 @@ const NAV_ITEMS: SideNavItem[] = [
     iconCategory: 'technology',
     title: 'APP SETTINGS',
     description: 'App status and properties',
+    iconBg: 'var(--product-apps-default)',
   },
   {
     id: 'app-name-icon',
@@ -15,6 +33,8 @@ const NAV_ITEMS: SideNavItem[] = [
     iconCategory: 'technology',
     title: 'APP NAME & ICON',
     description: 'Customize app name and icon',
+    headerDescription: 'The app icon will appear when users add your app to their home screen.',
+    iconBg: 'var(--product-tables-light)',
   },
   {
     id: 'splash-screen',
@@ -22,6 +42,8 @@ const NAV_ITEMS: SideNavItem[] = [
     iconCategory: 'technology',
     title: 'SPLASH SCREEN',
     description: 'Customize splash screen',
+    headerDescription: 'The splash screen appears when users open your app on their mobile devices.',
+    iconBg: 'var(--accent-default)',
   },
   {
     id: 'push-notifications',
@@ -29,6 +51,8 @@ const NAV_ITEMS: SideNavItem[] = [
     iconCategory: 'technology',
     title: 'PUSH NOTIFICATIONS',
     description: 'Send push notifications',
+    headerDescription: 'Send messages to mobile, tablet, or desktop devices',
+    iconBg: 'var(--brand-yellow)',
   },
   {
     id: 'ai-chatbot',
@@ -36,19 +60,300 @@ const NAV_ITEMS: SideNavItem[] = [
     iconCategory: 'ai',
     title: 'AI CHATBOT',
     description: 'Support your users with AI',
+    headerDescription: 'Use AI to provide real-time support for your customers',
+    iconBg: 'var(--product-ai-default)',
   },
 ]
 
-export function SettingsPage() {
+const APP_STATUS_OPTIONS = [
+  { value: 'enabled', label: 'Enabled' },
+  { value: 'disabled', label: 'Disabled' },
+  { value: 'scheduled', label: 'Disable on a specific date' },
+]
+
+const LANGUAGE_OPTIONS = [
+  { value: 'en-US', label: 'English (US)', countryCode: 'us' },
+  { value: 'tr', label: 'Türkçe', countryCode: 'tr' },
+  { value: 'de', label: 'Deutsch', countryCode: 'de' },
+  { value: 'fr', label: 'Français', countryCode: 'fr' },
+  { value: 'es', label: 'Español', countryCode: 'es' },
+]
+
+interface ToggleRowProps {
+  title: string
+  description: string
+  defaultChecked?: boolean
+  disabled?: boolean
+  extra?: ReactNode
+}
+
+function ToggleRow({ title, description, defaultChecked, disabled, extra }: ToggleRowProps) {
+  return (
+    <div className="settings-panel__row">
+      <div className="settings-panel__row-main">
+        <div className="settings-panel__row-text">
+          <p className="settings-panel__row-title">{title}</p>
+          <p className="settings-panel__row-desc">{description}</p>
+        </div>
+        <Toggle defaultChecked={defaultChecked} disabled={disabled} />
+      </div>
+      {extra && <div className="settings-panel__row-extra">{extra}</div>}
+    </div>
+  )
+}
+
+function AppSettingsPanel() {
+  const [appStatus, setAppStatus] = useState('enabled')
+  const [language, setLanguage] = useState('en-US')
+
+  return (
+    <section className="settings-panel__card">
+      <div className="settings-panel__row">
+        <DropdownSingle
+          title="App Status"
+          description="Disable your app now or on a specific date."
+          showTitle
+          showDescription
+          showHelpText={false}
+          showLeadingIcon={false}
+          options={APP_STATUS_OPTIONS}
+          value={appStatus}
+          onChange={setAppStatus}
+        />
+      </div>
+      <div className="settings-panel__row">
+        <DropdownLanguage
+          title="Default Language"
+          description="Set the default language for your app."
+          showTitle
+          showDescription
+          showHelpText={false}
+          options={LANGUAGE_OPTIONS}
+          value={language}
+          onChange={setLanguage}
+        />
+      </div>
+      <ToggleRow
+        title="Add to Home Screen Modal"
+        description="Show add to home screen modal when user opens the app."
+        defaultChecked
+      />
+      <ToggleRow
+        title="Show QR Code on Desktop"
+        description="Let users scan QR code to open the app on their phone."
+        defaultChecked
+        extra={
+          <Button
+            variant="ghost"
+            colorScheme="secondary"
+            size="sm"
+            leftIcon={<Icon name="pencil-to-square" category="general" size={16} />}
+          >
+            Customize
+          </Button>
+        }
+      />
+      <ToggleRow
+        title="Continue Forms Later"
+        description="Allow users to save their submission and complete the form through the app later."
+        defaultChecked
+      />
+      <ToggleRow
+        title="Progress Bar"
+        description="Let users see their progress for forms or documents marked as required."
+        disabled
+      />
+      <ToggleRow
+        title="Prevent Cloning"
+        description="Prevent other users from cloning this app."
+      />
+    </section>
+  )
+}
+
+interface AppNameIconPanelProps {
+  appName: string
+  setAppName: (value: string) => void
+  iconColor: string
+  setIconColor: (value: string) => void
+  iconBg: string
+  setIconBg: (value: string) => void
+}
+
+function AppNameIconPanel({
+  appName,
+  setAppName,
+  iconColor,
+  setIconColor,
+  iconBg,
+  setIconBg,
+}: AppNameIconPanelProps) {
+  return (
+    <section className="settings-panel__card">
+      <div className="settings-panel__row">
+        <FormField title="App Name" description="The name shown on your app." showHelpText={false}>
+          <Input
+            placeholder="My App"
+            value={appName}
+            onChange={(e) => setAppName(e.target.value)}
+          />
+        </FormField>
+      </div>
+      <div className="settings-panel__row">
+        <FormField
+          title="Icon Color"
+          description="Inverse of the App Header icon — uses the icon container color."
+          showHelpText={false}
+        >
+          <ColorInputWithPicker color={iconColor} onColorChange={setIconColor} />
+        </FormField>
+      </div>
+      <div className="settings-panel__row">
+        <FormField
+          title="Icon Background"
+          description="Inverse of the App Header icon — uses the icon glyph color."
+          showHelpText={false}
+        >
+          <ColorInputWithPicker color={iconBg} onColorChange={setIconBg} />
+        </FormField>
+      </div>
+    </section>
+  )
+}
+
+interface SplashState {
+  fontColor: string
+}
+
+interface SplashScreenPanelProps {
+  state: SplashState
+  onChange: (patch: Partial<SplashState>) => void
+  bgColor: string
+  setBgColor: (value: string) => void
+}
+
+function SplashScreenPanel({ state, onChange, bgColor, setBgColor }: SplashScreenPanelProps) {
+  return (
+    <section className="settings-panel__card">
+      <div className="settings-panel__row">
+        <FormField
+          title="Background Color"
+          description="Synced with the App Header background color."
+          showHelpText={false}
+        >
+          <ColorInputWithPicker color={bgColor} onColorChange={setBgColor} />
+        </FormField>
+      </div>
+      <div className="settings-panel__row">
+        <FormField
+          title="Font Color"
+          description="Text color shown on the splash screen."
+          showHelpText={false}
+        >
+          <ColorInputWithPicker
+            color={state.fontColor}
+            onColorChange={(fontColor) => onChange({ fontColor })}
+          />
+        </FormField>
+      </div>
+    </section>
+  )
+}
+
+const TABS_WITH_PREVIEW = new Set(['app-name-icon', 'splash-screen'])
+
+interface SettingsPageProps {
+  presetId: string
+  appTitle: string
+}
+
+export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
   const [activeId, setActiveId] = useState('app-settings')
+
+  // Read the AppHeader's currently selected icon from the preset snapshot.
+  // The icon shown in the App Icon and Splash mockups always mirrors what's
+  // configured for the AppHeader on the canvas.
+  const appHeaderIcon = loadStoredAppHeaderIcon(presetId) ?? 'Leaf'
+
+  // App name is sourced from the live appTitle (managed at App level).
+  const [appName, setAppName] = useState(appTitle)
+
+  const [splashState, setSplashState] = useState<SplashState>({
+    fontColor: '#FFFFFF',
+  })
+  const updateSplash = (patch: Partial<SplashState>) =>
+    setSplashState((prev) => ({ ...prev, ...patch }))
+
+  // Sync with the live AppHeader theme tokens.
+  // AppHeader bg = --bg-fill-brand. Inside it, the icon container uses --fg-inverse
+  // and the glyph uses --fg-brand. The Splash mockup mirrors that pattern.
+  // The standalone "App Icon" preview inverts these — its bg uses --fg-brand
+  // (the AppHeader glyph color) and its glyph uses --fg-inverse.
+  const [headerBg, setHeaderBg] = useCssVar('--bg-fill-brand', '#7D38EF')
+  const [brandColor, setBrandColor] = useCssVar('--fg-brand', '#7D38EF')
+  const [inverseColor, setInverseColor] = useCssVar('--fg-inverse', '#FFFFFF')
+
   const active = NAV_ITEMS.find((item) => item.id === activeId) ?? NAV_ITEMS[0]
+  const showPreview = TABS_WITH_PREVIEW.has(activeId)
 
   return (
     <div className="settings-page">
       <SideNav items={NAV_ITEMS} activeId={activeId} onChange={setActiveId} />
       <main className="settings-page__content">
-        <h1>{active.title}</h1>
-        <p>{active.description}</p>
+        <div className="settings-page__main">
+          <PanelHeader
+            icon={active.icon}
+            iconCategory={active.iconCategory}
+            title={active.title}
+            description={active.headerDescription ?? active.description}
+            iconBg={active.iconBg}
+          />
+          {activeId === 'app-settings' && <AppSettingsPanel />}
+          {activeId === 'app-name-icon' && (
+            <AppNameIconPanel
+              appName={appName}
+              setAppName={setAppName}
+              iconColor={inverseColor}
+              setIconColor={setInverseColor}
+              iconBg={brandColor}
+              setIconBg={setBrandColor}
+            />
+          )}
+          {activeId === 'splash-screen' && (
+            <SplashScreenPanel
+              state={splashState}
+              onChange={updateSplash}
+              bgColor={headerBg}
+              setBgColor={setHeaderBg}
+            />
+          )}
+        </div>
+        {showPreview && (
+          <div className="settings-page__preview">
+            <QuickPreview>
+              <BasicPhonePreview>
+                {activeId === 'app-name-icon' && (
+                  <HomeScreenMockup
+                    iconName={appHeaderIcon}
+                    iconColor={inverseColor}
+                    iconBg={brandColor}
+                    appName={appName}
+                  />
+                )}
+                {activeId === 'splash-screen' && (
+                  <SplashScreenMockup
+                    bgColor={headerBg}
+                    fontColor={splashState.fontColor}
+                    iconName={appHeaderIcon}
+                    iconColor={brandColor}
+                    iconBg={inverseColor}
+                    appName={appName}
+                  />
+                )}
+              </BasicPhonePreview>
+            </QuickPreview>
+          </div>
+        )}
       </main>
     </div>
   )
