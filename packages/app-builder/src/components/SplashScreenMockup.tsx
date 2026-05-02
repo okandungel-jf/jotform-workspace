@@ -1,7 +1,10 @@
 import { LucideIcon } from './IconPicker'
 
+export type SplashStyle = 'flat' | 'linear' | 'inverse' | 'mesh'
+
 interface SplashScreenMockupProps {
   bgColor: string
+  bgStyle?: SplashStyle
   fontColor: string
   iconName: string
   iconColor: string
@@ -11,6 +14,7 @@ interface SplashScreenMockupProps {
 
 export function SplashScreenMockup({
   bgColor,
+  bgStyle = 'flat',
   fontColor,
   iconName,
   iconColor,
@@ -18,7 +22,10 @@ export function SplashScreenMockup({
   appName,
 }: SplashScreenMockupProps) {
   return (
-    <div className="splash-mockup" style={{ background: bgColor, color: fontColor }}>
+    <div
+      className={`splash-mockup splash-mockup--${bgStyle}`}
+      style={bgStyle === 'flat' ? { background: bgColor, color: fontColor } : { color: fontColor }}
+    >
       <div className="splash-mockup__app">
         <div className="splash-mockup__icon" style={{ background: iconBg, color: iconColor }}>
           <LucideIcon name={iconName} size={56} />

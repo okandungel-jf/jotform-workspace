@@ -2739,6 +2739,31 @@ body {
     0 1px 2px rgb(0 0 0 / 0.10),
     0 4px 10px rgb(0 0 0 / 0.14),
     0 14px 28px rgb(0 0 0 / 0.18);
+
+  // ── Style variants (only --linear / --glow / --mesh override the bg;
+  // --flat keeps whatever inline `background` was passed by the parent) ──
+  &--linear {
+    background: linear-gradient(
+      180deg,
+      var(--primary-300) 0%,
+      var(--primary-600) 100%
+    );
+  }
+
+  &--inverse {
+    background: linear-gradient(
+      180deg,
+      var(--primary-600) 0%,
+      var(--primary-300) 100%
+    );
+  }
+
+  &--mesh {
+    background:
+      radial-gradient(at 0% 0%, var(--primary-300) 0%, transparent 60%),
+      radial-gradient(at 100% 100%, var(--primary-700) 0%, transparent 60%),
+      var(--primary-500);
+  }
 }
 
 .home-mockup__app-label {
@@ -2768,6 +2793,31 @@ body {
   align-items: center;
   justify-content: center;
   font-family: var(--font-family-heading);
+
+  // Style variants — only --linear/--inverse/--mesh override the bg;
+  // --flat keeps whatever inline `background` was passed by the parent.
+  &--linear {
+    background: linear-gradient(
+      180deg,
+      var(--primary-300) 0%,
+      var(--primary-600) 100%
+    );
+  }
+
+  &--inverse {
+    background: linear-gradient(
+      180deg,
+      var(--primary-600) 0%,
+      var(--primary-300) 100%
+    );
+  }
+
+  &--mesh {
+    background:
+      radial-gradient(at 0% 0%, var(--primary-300) 0%, transparent 60%),
+      radial-gradient(at 100% 100%, var(--primary-700) 0%, transparent 60%),
+      var(--primary-500);
+  }
 }
 
 .splash-mockup__app {

@@ -1,13 +1,22 @@
 import { LucideIcon } from './IconPicker'
 
+export type IconStyle = 'flat' | 'linear' | 'inverse' | 'mesh'
+
 interface HomeScreenMockupProps {
   iconName: string
   iconColor: string
   iconBg: string
+  iconStyle?: IconStyle
   appName: string
 }
 
-export function HomeScreenMockup({ iconName, iconColor, iconBg, appName }: HomeScreenMockupProps) {
+export function HomeScreenMockup({
+  iconName,
+  iconColor,
+  iconBg,
+  iconStyle = 'flat',
+  appName,
+}: HomeScreenMockupProps) {
   return (
     <div className="home-mockup">
       <div className="home-mockup__status-bar">
@@ -37,7 +46,10 @@ export function HomeScreenMockup({ iconName, iconColor, iconBg, appName }: HomeS
         <div className="home-mockup__slot" />
         <div className="home-mockup__slot" />
         <div className="home-mockup__app">
-          <div className="home-mockup__app-icon" style={{ background: iconBg, color: iconColor }}>
+          <div
+            className={`home-mockup__app-icon home-mockup__app-icon--${iconStyle}`}
+            style={iconStyle === 'flat' ? { background: iconBg, color: iconColor } : { color: iconColor }}
+          >
             <LucideIcon name={iconName} size={40} />
           </div>
           <span className="home-mockup__app-label">{appName || 'My App'}</span>

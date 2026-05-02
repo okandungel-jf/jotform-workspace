@@ -11,11 +11,11 @@ import {
 import { applyStoredOrDefaultTheme } from '@jf/app-elements'
 import { BasicPhonePreview } from '../components/BasicPhonePreview'
 import { ColorInputWithPicker } from '../components/ColorInputWithPicker'
-import { HomeScreenMockup } from '../components/HomeScreenMockup'
+import { HomeScreenMockup, type IconStyle } from '../components/HomeScreenMockup'
 import { PanelHeader } from '../components/PanelHeader'
 import { QuickPreview } from '../components/QuickPreview'
 import { SideNav, type SideNavItem } from '../components/SideNav'
-import { SplashScreenMockup } from '../components/SplashScreenMockup'
+import { SplashScreenMockup, type SplashStyle } from '../components/SplashScreenMockup'
 import { useCssVar } from '../hooks/useCssVar'
 import { loadStoredAppHeaderIcon } from '../presets/storage'
 
@@ -172,6 +172,13 @@ function AppSettingsPanel() {
   )
 }
 
+const ICON_STYLE_OPTIONS = [
+  { value: 'flat', label: 'Flat' },
+  { value: 'linear', label: 'Linear' },
+  { value: 'inverse', label: 'Inverse' },
+  { value: 'mesh', label: 'Mesh' },
+]
+
 interface AppNameIconPanelProps {
   appName: string
   setAppName: (value: string) => void
@@ -179,6 +186,8 @@ interface AppNameIconPanelProps {
   setIconColor: (value: string) => void
   iconBg: string
   setIconBg: (value: string) => void
+  iconStyle: IconStyle
+  setIconStyle: (value: IconStyle) => void
 }
 
 function AppNameIconPanel({
@@ -188,6 +197,8 @@ function AppNameIconPanel({
   setIconColor,
   iconBg,
   setIconBg,
+  iconStyle,
+  setIconStyle,
 }: AppNameIconPanelProps) {
   return (
     <section className="settings-panel__card">
@@ -203,7 +214,7 @@ function AppNameIconPanel({
       <div className="settings-panel__row">
         <FormField
           title="Icon Color"
-          description="Inverse of the App Header icon — uses the icon container color."
+          description="Color of the glyph shown inside your app icon."
           showHelpText={false}
         >
           <ColorInputWithPicker color={iconColor} onColorChange={setIconColor} />
@@ -212,10 +223,25 @@ function AppNameIconPanel({
       <div className="settings-panel__row">
         <FormField
           title="Icon Background"
-          description="Inverse of the App Header icon — uses the icon glyph color."
+          description="Background color of your app icon."
           showHelpText={false}
         >
           <ColorInputWithPicker color={iconBg} onColorChange={setIconBg} />
+        </FormField>
+      </div>
+      <div className="settings-panel__row">
+        <FormField
+          title="Style"
+          description="Choose an icon background style."
+          showHelpText={false}
+        >
+          <DropdownSingle
+            showLeadingIcon={false}
+            showHelpText={false}
+            options={ICON_STYLE_OPTIONS}
+            value={iconStyle}
+            onChange={(value) => setIconStyle(value as IconStyle)}
+          />
         </FormField>
       </div>
     </section>
@@ -226,20 +252,36 @@ interface SplashState {
   fontColor: string
 }
 
+const SPLASH_STYLE_OPTIONS = [
+  { value: 'flat', label: 'Flat' },
+  { value: 'linear', label: 'Linear' },
+  { value: 'inverse', label: 'Inverse' },
+  { value: 'mesh', label: 'Mesh' },
+]
+
 interface SplashScreenPanelProps {
   state: SplashState
   onChange: (patch: Partial<SplashState>) => void
   bgColor: string
   setBgColor: (value: string) => void
+  bgStyle: SplashStyle
+  setBgStyle: (value: SplashStyle) => void
 }
 
-function SplashScreenPanel({ state, onChange, bgColor, setBgColor }: SplashScreenPanelProps) {
+function SplashScreenPanel({
+  state,
+  onChange,
+  bgColor,
+  setBgColor,
+  bgStyle,
+  setBgStyle,
+}: SplashScreenPanelProps) {
   return (
     <section className="settings-panel__card">
       <div className="settings-panel__row">
         <FormField
           title="Background Color"
-          description="Synced with the App Header background color."
+          description="Background color of the splash screen."
           showHelpText={false}
         >
           <ColorInputWithPicker color={bgColor} onColorChange={setBgColor} />
@@ -254,6 +296,21 @@ function SplashScreenPanel({ state, onChange, bgColor, setBgColor }: SplashScree
           <ColorInputWithPicker
             color={state.fontColor}
             onColorChange={(fontColor) => onChange({ fontColor })}
+          />
+        </FormField>
+      </div>
+      <div className="settings-panel__row">
+        <FormField
+          title="Style"
+          description="Choose a splash background style."
+          showHelpText={false}
+        >
+          <DropdownSingle
+            showLeadingIcon={false}
+            showHelpText={false}
+            options={SPLASH_STYLE_OPTIONS}
+            value={bgStyle}
+            onChange={(value) => setBgStyle(value as SplashStyle)}
           />
         </FormField>
       </div>
@@ -284,6 +341,8 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
 
   // App name is sourced from the live appTitle (managed at App level).
   const [appName, setAppName] = useState(appTitle)
+  const [iconStyle, setIconStyle] = useState<IconStyle>('flat')
+  const [splashBgStyle, setSplashBgStyle] = useState<SplashStyle>('flat')
 
   const [splashState, setSplashState] = useState<SplashState>({
     fontColor: '#FFFFFF',
@@ -324,6 +383,8 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
               setIconColor={setInverseColor}
               iconBg={brandColor}
               setIconBg={setBrandColor}
+              iconStyle={iconStyle}
+              setIconStyle={setIconStyle}
             />
           )}
           {activeId === 'splash-screen' && (
@@ -332,6 +393,8 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
               onChange={updateSplash}
               bgColor={headerBg}
               setBgColor={setHeaderBg}
+              bgStyle={splashBgStyle}
+              setBgStyle={setSplashBgStyle}
             />
           )}
         </div>
@@ -344,12 +407,14 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
                     iconName={appHeaderIcon}
                     iconColor={inverseColor}
                     iconBg={brandColor}
+                    iconStyle={iconStyle}
                     appName={appName}
                   />
                 )}
                 {activeId === 'splash-screen' && (
                   <SplashScreenMockup
                     bgColor={headerBg}
+                    bgStyle={splashBgStyle}
                     fontColor={splashState.fontColor}
                     iconName={appHeaderIcon}
                     iconColor={brandColor}
