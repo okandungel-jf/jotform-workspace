@@ -2266,6 +2266,11 @@ body {
   background: var(--gray-500);
   border: 1.5px dashed var(--gray-300);
   border-radius: var(--radius-sm);
+
+  &--light {
+    background: var(--background-lightest);
+    border-color: var(--border-medium);
+  }
 }
 
 .upload-area__hint {
@@ -2275,6 +2280,10 @@ body {
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--gray-200);
+
+  .upload-area--light & {
+    color: var(--text-medium);
+  }
 }
 
 .color-input-popover {
@@ -2310,6 +2319,11 @@ body {
   background: var(--gray-500);
   border: 1px solid var(--gray-700);
   border-radius: var(--radius-sm);
+
+  &--light {
+    background: var(--background-white);
+    border-color: var(--border-medium);
+  }
 }
 
 .image-preview__thumb {
@@ -2325,6 +2339,10 @@ body {
   align-items: center;
   justify-content: center;
   color: var(--gray-200);
+
+  .image-preview--light & {
+    color: var(--text-medium);
+  }
 }
 
 .image-preview__name {
@@ -2336,6 +2354,10 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  .image-preview--light & {
+    color: var(--text-darkest);
+  }
 }
 
 .image-preview__remove {
@@ -2355,6 +2377,15 @@ body {
   &:hover {
     background: var(--gray-700);
     color: var(--core-white);
+  }
+
+  .image-preview--light & {
+    color: var(--text-medium);
+
+    &:hover {
+      background: var(--background-light);
+      color: var(--text-darkest);
+    }
   }
 }
 
@@ -2740,6 +2771,12 @@ body {
     0 4px 10px rgb(0 0 0 / 0.14),
     0 14px 28px rgb(0 0 0 / 0.18);
 
+  &--image {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
   // ── Style variants (only --linear / --glow / --mesh override the bg;
   // --flat keeps whatever inline `background` was passed by the parent) ──
   &--linear {
@@ -2898,6 +2935,12 @@ body {
   box-shadow:
     0 4px 12px rgb(0 0 0 / 0.12),
     inset 0 0 0 0.5px rgb(255 255 255 / 0.2);
+
+  &--image {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
 }
 
 .splash-mockup__label {

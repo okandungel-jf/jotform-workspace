@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import {
   Button,
   DropdownLanguage,
@@ -6,12 +6,17 @@ import {
   FormField,
   Icon,
   Input,
+  Segmented,
   Toggle,
 } from '@jf/design-system'
-import { applyStoredOrDefaultTheme } from '@jf/app-elements'
+import { compressImageFile } from '@jf/app-elements'
 import { BasicPhonePreview } from '../components/BasicPhonePreview'
 import { ColorInputWithPicker } from '../components/ColorInputWithPicker'
-import { HomeScreenMockup, type IconStyle } from '../components/HomeScreenMockup'
+import {
+  HomeScreenMockup,
+  type AppIconVariant,
+  type IconStyle,
+} from '../components/HomeScreenMockup'
 import { PanelHeader } from '../components/PanelHeader'
 import { QuickPreview } from '../components/QuickPreview'
 import { SideNav, type SideNavItem } from '../components/SideNav'
@@ -182,6 +187,11 @@ const ICON_STYLE_OPTIONS = [
 interface AppNameIconPanelProps {
   appName: string
   setAppName: (value: string) => void
+  variant: AppIconVariant
+  setVariant: (value: AppIconVariant) => void
+  imageUrl: string | null
+  imageName: string | null
+  setImage: (url: string | null, name: string | null) => void
   iconColor: string
   setIconColor: (value: string) => void
   iconBg: string
@@ -193,6 +203,11 @@ interface AppNameIconPanelProps {
 function AppNameIconPanel({
   appName,
   setAppName,
+  variant,
+  setVariant,
+  imageUrl,
+  imageName,
+  setImage,
   iconColor,
   setIconColor,
   iconBg,
@@ -200,6 +215,8 @@ function AppNameIconPanel({
   iconStyle,
   setIconStyle,
 }: AppNameIconPanelProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   return (
     <section className="settings-panel__card">
       <div className="settings-panel__row">
@@ -212,38 +229,113 @@ function AppNameIconPanel({
         </FormField>
       </div>
       <div className="settings-panel__row">
-        <FormField
-          title="Icon Color"
-          description="Color of the glyph shown inside your app icon."
-          showHelpText={false}
-        >
-          <ColorInputWithPicker color={iconColor} onColorChange={setIconColor} />
-        </FormField>
-      </div>
-      <div className="settings-panel__row">
-        <FormField
-          title="Icon Background"
-          description="Background color of your app icon."
-          showHelpText={false}
-        >
-          <ColorInputWithPicker color={iconBg} onColorChange={setIconBg} />
-        </FormField>
-      </div>
-      <div className="settings-panel__row">
-        <FormField
-          title="Style"
-          description="Choose an icon background style."
-          showHelpText={false}
-        >
-          <DropdownSingle
-            showLeadingIcon={false}
-            showHelpText={false}
-            options={ICON_STYLE_OPTIONS}
-            value={iconStyle}
-            onChange={(value) => setIconStyle(value as IconStyle)}
+        <FormField title="Variant" description="Design your own icon or upload an image." showHelpText={false}>
+          <Segmented
+            accent="apps"
+            variant="text"
+            value={variant}
+            onChange={(value) => setVariant(value as AppIconVariant)}
+            items={[
+              { value: 'Icon', label: 'Icon' },
+              { value: 'Image', label: 'Image' },
+            ]}
           />
         </FormField>
       </div>
+      {variant === 'Icon' && (
+        <>
+          <div className="settings-panel__row">
+            <FormField
+              title="Icon Color"
+              description="Color of the glyph shown inside your app icon."
+              showHelpText={false}
+            >
+              <ColorInputWithPicker color={iconColor} onColorChange={setIconColor} />
+            </FormField>
+          </div>
+          <div className="settings-panel__row">
+            <FormField
+              title="Icon Background"
+              description="Background color of your app icon."
+              showHelpText={false}
+            >
+              <ColorInputWithPicker color={iconBg} onColorChange={setIconBg} />
+            </FormField>
+          </div>
+          <div className="settings-panel__row">
+            <FormField
+              title="Style"
+              description="Choose an icon background style."
+              showHelpText={false}
+            >
+              <DropdownSingle
+                showLeadingIcon={false}
+                showHelpText={false}
+                options={ICON_STYLE_OPTIONS}
+                value={iconStyle}
+                onChange={(value) => setIconStyle(value as IconStyle)}
+              />
+            </FormField>
+          </div>
+        </>
+      )}
+      {variant === 'Image' && (
+        <div className="settings-panel__row">
+          <FormField
+            title="App Image"
+            description="Upload an image to use as your app icon."
+            showHelpText={false}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                compressImageFile(file).then((url) => {
+                  setImage(url, file.name)
+                })
+                e.target.value = ''
+              }}
+            />
+            {imageUrl ? (
+              <div className="image-preview image-preview--light">
+                <div
+                  className="image-preview__thumb"
+                  style={{ backgroundImage: `url(${imageUrl})` }}
+                />
+                <span className="image-preview__name" title={imageName ?? ''}>
+                  {imageName ?? 'image'}
+                </span>
+                <button
+                  type="button"
+                  className="image-preview__remove"
+                  aria-label="Remove image"
+                  onClick={() => setImage(null, null)}
+                >
+                  <Icon name="trash-filled" category="general" size={16} />
+                </button>
+              </div>
+            ) : (
+              <div className="upload-area upload-area--light">
+                <Button
+                  variant="filled"
+                  colorScheme="secondary"
+                  shape="rectangle"
+                  size="md"
+                  leftIcon={<Icon name="image-plus-filled" category="media" size={16} />}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Choose File
+                </Button>
+                <span className="upload-area__hint">OR DRAG AND DROP HERE</span>
+              </div>
+            )}
+          </FormField>
+        </div>
+      )}
     </section>
   )
 }
@@ -354,12 +446,6 @@ interface SettingsPageProps {
 export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
   const [activeId, setActiveId] = useState('app-settings')
 
-  // Apply the brand-derived theme (palette + neutrals + fonts) so the mockups
-  // pick up the same dynamic --neutral-* / --primary-* tokens as the canvas.
-  useEffect(() => {
-    applyStoredOrDefaultTheme(presetId === 'empty' ? undefined : presetId)
-  }, [presetId])
-
   // Read the AppHeader's currently selected icon from the preset snapshot.
   // The icon shown in the App Icon and Splash mockups always mirrors what's
   // configured for the AppHeader on the canvas.
@@ -368,6 +454,13 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
   // App name is sourced from the live appTitle (managed at App level).
   const [appName, setAppName] = useState(appTitle)
   const [iconStyle, setIconStyle] = useState<IconStyle>('flat')
+  const [iconVariant, setIconVariant] = useState<AppIconVariant>('Icon')
+  const [appImage, setAppImage] = useState<{ url: string | null; name: string | null }>({
+    url: null,
+    name: null,
+  })
+  const setImage = (url: string | null, name: string | null) => setAppImage({ url, name })
+
   const [splashBgStyle, setSplashBgStyle] = useState<SplashStyle>('flat')
   const [splashAnimation, setSplashAnimation] = useState<SplashAnimation>('none')
 
@@ -406,6 +499,11 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
             <AppNameIconPanel
               appName={appName}
               setAppName={setAppName}
+              variant={iconVariant}
+              setVariant={setIconVariant}
+              imageUrl={appImage.url}
+              imageName={appImage.name}
+              setImage={setImage}
               iconColor={inverseColor}
               setIconColor={setInverseColor}
               iconBg={brandColor}
@@ -433,6 +531,8 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
               <BasicPhonePreview>
                 {activeId === 'app-name-icon' && (
                   <HomeScreenMockup
+                    variant={iconVariant}
+                    imageUrl={appImage.url}
                     iconName={appHeaderIcon}
                     iconColor={inverseColor}
                     iconBg={brandColor}
@@ -445,6 +545,8 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
                     bgColor={headerBg}
                     bgStyle={splashBgStyle}
                     fontColor={splashState.fontColor}
+                    variant={iconVariant}
+                    imageUrl={appImage.url}
                     iconName={appHeaderIcon}
                     iconColor={brandColor}
                     iconBg={inverseColor}

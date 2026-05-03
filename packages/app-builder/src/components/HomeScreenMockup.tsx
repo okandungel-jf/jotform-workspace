@@ -1,8 +1,11 @@
 import { LucideIcon } from './IconPicker'
 
 export type IconStyle = 'flat' | 'linear' | 'inverse' | 'mesh'
+export type AppIconVariant = 'Icon' | 'Image'
 
 interface HomeScreenMockupProps {
+  variant?: AppIconVariant
+  imageUrl?: string | null
   iconName: string
   iconColor: string
   iconBg: string
@@ -11,12 +14,15 @@ interface HomeScreenMockupProps {
 }
 
 export function HomeScreenMockup({
+  variant = 'Icon',
+  imageUrl,
   iconName,
   iconColor,
   iconBg,
   iconStyle = 'flat',
   appName,
 }: HomeScreenMockupProps) {
+  const showImage = variant === 'Image' && !!imageUrl
   return (
     <div className="home-mockup">
       <div className="home-mockup__status-bar">
@@ -46,12 +52,19 @@ export function HomeScreenMockup({
         <div className="home-mockup__slot" />
         <div className="home-mockup__slot" />
         <div className="home-mockup__app">
-          <div
-            className={`home-mockup__app-icon home-mockup__app-icon--${iconStyle}`}
-            style={iconStyle === 'flat' ? { background: iconBg, color: iconColor } : { color: iconColor }}
-          >
-            <LucideIcon name={iconName} size={40} />
-          </div>
+          {showImage ? (
+            <div
+              className="home-mockup__app-icon home-mockup__app-icon--image"
+              style={{ backgroundImage: `url(${imageUrl})` }}
+            />
+          ) : (
+            <div
+              className={`home-mockup__app-icon home-mockup__app-icon--${iconStyle}`}
+              style={iconStyle === 'flat' ? { background: iconBg, color: iconColor } : { color: iconColor }}
+            >
+              <LucideIcon name={iconName} size={40} />
+            </div>
+          )}
           <span className="home-mockup__app-label">{appName || 'My App'}</span>
         </div>
         <div className="home-mockup__slot" />
