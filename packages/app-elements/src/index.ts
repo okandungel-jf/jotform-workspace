@@ -75,6 +75,10 @@ export { BottomSheet } from './layout/components/BottomSheet';
 // Runtime (collections + form sheet for dynamic preset flows)
 export { CollectionsProvider, useCollections } from './runtime/CollectionsContext';
 export type { FormField, FormSchema, CollectionItem, CollectionsContextValue } from './runtime/CollectionsContext';
+export { CartProvider, useCart } from './runtime/CartContext';
+export type { CartItem, CartContextValue } from './runtime/CartContext';
+export { FavoritesProvider, useFavorites } from './runtime/FavoritesContext';
+export type { FavoriteItem, FavoritesContextValue } from './runtime/FavoritesContext';
 export { FormSheet } from './runtime/FormSheet';
 
 // Icon

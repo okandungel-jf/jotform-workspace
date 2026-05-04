@@ -10,6 +10,8 @@ import {
   BottomSheet,
   AppIcon,
   CollectionsProvider,
+  CartProvider,
+  FavoritesProvider,
   FormSheet,
   compressImageFile,
   compressImageFiles,
@@ -24,6 +26,8 @@ import previewUserAvatar from '../assets/preview-user-avatar.jpg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
 import { LivePreviewMenuDrawer } from '../components/LivePreviewMenuDrawer'
+import { LivePreviewCartButton } from '../components/LivePreviewCartButton'
+import { LivePreviewCartPage } from '../components/LivePreviewCartPage'
 import { MobileBottomBar } from '../components/MobileBottomBar'
 import {
   draggable,
@@ -994,6 +998,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [appSubtitle, setAppSubtitle] = useState(initial.appSubtitle)
   const [appHeaderState, setAppHeaderState] = useState<AppHeaderState>(initial.appHeader)
   const [isPreviewMenuOpen, setIsPreviewMenuOpen] = useState(false)
+  const [isPreviewCartOpen, setIsPreviewCartOpen] = useState(false)
 
   useEffect(() => {
     if (!preset) return
@@ -3455,6 +3460,8 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
               </div>
             ) : (
               <CollectionsProvider>
+              <CartProvider>
+              <FavoritesProvider>
               <div className="live-preview">
                 <div className="live-preview__header">
                   <span className="live-preview__title">Live Preview</span>
@@ -3517,12 +3524,17 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                             <span className="live-preview__top-header-btn" aria-hidden="true" />
                           )
                         })()}
-                        <img
-                          className="live-preview__top-header-avatar"
-                          src={previewUserAvatar}
-                          alt=""
-                          aria-hidden="true"
-                        />
+                        <div className="live-preview__top-header-right">
+                          {pages.some((p) => p.elements.some((el) => el.componentId === 'product-list')) && (
+                            <LivePreviewCartButton onClick={() => setIsPreviewCartOpen(true)} />
+                          )}
+                          <img
+                            className="live-preview__top-header-avatar"
+                            src={previewUserAvatar}
+                            alt=""
+                            aria-hidden="true"
+                          />
+                        </div>
                       </div>
                       <div ref={setPreviewContentScalerEl} className="live-preview__content-scaler app-scope">
                         <div className="live-preview__content app-scope">
@@ -3585,7 +3597,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                           })()}
                         </div>
                       </div>
-                      {pages.length > 1 && (
+                      {pages.length > 1 && !isPreviewCartOpen && (
                         <div className="live-preview__bottom-nav app-scope">
                           <BottomNavigation
                             items={pages.slice(0, 5).map((p, i) => ({ icon: getPageIconName(p, i), label: p.name }))}
@@ -3605,10 +3617,17 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                         appTitle={appTitle}
                         appHeader={appHeaderState}
                       />
+                      <LivePreviewCartPage
+                        open={isPreviewCartOpen}
+                        onClose={() => setIsPreviewCartOpen(false)}
+                        avatarUrl={previewUserAvatar}
+                      />
                     </div>
                   </div>
                 </div>
               </div>
+              </FavoritesProvider>
+              </CartProvider>
               </CollectionsProvider>
             )}
           </div>

@@ -1,6 +1,8 @@
 import { useState, useEffect, type FC } from 'react';
 import { Icon } from '../Icon/Icon';
 import { Button } from '../Button';
+import { useCart } from '../../runtime/CartContext';
+import { useFavorites } from '../../runtime/FavoritesContext';
 import './ProductList.scss';
 
 export type ProductListLayout = 'ThreeColumns' | 'TwoColumns' | 'SingleColumn';
@@ -77,12 +79,17 @@ const ProductCardItem: FC<{ product: ProductItem; buttonLabel: string; currency:
   currency,
   onUpdate,
 }) => {
-  const [liked, setLiked] = useState(false);
+  const cart = useCart();
+  const favorites = useFavorites();
+  const inCart = cart?.has(product.name) ?? false;
+  const liked = favorites?.has(product.name) ?? false;
+  const handleAdd = () => cart?.add({ name: product.name, price: product.price, image: product.image });
+  const toggleLike = () => favorites?.toggle({ name: product.name, price: product.price, image: product.image });
   return (
   <div className="jf-product-item jf-product-item--card">
     <div className="jf-product-item__image">
       {product.image ? <img src={product.image} alt={product.name} className="jf-product-item__img" /> : <ImagePlaceholder />}
-      <button className={`jf-product-item__like${liked ? ' liked' : ''}`} onClick={() => setLiked(!liked)}>
+      <button className={`jf-product-item__like${liked ? ' liked' : ''}`} onClick={toggleLike}>
         <Icon name="Heart" size={18} forceStyle={liked ? 'fill' : 'outline'} />
       </button>
     </div>
@@ -115,13 +122,15 @@ const ProductCardItem: FC<{ product: ProductItem; buttonLabel: string; currency:
       <div className="jf-product-item__action">
         <Button
           variant="Default"
+          state={inCart ? 'Disabled' : 'Default'}
           corner="Default"
           size="Small"
-          label={buttonLabel}
+          label={inCart ? 'Added to Cart' : buttonLabel}
           leftIcon="none"
           rightIcon="none"
           fullWidth
           shrinked
+          onClick={inCart ? undefined : handleAdd}
         />
       </div>
     </div>
@@ -138,7 +147,12 @@ const ProductBasicItem: FC<{ product: ProductItem; buttonLabel: string; currency
   currency,
   onUpdate,
 }) => {
-  const [liked, setLiked] = useState(false);
+  const cart = useCart();
+  const favorites = useFavorites();
+  const inCart = cart?.has(product.name) ?? false;
+  const liked = favorites?.has(product.name) ?? false;
+  const handleAdd = () => cart?.add({ name: product.name, price: product.price, image: product.image });
+  const toggleLike = () => favorites?.toggle({ name: product.name, price: product.price, image: product.image });
   return (
   <div className="jf-product-item jf-product-item--basic">
     <div className="jf-product-item__image-basic">
@@ -171,17 +185,19 @@ const ProductBasicItem: FC<{ product: ProductItem; buttonLabel: string; currency
         </p>
       </div>
       <div className="jf-product-item__right">
-        <button className={`jf-product-item__like jf-product-item__like--inline${liked ? ' liked' : ''}`} onClick={() => setLiked(!liked)}>
+        <button className={`jf-product-item__like jf-product-item__like--inline${liked ? ' liked' : ''}`} onClick={toggleLike}>
           <Icon name="Heart" size={24} forceStyle={liked ? 'fill' : 'outline'} />
         </button>
         <Button
           variant="Default"
+          state={inCart ? 'Disabled' : 'Default'}
           corner="Default"
           size="Small"
-          label={buttonLabel}
+          label={inCart ? 'Added to Cart' : buttonLabel}
           leftIcon="none"
           rightIcon="none"
           shrinked
+          onClick={inCart ? undefined : handleAdd}
         />
       </div>
     </div>
