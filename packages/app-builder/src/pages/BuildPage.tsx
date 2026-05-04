@@ -30,6 +30,7 @@ import { LivePreviewCartButton } from '../components/LivePreviewCartButton'
 import { LivePreviewCartPage } from '../components/LivePreviewCartPage'
 import { LivePreviewCheckoutPage } from '../components/LivePreviewCheckoutPage'
 import { LivePreviewOrderBar } from '../components/LivePreviewOrderBar'
+import { LivePreviewAvatarPopover } from '../components/LivePreviewAvatarPopover'
 import { MobileBottomBar } from '../components/MobileBottomBar'
 import {
   draggable,
@@ -1002,6 +1003,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [isPreviewMenuOpen, setIsPreviewMenuOpen] = useState(false)
   const [isPreviewCartOpen, setIsPreviewCartOpen] = useState(false)
   const [isPreviewCheckoutOpen, setIsPreviewCheckoutOpen] = useState(false)
+  const [isAvatarPopoverOpen, setIsAvatarPopoverOpen] = useState(false)
 
   useEffect(() => {
     if (!preset) return
@@ -3531,11 +3533,22 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                           {pages.some((p) => p.elements.some((el) => el.componentId === 'product-list')) && (
                             <LivePreviewCartButton onClick={() => setIsPreviewCartOpen(true)} />
                           )}
-                          <img
-                            className="live-preview__top-header-avatar"
-                            src={previewUserAvatar}
-                            alt=""
-                            aria-hidden="true"
+                          <button
+                            type="button"
+                            className="live-preview__top-header-avatar-btn"
+                            aria-label="Account menu"
+                            onClick={() => setIsAvatarPopoverOpen((v) => !v)}
+                          >
+                            <img
+                              className="live-preview__top-header-avatar"
+                              src={previewUserAvatar}
+                              alt=""
+                              aria-hidden="true"
+                            />
+                          </button>
+                          <LivePreviewAvatarPopover
+                            open={isAvatarPopoverOpen}
+                            onClose={() => setIsAvatarPopoverOpen(false)}
                           />
                         </div>
                       </div>
