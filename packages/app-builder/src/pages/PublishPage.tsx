@@ -42,14 +42,16 @@ export function PublishPage() {
     <div className="publish-page">
       <SideNav items={NAV_ITEMS} activeId={activeId} onChange={setActiveId} />
       <main className="publish-page__content">
-        <PanelHeader
-          icon={active.icon}
-          iconCategory={active.iconCategory}
-          title={active.headerTitle ?? active.title}
-          description={active.headerDescription ?? active.description}
-          iconBg={active.iconBg}
-        />
-        {activeId === 'quick-share' && <QuickSharePanel />}
+        <div className="publish-page__main">
+          <PanelHeader
+            icon={active.icon}
+            iconCategory={active.iconCategory}
+            title={active.headerTitle ?? active.title}
+            description={active.headerDescription ?? active.description}
+            iconBg={active.iconBg}
+          />
+          {activeId === 'quick-share' && <QuickSharePanel />}
+        </div>
       </main>
     </div>
   )

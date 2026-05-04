@@ -3204,6 +3204,10 @@ body {
   @extend .settings-page__content;
 }
 
+.publish-page__main {
+  @extend .settings-page__main;
+}
+
 // ============================================
 // Mobile Elements Bottom Sheet
 // ============================================
