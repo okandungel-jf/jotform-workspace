@@ -7,7 +7,7 @@ interface LivePreviewAvatarPopoverProps {
 }
 
 const ITEMS = [
-  { id: 'profile', label: 'Profile', highlighted: true },
+  { id: 'profile', label: 'Profile' },
   { id: 'orders', label: 'Previous Orders' },
   { id: 'logout', label: 'Log out' },
 ]
@@ -47,7 +47,7 @@ export function LivePreviewAvatarPopover({
           <li key={item.id}>
             <button
               type="button"
-              className={`live-preview__avatar-popover-item${item.highlighted ? ' live-preview__avatar-popover-item--highlighted' : ''}`}
+              className="live-preview__avatar-popover-item"
               onClick={onClose}
             >
               {item.label}

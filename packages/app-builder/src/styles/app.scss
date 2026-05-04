@@ -1311,13 +1311,9 @@ body {
   font-weight: var(--font-weight-medium);
   color: var(--fg-primary);
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: color 0.15s ease;
 
   &:hover {
-    background: var(--bg-surface-hover);
-  }
-
-  &--highlighted {
     color: var(--fg-brand);
   }
 }
