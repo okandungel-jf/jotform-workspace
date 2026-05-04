@@ -28,6 +28,7 @@ import { PageNavigationBar, getPageIconName } from '../components/PageNavigation
 import { LivePreviewMenuDrawer } from '../components/LivePreviewMenuDrawer'
 import { LivePreviewCartButton } from '../components/LivePreviewCartButton'
 import { LivePreviewCartPage } from '../components/LivePreviewCartPage'
+import { LivePreviewOrderBar } from '../components/LivePreviewOrderBar'
 import { MobileBottomBar } from '../components/MobileBottomBar'
 import {
   draggable,
@@ -3621,6 +3622,11 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                         open={isPreviewCartOpen}
                         onClose={() => setIsPreviewCartOpen(false)}
                         avatarUrl={previewUserAvatar}
+                      />
+                      <LivePreviewOrderBar
+                        hidden={isPreviewCartOpen}
+                        hasBottomNav={pages.length > 1}
+                        onClick={() => setIsPreviewCartOpen(true)}
                       />
                     </div>
                   </div>

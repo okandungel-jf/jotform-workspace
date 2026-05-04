@@ -1360,6 +1360,22 @@ body {
   }
 }
 
+.live-preview__order-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 21px;
+  z-index: 2;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-surface);
+  box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.03);
+
+  &--with-nav {
+    bottom: 77px;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
 .live-preview__bottom-nav {
   position: absolute;
   bottom: 0;
