@@ -23,6 +23,7 @@ import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicato
 import previewUserAvatar from '../assets/preview-user-avatar.jpg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
+import { LivePreviewMenuDrawer } from '../components/LivePreviewMenuDrawer'
 import { MobileBottomBar } from '../components/MobileBottomBar'
 import {
   draggable,
@@ -992,6 +993,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const setAppTitle = (title: string) => onAppTitleChange?.(title)
   const [appSubtitle, setAppSubtitle] = useState(initial.appSubtitle)
   const [appHeaderState, setAppHeaderState] = useState<AppHeaderState>(initial.appHeader)
+  const [isPreviewMenuOpen, setIsPreviewMenuOpen] = useState(false)
 
   useEffect(() => {
     if (!preset) return
@@ -3501,7 +3503,12 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                             )
                           }
                           return pages.length > 0 ? (
-                            <button type="button" className="live-preview__top-header-btn" aria-label="Menu">
+                            <button
+                              type="button"
+                              className="live-preview__top-header-btn"
+                              aria-label="Menu"
+                              onClick={() => setIsPreviewMenuOpen(true)}
+                            >
                               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                 <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                               </svg>
@@ -3589,6 +3596,15 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                       )}
                       <img src={phoneHomeIndicator} alt="" className="live-preview__home-indicator" />
                       <FormSheet />
+                      <LivePreviewMenuDrawer
+                        open={isPreviewMenuOpen}
+                        onClose={() => setIsPreviewMenuOpen(false)}
+                        pages={pages}
+                        activePageId={activePageId}
+                        onPageSelect={setActivePageId}
+                        appTitle={appTitle}
+                        appHeader={appHeaderState}
+                      />
                     </div>
                   </div>
                 </div>
