@@ -1394,6 +1394,104 @@ body {
   }
 }
 
+// ---- Checkout Page ----
+.live-preview__checkout-page {
+  position: absolute;
+  top: 54px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+}
+
+.live-preview__checkout-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 48px;
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--border-tertiary);
+}
+
+.live-preview__checkout-back {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--fg-primary);
+  cursor: pointer;
+}
+
+.live-preview__checkout-title {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-paragraph-md);
+  font-weight: 600;
+  color: var(--fg-primary);
+  text-align: center;
+}
+
+.live-preview__checkout-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 1.5px solid #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.live-preview__checkout-body {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.live-preview__checkout-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-tertiary);
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-paragraph-md);
+  font-weight: 600;
+  color: var(--fg-primary);
+}
+
+.live-preview__checkout-section-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-brand);
+}
+
+.live-preview__checkout-required {
+  color: var(--fg-error);
+  margin-left: 2px;
+}
+
+.live-preview__checkout-cta {
+  flex-shrink: 0;
+  padding: var(--space-3) var(--space-4) var(--space-10);
+  border-top: 1px solid var(--border-tertiary);
+}
+
 // ---- Cart Page ----
 .live-preview__cart-page {
   position: absolute;

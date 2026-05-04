@@ -6,6 +6,7 @@ type CartTab = 'order' | 'favorites'
 interface LivePreviewCartPageProps {
   open: boolean
   onClose: () => void
+  onContinue?: () => void
   avatarUrl: string
   currency?: string
 }
@@ -44,6 +45,7 @@ function ItemRow({
 export function LivePreviewCartPage({
   open,
   onClose,
+  onContinue,
   avatarUrl,
   currency = '$',
 }: LivePreviewCartPageProps) {
@@ -152,6 +154,7 @@ export function LivePreviewCartPage({
           leftIcon="none"
           rightIcon="none"
           label={tab === 'order' && items.length > 0 ? `Continue ${currency}${total}` : 'Start Shopping'}
+          onClick={tab === 'order' && items.length > 0 ? onContinue : undefined}
         />
       </div>
     </aside>

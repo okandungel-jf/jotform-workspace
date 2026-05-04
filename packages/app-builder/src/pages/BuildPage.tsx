@@ -28,6 +28,7 @@ import { PageNavigationBar, getPageIconName } from '../components/PageNavigation
 import { LivePreviewMenuDrawer } from '../components/LivePreviewMenuDrawer'
 import { LivePreviewCartButton } from '../components/LivePreviewCartButton'
 import { LivePreviewCartPage } from '../components/LivePreviewCartPage'
+import { LivePreviewCheckoutPage } from '../components/LivePreviewCheckoutPage'
 import { LivePreviewOrderBar } from '../components/LivePreviewOrderBar'
 import { MobileBottomBar } from '../components/MobileBottomBar'
 import {
@@ -1000,6 +1001,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [appHeaderState, setAppHeaderState] = useState<AppHeaderState>(initial.appHeader)
   const [isPreviewMenuOpen, setIsPreviewMenuOpen] = useState(false)
   const [isPreviewCartOpen, setIsPreviewCartOpen] = useState(false)
+  const [isPreviewCheckoutOpen, setIsPreviewCheckoutOpen] = useState(false)
 
   useEffect(() => {
     if (!preset) return
@@ -3598,7 +3600,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                           })()}
                         </div>
                       </div>
-                      {pages.length > 1 && !isPreviewCartOpen && (
+                      {pages.length > 1 && !isPreviewCartOpen && !isPreviewCheckoutOpen && (
                         <div className="live-preview__bottom-nav app-scope">
                           <BottomNavigation
                             items={pages.slice(0, 5).map((p, i) => ({ icon: getPageIconName(p, i), label: p.name }))}
@@ -3621,12 +3623,18 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                       <LivePreviewCartPage
                         open={isPreviewCartOpen}
                         onClose={() => setIsPreviewCartOpen(false)}
+                        onContinue={() => setIsPreviewCheckoutOpen(true)}
+                        avatarUrl={previewUserAvatar}
+                      />
+                      <LivePreviewCheckoutPage
+                        open={isPreviewCheckoutOpen}
+                        onClose={() => setIsPreviewCheckoutOpen(false)}
                         avatarUrl={previewUserAvatar}
                       />
                       <LivePreviewOrderBar
-                        hidden={isPreviewCartOpen}
+                        hidden={isPreviewCartOpen || isPreviewCheckoutOpen}
                         hasBottomNav={pages.length > 1}
-                        onClick={() => setIsPreviewCartOpen(true)}
+                        onClick={() => setIsPreviewCheckoutOpen(true)}
                       />
                     </div>
                   </div>
