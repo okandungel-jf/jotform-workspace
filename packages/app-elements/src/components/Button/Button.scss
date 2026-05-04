@@ -95,8 +95,9 @@
     }
 
     &.jf-btn--disabled {
-      background: var(--bg-fill-disabled);
-      color: var(--fg-disabled);
+      background: transparent;
+      color: var(--fg-secondary);
+      border-color: var(--border);
       cursor: not-allowed;
     }
   }
