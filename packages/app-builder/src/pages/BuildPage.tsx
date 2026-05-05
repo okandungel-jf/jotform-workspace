@@ -887,6 +887,21 @@ function DroppablePage({
   )
 }
 
+function AiCreateWidgetButton({ onClick }: { onClick?: () => void }) {
+  return (
+    <button type="button" className="ai-create-btn" onClick={onClick}>
+      <span className="ai-create-btn__visual">
+        <img src="/podo-widget-creator.png" alt="" className="ai-create-btn__visual-img" />
+      </span>
+      <span className="ai-create-btn__copy">
+        <span className="ai-create-btn__title">Create widget with</span>
+        <span className="ai-create-btn__badge">AI</span>
+      </span>
+      <Icon name="chevron-right" category="arrows" size={20} className="ai-create-btn__chevron" />
+    </button>
+  )
+}
+
 function TabMenu({ activeTab, onTabChange }: { activeTab: 'basic' | 'widgets'; onTabChange: (tab: 'basic' | 'widgets') => void }) {
   return (
     <div className="build-page__tab-menu" data-theme="dark">
@@ -1232,13 +1247,24 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   }, [appTitle, appSubtitle])
 
   const [activeTab, setActiveTab] = useState<'basic' | 'widgets'>('basic')
+  const [widgetSearch, setWidgetSearch] = useState('')
+  useEffect(() => { setWidgetSearch('') }, [activeTab])
 
   const componentMap = components.reduce<Record<string, RegisteredComponent>>((acc, comp) => {
     if (!HIDDEN_ELEMENTS.includes(comp.id)) acc[comp.id] = comp
     return acc
   }, {})
 
-  const activeGroups = activeTab === 'basic' ? BASIC_GROUPS : WIDGETS_GROUPS
+  const baseGroups = activeTab === 'basic' ? BASIC_GROUPS : WIDGETS_GROUPS
+  const widgetSearchTerm = widgetSearch.trim().toLowerCase()
+  const activeGroups = activeTab === 'widgets' && widgetSearchTerm
+    ? baseGroups
+        .map((g) => ({
+          ...g,
+          elementIds: g.elementIds.filter((id) => componentMap[id]?.name.toLowerCase().includes(widgetSearchTerm)),
+        }))
+        .filter((g) => g.elementIds.length > 0)
+    : baseGroups
 
   const handleAddElement = useCallback((comp: RegisteredComponent) => {
     const element = createCanvasElement(comp, nextElementId(pagesRef.current, headerActionsRef.current))
@@ -1793,7 +1819,26 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
           </button>
         </div>
         <TabMenu activeTab={activeTab} onTabChange={setActiveTab} />
+        {activeTab === 'widgets' && (
+          <>
+            <div className="build-page__ai-create" data-theme="dark">
+              <AiCreateWidgetButton />
+            </div>
+            <div className="build-page__widget-search" data-theme="dark">
+              <DSSearchInput
+                size="sm"
+                placeholder="Search widgets"
+                value={widgetSearch}
+                onChange={(e) => setWidgetSearch(e.target.value)}
+                onClear={() => setWidgetSearch('')}
+              />
+            </div>
+          </>
+        )}
         <div className="build-page__elements">
+          {activeTab === 'widgets' && widgetSearchTerm && activeGroups.length === 0 && (
+            <div className="build-page__widget-search-empty">No widgets found</div>
+          )}
           {activeGroups.map((group, groupIndex) => {
             const validItems = group.elementIds
               .map((id) => componentMap[id])
@@ -3712,7 +3757,26 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
     >
       <div className="mobile-elements-sheet v2-sheet">
         <TabMenu activeTab={activeTab} onTabChange={setActiveTab} />
+        {activeTab === 'widgets' && (
+          <>
+            <div className="build-page__ai-create" data-theme="dark">
+              <AiCreateWidgetButton />
+            </div>
+            <div className="build-page__widget-search" data-theme="dark">
+              <DSSearchInput
+                size="sm"
+                placeholder="Search widgets"
+                value={widgetSearch}
+                onChange={(e) => setWidgetSearch(e.target.value)}
+                onClear={() => setWidgetSearch('')}
+              />
+            </div>
+          </>
+        )}
         <div className="mobile-elements-sheet__list">
+          {activeTab === 'widgets' && widgetSearchTerm && activeGroups.length === 0 && (
+            <div className="build-page__widget-search-empty">No widgets found</div>
+          )}
           {activeGroups.map((group, groupIndex) => {
             const validItems = group.elementIds.map((id) => componentMap[id]).filter(Boolean)
             if (validItems.length === 0) return null
