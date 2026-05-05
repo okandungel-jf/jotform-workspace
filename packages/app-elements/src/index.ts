@@ -35,6 +35,7 @@ import './components/DailyTaskManager/register';
 import './components/ColorPicker/register';
 export { ColorPicker as TokenColorPicker } from './components/ColorPicker/ColorPicker';
 export type { ColorPickerProps as TokenColorPickerProps } from './components/ColorPicker/ColorPicker';
+export { ColorPicker as HsvColorPicker } from './layout/components/ColorPicker';
 import './components/EmptyState/register';
 import './components/Chart/register';
 import './components/AppHeader/register';

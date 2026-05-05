@@ -1,4 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useCallback, useRef, useContext, createContext, memo, type CSSProperties, type RefObject } from 'react'
+import { createPortal } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import {
   ComponentRegistry,
@@ -19,8 +20,10 @@ import {
   type VariantValues,
   type PropertyValues,
   type StateValues,
+  HsvColorPicker,
 } from '@jf/app-elements'
-import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput, FormField as DSFormField, TextArea as DSTextArea, DropdownSingle as DSDropdownSingle, FieldMapper as DSFieldMapper, FieldComposer as DSFieldComposer, type FieldToken, Link as DSLink, Modal as DSModal, SearchInput as DSSearchInput } from '@jf/design-system'
+import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput, FormField as DSFormField, TextArea as DSTextArea, DropdownSingle as DSDropdownSingle, FieldMapper as DSFieldMapper, FieldComposer as DSFieldComposer, type FieldToken, Link as DSLink, Modal as DSModal, SearchInput as DSSearchInput, ColorInput as DSColorInput } from '@jf/design-system'
+import { Youtube as YoutubeIcon, Twitter as TwitterIcon, Linkedin as LinkedinIcon, Facebook as FacebookIcon, Instagram as InstagramIcon } from 'lucide-react'
 import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
 import previewUserAvatar from '../assets/preview-user-avatar.jpg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
@@ -884,6 +887,129 @@ function DroppablePage({
         <CanvasDropLine target={dropTarget} containerRef={ref} />
       </div>
     </DropEdgeContext.Provider>
+  )
+}
+
+function useResolvedCssVar(varName: string, selectors: string[], fallback: string): string {
+  const [resolved, setResolved] = useState(fallback)
+  useEffect(() => {
+    let root: HTMLElement | null = null
+    for (const sel of selectors) {
+      const el = document.querySelector(sel) as HTMLElement | null
+      if (el) { root = el; break }
+    }
+    const target = root ?? document.documentElement
+    const update = () => {
+      const value = getComputedStyle(target).getPropertyValue(varName).trim()
+      if (value) setResolved(toHex(value) || fallback)
+    }
+    update()
+    const observer = new MutationObserver(update)
+    observer.observe(target, { attributes: true, attributeFilter: ['style', 'class'] })
+    return () => observer.disconnect()
+  }, [varName, fallback, selectors.join('|')])
+  return resolved
+}
+
+function toHex(input: string): string {
+  const v = input.trim()
+  if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) return v.toUpperCase()
+  const m = v.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i)
+  if (!m) return ''
+  const r = Number(m[1]).toString(16).padStart(2, '0')
+  const g = Number(m[2]).toString(16).padStart(2, '0')
+  const b = Number(m[3]).toString(16).padStart(2, '0')
+  return `#${r}${g}${b}`.toUpperCase()
+}
+
+function ColorPropertyField({
+  value,
+  onChange,
+  placeholder,
+  fallback = '#7D38EF',
+}: {
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  fallback?: string
+}) {
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const popupRef = useRef<HTMLDivElement>(null)
+  const [open, setOpen] = useState(false)
+  const [pos, setPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 })
+
+  const openPicker = useCallback(() => {
+    const rect = wrapperRef.current?.getBoundingClientRect()
+    if (rect) setPos({ top: rect.bottom + 8, left: Math.max(8, rect.right - 272) })
+    setOpen(true)
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as Node
+      if (popupRef.current?.contains(t) || wrapperRef.current?.contains(t)) return
+      setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  const pickerColor = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value) ? value : fallback
+  const displayColor = value || fallback
+
+  return (
+    <div ref={wrapperRef} style={{ position: 'relative' }}>
+      <DSColorInput
+        color={displayColor}
+        onColorChange={onChange}
+        onSwatchClick={openPicker}
+        placeholder={placeholder}
+      />
+      {open && createPortal(
+        <div
+          ref={popupRef}
+          className="color-theme-grid__picker-popup"
+          data-theme="dark"
+          style={{ top: pos.top, left: pos.left }}
+        >
+          <HsvColorPicker
+            color={pickerColor}
+            onChange={onChange}
+            tint={0}
+            onTintChange={() => {}}
+            hideTint
+          />
+        </div>,
+        document.body,
+      )}
+    </div>
+  )
+}
+
+const SOCIAL_BG_SELECTORS = ['.themes-view__device', '.app-scope']
+function SocialIconColorField({
+  value,
+  onChange,
+  tokenVariable = '--bg-fill-brand',
+}: {
+  value: string
+  onChange: (v: string) => void
+  tokenVariable?: string
+}) {
+  const fallback = useResolvedCssVar(tokenVariable, SOCIAL_BG_SELECTORS, '#7D38EF')
+  return (
+    <ColorPropertyField
+      value={value}
+      onChange={onChange}
+      fallback={fallback}
+      placeholder={fallback}
+    />
   )
 }
 
@@ -2154,10 +2280,16 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                                     { value: 'products', label: 'Products' },
                                     { value: 'condition', label: 'Condition' },
                                   ]
-                                : [
-                                    { value: 'general', label: 'General' },
-                                    { value: 'condition', label: 'Condition' },
-                                  ]
+                                : selectedComponent.id === 'social-follow'
+                                  ? [
+                                      { value: 'general', label: 'General' },
+                                      { value: 'style', label: 'Style' },
+                                      { value: 'condition', label: 'Condition' },
+                                    ]
+                                  : [
+                                      { value: 'general', label: 'General' },
+                                      { value: 'condition', label: 'Condition' },
+                                    ]
                     }
                   />
                 </div>
@@ -2219,6 +2351,14 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                   const isList = selectedComponent.id === 'list'
                   const isImageGallery = selectedComponent.id === 'image-gallery'
                   const isProductList = selectedComponent.id === 'product-list'
+                  const isSocialFollow = selectedComponent.id === 'social-follow'
+                  const socialPlatforms = [
+                    { key: 'Youtube', icon: <YoutubeIcon size={20} />, placeholder: '@jotform' },
+                    { key: 'X (Twitter)', icon: <TwitterIcon size={20} />, placeholder: 'jotform' },
+                    { key: 'LinkedIn', icon: <LinkedinIcon size={20} />, placeholder: 'jotform' },
+                    { key: 'Facebook', icon: <FacebookIcon size={20} />, placeholder: 'jotform' },
+                    { key: 'Instagram', icon: <InstagramIcon size={20} />, placeholder: '@jotform' },
+                  ]
                   const cardActionOptions = [
                     { value: 'Do Nothing', label: 'Do Nothing', icon: 'minus-sm', iconCategory: 'general' },
                     { value: 'Navigate to Page', label: 'Navigate to Page', icon: 'form-title-filled', iconCategory: 'general' },
@@ -3198,6 +3338,81 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                     )
                   }
 
+                  if (isSocialFollow && propertyTab === 'general') {
+                    return (
+                      <div className="property-panel__body">
+                        {socialPlatforms.map((p) => (
+                          <div key={p.key} className="property-panel__field">
+                            <DSFormField title={p.key} size="md" showDescription={false} showHelpText={false}>
+                              <DSInput
+                                leftContent={p.icon}
+                                value={String(selectedElement.properties[p.key] || '')}
+                                placeholder={p.placeholder}
+                                onChange={(e) => handlePropertyChange(selectedElement.id, p.key, e.target.value)}
+                              />
+                            </DSFormField>
+                          </div>
+                        ))}
+                        <div className="property-panel__field property-panel__field--inline">
+                          <DSFormField
+                            title="Shrink"
+                            description="Make element smaller."
+                            size="md"
+                            showDescription
+                            showHelpText={false}
+                          >
+                            <DSToggle
+                              size="md"
+                              checked={Boolean(selectedElement.properties['Shrinked'])}
+                              onChange={(e) => handlePropertyChange(selectedElement.id, 'Shrinked', e.target.checked)}
+                            />
+                          </DSFormField>
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  if (isSocialFollow && propertyTab === 'style') {
+                    const visibleSocialVariants = Object.entries(selectedComponent.variants)
+                      .filter(([group]) => group !== 'Layout')
+                      .filter(([, config]) => {
+                        if (!config.showWhen) return true
+                        return Object.entries(config.showWhen).every(
+                          ([key, val]) => selectedElement.variants[key] === val,
+                        )
+                      })
+                    const isFilled = selectedElement.variants['Filled'] !== 'No'
+                    const isPrimary = selectedElement.variants['Variant'] !== 'Secondary'
+                    return (
+                      <div className="property-panel__body">
+                        {visibleSocialVariants.map(([group, config]) => (
+                          <div key={group} className="property-panel__field">
+                            <DSFormField title={group} size="md" showDescription={false} showHelpText={false}>
+                              <Segmented
+                                accent="apps"
+                                variant="text"
+                                value={String(selectedElement.variants[group] ?? '')}
+                                onChange={(val) => handleVariantChange(selectedElement.id, group, val)}
+                                items={config.options.map((opt) => ({ value: opt, label: opt }))}
+                              />
+                            </DSFormField>
+                          </div>
+                        ))}
+                        {isPrimary && (
+                          <div className="property-panel__field">
+                            <DSFormField title="Icon Color" size="md" showDescription={false} showHelpText={false}>
+                              <SocialIconColorField
+                                value={String(selectedElement.properties['Icon Color'] || '')}
+                                onChange={(val) => handlePropertyChange(selectedElement.id, 'Icon Color', val)}
+                                tokenVariable={isFilled ? '--bg-fill-brand' : '--fg-brand'}
+                              />
+                            </DSFormField>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  }
+
                   const showVariants =
                     isAppHeader
                       ? propertyTab === 'style'
@@ -3205,7 +3420,9 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                         ? (propertyTab === 'layout' || propertyTab === 'action')
                         : isList
                           ? (propertyTab === 'general' || propertyTab === 'layout')
-                          : propertyTab === 'general'
+                          : isSocialFollow
+                            ? false
+                            : propertyTab === 'general'
 
                   const cardTabVariants = propertyTab === 'layout' ? CARD_LAYOUT_VARIANTS : []
                   const cardTabProps = propertyTab === 'layout' ? CARD_LAYOUT_PROPS : []

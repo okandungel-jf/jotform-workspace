@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import type { CSSProperties, FC } from 'react';
 import { Button } from '../Button';
 import './SocialFollow.scss';
 
@@ -19,12 +19,14 @@ export interface SocialFollowProps {
   shrinked?: boolean;
   skeleton?: boolean;
   skeletonAnimation?: 'pulse' | 'shimmer';
+  iconColor?: string;
 }
 
 const DEFAULT_PLATFORMS: SocialPlatform[] = [
   { icon: 'Youtube', label: 'YouTube' },
   { icon: 'Twitter', label: 'X' },
   { icon: 'Linkedin', label: 'LinkedIn' },
+  { icon: 'Facebook', label: 'Facebook' },
   { icon: 'Instagram', label: 'Instagram' },
 ];
 
@@ -37,6 +39,7 @@ export const SocialFollow: FC<SocialFollowProps> = ({
   shrinked = false,
   skeleton = false,
   skeletonAnimation = 'pulse',
+  iconColor,
 }) => {
   const rootClasses = [
     'jf-social',
@@ -45,11 +48,33 @@ export const SocialFollow: FC<SocialFollowProps> = ({
     shrinked && 'jf-social--shrinked',
   ].filter(Boolean).join(' ');
 
+  const wrapperStyle: CSSProperties | undefined = (() => {
+    if (variant === 'Secondary' && !filled) {
+      return {
+        '--fg-brand': 'var(--fg-primary)',
+        '--fg-brand-hover': 'var(--fg-primary)',
+      } as CSSProperties;
+    }
+    if (variant === 'Secondary') return undefined;
+    if (!iconColor) return undefined;
+    if (!filled) {
+      return {
+        '--fg-brand': iconColor,
+        '--fg-brand-hover': iconColor,
+      } as CSSProperties;
+    }
+    return {
+      '--bg-fill-brand': iconColor,
+      '--bg-fill-brand-hover': iconColor,
+      '--bg-fill-brand-disabled': iconColor,
+    } as CSSProperties;
+  })();
+
   const animClass = skeletonAnimation === 'shimmer' ? 'animate-shimmer' : 'animate-pulse';
 
   if (skeleton) {
     return (
-      <div className={rootClasses}>
+      <div className={rootClasses} style={wrapperStyle}>
         {platforms.map((_, i) => (
           <div
             key={i}
@@ -62,7 +87,7 @@ export const SocialFollow: FC<SocialFollowProps> = ({
   }
 
   return (
-    <div className={rootClasses}>
+    <div className={rootClasses} style={wrapperStyle}>
       {platforms.map((platform, i) => (
         <Button
           key={i}

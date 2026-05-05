@@ -18,7 +18,6 @@ ComponentRegistry.register({
     Variant: {
       options: ['Primary', 'Secondary'],
       default: 'Primary',
-      showWhen: { Filled: 'Yes' },
     },
     Filled: {
       options: ['Yes', 'No'],
@@ -27,6 +26,12 @@ ComponentRegistry.register({
   },
 
   properties: [
+    { name: 'Icon Color', type: 'color', default: '' },
+    { name: 'Youtube', type: 'text', default: '' },
+    { name: 'X (Twitter)', type: 'text', default: '' },
+    { name: 'LinkedIn', type: 'text', default: '' },
+    { name: 'Facebook', type: 'text', default: '' },
+    { name: 'Instagram', type: 'text', default: '' },
     { name: 'Selected', type: 'boolean', default: false },
     { name: 'Shrinked', type: 'boolean', default: false },
     { name: 'Skeleton', type: 'boolean', default: false },
@@ -111,9 +116,17 @@ ComponentRegistry.register({
       description:
         'When `true`, constrains width to 300px and forces wrap layout.',
     },
+    {
+      name: 'iconColor',
+      type: 'string',
+      default: 'undefined',
+      description:
+        'Custom hex color for the social icons. Overrides `--fg-inverse`, `--fg-primary`, `--fg-brand` on the wrapper.',
+    },
   ],
 
   render(variants: VariantValues, props: PropertyValues, _states: StateValues): React.ReactNode {
+    const iconColorRaw = String(props['Icon Color'] ?? '').trim();
     return (
       <SocialFollow
         layout={variants['Layout'] as SocialLayout}
@@ -122,6 +135,7 @@ ComponentRegistry.register({
         selected={props['Selected'] as boolean}
         shrinked={props['Shrinked'] as boolean}
         skeleton={props['Skeleton'] as boolean}
+        iconColor={iconColorRaw || undefined}
       />
     );
   },
