@@ -11,7 +11,7 @@ interface LivePreviewCheckoutPageProps {
 function totalPrice(items: CartItem[]): string {
   const sum = items.reduce((acc, item) => {
     const num = parseFloat(String(item.price).replace(/[^0-9.]/g, ''))
-    return acc + (isNaN(num) ? 0 : num)
+    return acc + (isNaN(num) ? 0 : num * item.quantity)
   }, 0)
   return sum.toFixed(2)
 }

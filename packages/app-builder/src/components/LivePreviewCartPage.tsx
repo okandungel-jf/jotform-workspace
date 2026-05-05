@@ -14,7 +14,7 @@ interface LivePreviewCartPageProps {
 function totalPrice(items: CartItem[]): string {
   const sum = items.reduce((acc, item) => {
     const num = parseFloat(String(item.price).replace(/[^0-9.]/g, ''))
-    return acc + (isNaN(num) ? 0 : num)
+    return acc + (isNaN(num) ? 0 : num * item.quantity)
   }, 0)
   return sum.toFixed(2)
 }
@@ -22,10 +22,12 @@ function totalPrice(items: CartItem[]): string {
 function ItemRow({
   item,
   currency,
+  controls,
   trailing,
 }: {
   item: CartItem | FavoriteItem
   currency: string
+  controls?: React.ReactNode
   trailing?: React.ReactNode
 }) {
   return (
@@ -36,8 +38,45 @@ function ItemRow({
       <div className="live-preview__cart-row-info">
         <p className="live-preview__cart-row-name">{item.name}</p>
         <p className="live-preview__cart-row-price">{currency}{item.price}</p>
+        {controls}
       </div>
       {trailing}
+    </div>
+  )
+}
+
+function QuantityStepper({
+  value,
+  onDecrement,
+  onIncrement,
+}: {
+  value: number
+  onDecrement: () => void
+  onIncrement: () => void
+}) {
+  return (
+    <div className="live-preview__cart-stepper" role="group" aria-label="Quantity">
+      <button
+        type="button"
+        className="live-preview__cart-stepper-btn"
+        aria-label="Decrease quantity"
+        onClick={onDecrement}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </button>
+      <span className="live-preview__cart-stepper-count">{value}</span>
+      <button
+        type="button"
+        className="live-preview__cart-stepper-btn"
+        aria-label="Increase quantity"
+        onClick={onIncrement}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </button>
     </div>
   )
 }
@@ -102,6 +141,13 @@ export function LivePreviewCartPage({
                   key={item.name}
                   item={item}
                   currency={currency}
+                  controls={
+                    <QuantityStepper
+                      value={item.quantity}
+                      onDecrement={() => cart?.decrement(item.name)}
+                      onIncrement={() => cart?.increment(item.name)}
+                    />
+                  }
                   trailing={
                     <button
                       type="button"
