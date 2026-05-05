@@ -1,0 +1,651 @@
+export type RadiusScale = 'Small' | 'Medium' | 'Large' | 'XLarge';
+export type ThemeMode = 'light' | 'dark';
+export type ThemeSurface = 'panel' | 'copilot' | 'both';
+
+export interface ThemeColorScheme {
+  brand: string;
+  surface: string;
+  text: string;
+}
+
+export interface AppTheme {
+  id: string;
+  name: string;
+  shortName: string;
+  vibe: string;
+  color: string;
+  font: string;
+  headingFont: string;
+  radius: RadiusScale;
+  tint: number;
+  mode: ThemeMode;
+  harmonyOffset: number;
+  scheme: ThemeColorScheme;
+  moods: string[];
+  categories: string[];
+  surfaceIn: ThemeSurface;
+}
+
+export const MOODS = [
+  'warm', 'cool', 'neutral',
+  'energetic', 'calm', 'serene',
+  'premium', 'professional', 'casual', 'playful',
+  'bold', 'subtle', 'minimal',
+  'earthy', 'organic', 'natural',
+  'modern', 'classic', 'futuristic', 'artisanal',
+  'elegant', 'friendly', 'trustworthy', 'vibrant',
+  'sophisticated', 'creative', 'technical',
+] as const;
+
+export const CATEGORIES = [
+  'coffee shop', 'restaurant', 'bakery', 'wine bar', 'bar', 'nightlife', 'food delivery',
+  'fitness', 'gym', 'wellness', 'spa', 'beauty', 'salon',
+  'healthcare', 'clinic', 'dental', 'veterinary', 'pets',
+  'education', 'school', 'tutoring', 'kids', 'family',
+  'retail', 'e-commerce', 'boutique', 'luxury retail', 'fashion', 'jewelry',
+  'creative', 'agency', 'studio', 'portfolio', 'design',
+  'tech', 'saas', 'dev tools', 'crypto', 'gaming',
+  'finance', 'fintech', 'legal', 'consulting', 'b2b', 'professional services',
+  'real estate', 'travel', 'hospitality', 'hotel',
+  'nonprofit', 'community', 'events', 'conference',
+  'sports', 'outdoors', 'sustainability', 'gardening',
+  'bookstore', 'craft', 'music', 'arts',
+] as const;
+
+export type Mood = typeof MOODS[number];
+export type Category = typeof CATEGORIES[number];
+
+export const THEME_CATALOG: AppTheme[] = [
+  {
+    id: 'sky',
+    name: 'Default',
+    shortName: 'Sky',
+    vibe: 'Friendly, trustworthy blue — the safe default for apps that need to feel approachable.',
+    color: '#0385C8', font: 'DM Sans', headingFont: 'DM Sans',
+    radius: 'Large', tint: 30, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#0385C8', surface: '#D3E9FF', text: '#0385C8' },
+    moods: ['friendly', 'calm', 'professional', 'modern', 'trustworthy'],
+    categories: ['tech', 'saas', 'healthcare', 'education', 'finance', 'real estate', 'professional services', 'hospitality'],
+    surfaceIn: 'both',
+  },
+  {
+    id: 'amethyst',
+    name: 'Amethyst',
+    shortName: 'Amethyst',
+    vibe: 'Bold creative purple — for brands that want to stand out without going dark.',
+    color: '#7D38EF', font: 'Inter', headingFont: '',
+    radius: 'Medium', tint: 50, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#7D38EF', surface: '#EDE8FE', text: '#7D38EF' },
+    moods: ['bold', 'creative', 'premium', 'energetic', 'modern'],
+    categories: ['creative', 'agency', 'studio', 'design', 'beauty', 'events', 'portfolio', 'arts'],
+    surfaceIn: 'both',
+  },
+  {
+    id: 'sunset',
+    name: 'Sunset',
+    shortName: 'Sunset',
+    vibe: 'Warm energetic orange — playful, kid-friendly, summery.',
+    color: '#F97101', font: 'Bricolage Grotesque', headingFont: '',
+    radius: 'Large', tint: 60, mode: 'light', harmonyOffset: 180,
+    scheme: { brand: '#F97101', surface: '#FEF3C5', text: '#F97101' },
+    moods: ['warm', 'energetic', 'playful', 'vibrant', 'friendly', 'casual'],
+    categories: ['kids', 'family', 'food delivery', 'sports', 'fitness', 'retail', 'events', 'travel'],
+    surfaceIn: 'both',
+  },
+  {
+    id: 'forest',
+    name: 'Forest',
+    shortName: 'Mint',
+    vibe: 'Organic earthy green — natural, calm, sustainable.',
+    color: '#19A44B', font: 'Public Sans', headingFont: 'Lora',
+    radius: 'Small', tint: 40, mode: 'light', harmonyOffset: 120,
+    scheme: { brand: '#19A44B', surface: '#DDFBE8', text: '#19A44B' },
+    moods: ['organic', 'natural', 'calm', 'earthy', 'subtle', 'trustworthy'],
+    categories: ['wellness', 'healthcare', 'outdoors', 'sustainability', 'gardening', 'pets', 'veterinary', 'nonprofit', 'community'],
+    surfaceIn: 'both',
+  },
+  {
+    id: 'dark-elegance',
+    name: 'Dark Elegance',
+    shortName: 'Elegance',
+    vibe: 'Premium dark purple — sophisticated, luxurious, evening-mode.',
+    color: '#8D5DF9', font: 'Figtree', headingFont: 'Playfair Display',
+    radius: 'XLarge', tint: 70, mode: 'dark', harmonyOffset: 160,
+    scheme: { brand: '#8D5DF9', surface: '#F0EBFE', text: '#8D5DF9' },
+    moods: ['premium', 'elegant', 'sophisticated', 'creative', 'modern'],
+    categories: ['luxury retail', 'beauty', 'spa', 'fashion', 'jewelry', 'events', 'nightlife', 'hotel'],
+    surfaceIn: 'both',
+  },
+  {
+    id: 'cherry-night',
+    name: 'Cherry Night',
+    shortName: 'Cherry',
+    vibe: 'Bold dramatic red on dark — passionate, high-energy, appetite-stoking.',
+    color: '#DF2125', font: 'Instrument Sans', headingFont: 'Merriweather',
+    radius: 'Medium', tint: 35, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#DF2125', surface: '#FDE8E8', text: '#DF2125' },
+    moods: ['bold', 'energetic', 'vibrant', 'modern'],
+    categories: ['nightlife', 'bar', 'restaurant', 'food delivery', 'fitness', 'gym', 'gaming', 'sports'],
+    surfaceIn: 'both',
+  },
+  {
+    id: 'aqua-night',
+    name: 'Aqua Night',
+    shortName: 'Aqua',
+    vibe: 'Cool futuristic cyan on dark — technical, minimal, dev-tool aesthetic.',
+    color: '#00B5D4', font: 'JetBrains Mono', headingFont: '',
+    radius: 'Medium', tint: 25, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#00B5D4', surface: '#DDF3FF', text: '#00B5D4' },
+    moods: ['cool', 'modern', 'futuristic', 'technical', 'minimal'],
+    categories: ['tech', 'saas', 'dev tools', 'gaming', 'crypto', 'music'],
+    surfaceIn: 'both',
+  },
+  {
+    id: 'cozy',
+    name: 'Cozy',
+    shortName: 'Cozy',
+    vibe: 'Warm earthy brown — artisanal, premium, hand-crafted feel.',
+    color: '#8B5E3C', font: 'Lora', headingFont: 'Playfair Display',
+    radius: 'Large', tint: 80, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#8B5E3C', surface: '#F5EDE6', text: '#8B5E3C' },
+    moods: ['warm', 'earthy', 'premium', 'artisanal', 'classic'],
+    categories: ['coffee shop', 'bakery', 'restaurant', 'wine bar', 'bookstore', 'craft', 'travel'],
+    surfaceIn: 'both',
+  },
+  {
+    id: 'monochrome',
+    name: 'Monochrome',
+    shortName: 'Mono',
+    vibe: 'Neutral slate grey — minimal, professional, content-first.',
+    color: '#5A6180', font: 'IBM Plex Mono', headingFont: '',
+    radius: 'Small', tint: 0, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#5A6180', surface: '#DADEF3', text: '#5A6180' },
+    moods: ['minimal', 'neutral', 'professional', 'technical', 'subtle'],
+    categories: ['legal', 'finance', 'fintech', 'b2b', 'consulting', 'dev tools', 'portfolio', 'professional services'],
+    surfaceIn: 'both',
+  },
+
+  // ── Copilot-only expansion ─────────────────────────────────────────────
+  // Pastels & soft tones
+  {
+    id: 'sage',
+    name: 'Sage',
+    shortName: 'Sage',
+    vibe: 'Soft sage green — calm, grounded, herbal.',
+    color: '#7BA88C', font: 'Hanken Grotesk', headingFont: 'Fraunces',
+    radius: 'Large', tint: 35, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#7BA88C', surface: '#E5F0E9', text: '#7BA88C' },
+    moods: ['calm', 'natural', 'organic', 'subtle', 'serene'],
+    categories: ['wellness', 'spa', 'gardening', 'sustainability', 'beauty', 'salon', 'nonprofit'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'peach',
+    name: 'Peach',
+    shortName: 'Peach',
+    vibe: 'Soft peach — warm, gentle, friendly.',
+    color: '#F4A77B', font: 'Fredoka', headingFont: '',
+    radius: 'XLarge', tint: 50, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#F4A77B', surface: '#FEEEE2', text: '#F4A77B' },
+    moods: ['warm', 'friendly', 'casual', 'playful', 'subtle'],
+    categories: ['kids', 'family', 'bakery', 'beauty', 'salon', 'events'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'lilac',
+    name: 'Lilac',
+    shortName: 'Lilac',
+    vibe: 'Gentle lilac — soft, romantic, calming.',
+    color: '#B89AE5', font: 'Frances', headingFont: 'Lora',
+    radius: 'Large', tint: 40, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#B89AE5', surface: '#EFE9FA', text: '#B89AE5' },
+    moods: ['calm', 'serene', 'subtle', 'elegant', 'creative'],
+    categories: ['beauty', 'spa', 'wellness', 'salon', 'events', 'arts'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'blush',
+    name: 'Blush',
+    shortName: 'Blush',
+    vibe: 'Powder pink — feminine, romantic, refined.',
+    color: '#E89AAB', font: 'Frances', headingFont: 'Playfair Display',
+    radius: 'Large', tint: 50, mode: 'light', harmonyOffset: 160,
+    scheme: { brand: '#E89AAB', surface: '#FBE8ED', text: '#E89AAB' },
+    moods: ['elegant', 'subtle', 'premium', 'classic', 'sophisticated'],
+    categories: ['beauty', 'salon', 'boutique', 'fashion', 'events', 'wellness', 'spa'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'cream',
+    name: 'Cream',
+    shortName: 'Cream',
+    vibe: 'Warm cream — paper-and-ink, classic, literary.',
+    color: '#A88B5C', font: 'Lora', headingFont: 'Playfair Display',
+    radius: 'Medium', tint: 70, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#A88B5C', surface: '#F5EDDB', text: '#A88B5C' },
+    moods: ['classic', 'artisanal', 'warm', 'subtle', 'premium'],
+    categories: ['bakery', 'bookstore', 'craft', 'wine bar', 'coffee shop', 'arts'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'sky-mist',
+    name: 'Sky Mist',
+    shortName: 'Mist',
+    vibe: 'Pale sky blue — airy, calm, hopeful.',
+    color: '#7DB3D9', font: 'Hanken Grotesk', headingFont: 'Sora',
+    radius: 'Large', tint: 35, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#7DB3D9', surface: '#E1EEF7', text: '#7DB3D9' },
+    moods: ['calm', 'serene', 'subtle', 'friendly', 'trustworthy'],
+    categories: ['healthcare', 'wellness', 'education', 'tutoring', 'nonprofit', 'community'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'mint-pastel',
+    name: 'Mint Pastel',
+    shortName: 'Mint Pastel',
+    vibe: 'Pale mint — fresh, clean, modern.',
+    color: '#7CC9A8', font: 'Public Sans', headingFont: '',
+    radius: 'Large', tint: 30, mode: 'light', harmonyOffset: 130,
+    scheme: { brand: '#7CC9A8', surface: '#E1F4EA', text: '#7CC9A8' },
+    moods: ['calm', 'natural', 'modern', 'minimal', 'subtle'],
+    categories: ['wellness', 'spa', 'healthcare', 'sustainability', 'tech', 'saas'],
+    surfaceIn: 'copilot',
+  },
+
+  // Vibrant & neon
+  {
+    id: 'electric-indigo',
+    name: 'Electric Indigo',
+    shortName: 'Indigo',
+    vibe: 'Saturated indigo — bold, modern, confident.',
+    color: '#5C4FFF', font: 'Inter', headingFont: 'Space Grotesk',
+    radius: 'Medium', tint: 30, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#5C4FFF', surface: '#E5E2FF', text: '#5C4FFF' },
+    moods: ['bold', 'modern', 'futuristic', 'creative', 'vibrant'],
+    categories: ['saas', 'tech', 'crypto', 'creative', 'agency', 'design'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'hot-pink',
+    name: 'Hot Pink',
+    shortName: 'Hot Pink',
+    vibe: 'Vivid magenta — loud, fashion-forward, unapologetic.',
+    color: '#FF2D7E', font: 'Geist', headingFont: '',
+    radius: 'Medium', tint: 25, mode: 'light', harmonyOffset: 180,
+    scheme: { brand: '#FF2D7E', surface: '#FFE2EE', text: '#FF2D7E' },
+    moods: ['bold', 'vibrant', 'energetic', 'creative', 'modern'],
+    categories: ['fashion', 'beauty', 'nightlife', 'events', 'creative', 'agency'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'volt',
+    name: 'Volt',
+    shortName: 'Volt',
+    vibe: 'High-voltage yellow-green — adrenaline, sport, attention.',
+    color: '#B8E600', font: 'Geist', headingFont: '',
+    radius: 'Small', tint: 15, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#B8E600', surface: '#F1FACA', text: '#B8E600' },
+    moods: ['bold', 'energetic', 'vibrant', 'futuristic', 'modern'],
+    categories: ['fitness', 'gym', 'sports', 'gaming', 'crypto', 'dev tools'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'magenta',
+    name: 'Magenta',
+    shortName: 'Magenta',
+    vibe: 'Saturated magenta — creative, theatrical, expressive.',
+    color: '#D81B89', font: 'Inter', headingFont: 'Fraunces',
+    radius: 'Large', tint: 40, mode: 'light', harmonyOffset: 160,
+    scheme: { brand: '#D81B89', surface: '#FBE2EF', text: '#D81B89' },
+    moods: ['bold', 'creative', 'vibrant', 'energetic', 'modern'],
+    categories: ['creative', 'agency', 'studio', 'arts', 'events', 'beauty', 'fashion'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'neon-cyan',
+    name: 'Neon Cyan',
+    shortName: 'Neon Cyan',
+    vibe: 'Pure cyan on near-black — terminal, futurist, dev-noir.',
+    color: '#00E5D6', font: 'JetBrains Mono', headingFont: '',
+    radius: 'Small', tint: 10, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#00E5D6', surface: '#D1FAF7', text: '#00E5D6' },
+    moods: ['futuristic', 'technical', 'cool', 'minimal', 'bold'],
+    categories: ['dev tools', 'crypto', 'gaming', 'tech', 'saas'],
+    surfaceIn: 'copilot',
+  },
+
+  // Retro & vintage
+  {
+    id: 'mustard',
+    name: 'Mustard',
+    shortName: 'Mustard',
+    vibe: 'Retro mustard — diner, bistro, mid-century warmth.',
+    color: '#C19D2C', font: 'Bricolage Grotesque', headingFont: 'Fraunces',
+    radius: 'Medium', tint: 60, mode: 'light', harmonyOffset: 160,
+    scheme: { brand: '#C19D2C', surface: '#F6ECC4', text: '#C19D2C' },
+    moods: ['warm', 'classic', 'artisanal', 'casual', 'friendly'],
+    categories: ['restaurant', 'wine bar', 'craft', 'bakery', 'coffee shop', 'travel'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'terracotta',
+    name: 'Terracotta',
+    shortName: 'Terracotta',
+    vibe: 'Earthy terracotta — Mediterranean, hand-thrown, sun-baked.',
+    color: '#B85C3D', font: 'Lora', headingFont: 'Fraunces',
+    radius: 'Large', tint: 65, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#B85C3D', surface: '#F5DBCD', text: '#B85C3D' },
+    moods: ['warm', 'earthy', 'artisanal', 'classic', 'organic'],
+    categories: ['travel', 'hospitality', 'restaurant', 'craft', 'gardening', 'arts', 'hotel'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'olive',
+    name: 'Olive',
+    shortName: 'Olive',
+    vibe: 'Muted olive — wine country, library, slow living.',
+    color: '#6E7240', font: 'Public Sans', headingFont: 'Bitter',
+    radius: 'Small', tint: 45, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#6E7240', surface: '#E5E7CB', text: '#6E7240' },
+    moods: ['earthy', 'classic', 'subtle', 'artisanal', 'natural'],
+    categories: ['wine bar', 'restaurant', 'bookstore', 'craft', 'gardening', 'sustainability'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'burgundy',
+    name: 'Burgundy',
+    shortName: 'Burgundy',
+    vibe: 'Deep wine red — old-world, formal, traditional.',
+    color: '#6E1F2A', font: 'DM Sans', headingFont: 'Playfair Display',
+    radius: 'Small', tint: 50, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#6E1F2A', surface: '#F0D8DC', text: '#6E1F2A' },
+    moods: ['premium', 'classic', 'sophisticated', 'elegant', 'professional'],
+    categories: ['legal', 'wine bar', 'luxury retail', 'professional services', 'consulting', 'hotel'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'mauve',
+    name: 'Mauve',
+    shortName: 'Mauve',
+    vibe: 'Dusty mauve — vintage, romantic, understated.',
+    color: '#9B6E81', font: 'Frances', headingFont: 'Fraunces',
+    radius: 'Large', tint: 55, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#9B6E81', surface: '#EFE0E5', text: '#9B6E81' },
+    moods: ['classic', 'subtle', 'elegant', 'sophisticated', 'creative'],
+    categories: ['boutique', 'beauty', 'salon', 'events', 'fashion', 'arts'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'rust',
+    name: 'Rust',
+    shortName: 'Rust',
+    vibe: 'Burnt rust — autumn, leather, workshop.',
+    color: '#A04D2A', font: 'Bricolage Grotesque', headingFont: 'Merriweather',
+    radius: 'Medium', tint: 60, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#A04D2A', surface: '#F0D5C5', text: '#A04D2A' },
+    moods: ['warm', 'earthy', 'artisanal', 'classic', 'organic'],
+    categories: ['craft', 'outdoors', 'travel', 'restaurant', 'coffee shop', 'wine bar'],
+    surfaceIn: 'copilot',
+  },
+
+  // Industrial & technical darks
+  {
+    id: 'steel',
+    name: 'Steel',
+    shortName: 'Steel',
+    vibe: 'Cool steel grey — engineered, clean, no-nonsense.',
+    color: '#4D5969', font: 'Inter', headingFont: 'Space Grotesk',
+    radius: 'Small', tint: 20, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#4D5969', surface: '#D8DDE3', text: '#4D5969' },
+    moods: ['professional', 'minimal', 'technical', 'neutral', 'modern'],
+    categories: ['b2b', 'saas', 'consulting', 'dev tools', 'professional services', 'tech'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'charcoal',
+    name: 'Charcoal',
+    shortName: 'Charcoal',
+    vibe: 'Near-black charcoal — terminal, editorial, focused.',
+    color: '#2D3239', font: 'IBM Plex Mono', headingFont: '',
+    radius: 'Small', tint: 0, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#2D3239', surface: '#D4D7DB', text: '#2D3239' },
+    moods: ['minimal', 'technical', 'professional', 'subtle', 'modern'],
+    categories: ['dev tools', 'legal', 'b2b', 'consulting', 'portfolio', 'finance'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'midnight',
+    name: 'Midnight',
+    shortName: 'Midnight',
+    vibe: 'Deep navy — quiet luxury, finance, after-hours.',
+    color: '#1F2A4E', font: 'DM Sans', headingFont: 'Playfair Display',
+    radius: 'Medium', tint: 35, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#1F2A4E', surface: '#D7DAE4', text: '#1F2A4E' },
+    moods: ['premium', 'professional', 'sophisticated', 'classic', 'trustworthy'],
+    categories: ['finance', 'fintech', 'legal', 'consulting', 'luxury retail', 'hotel', 'real estate'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'emerald-night',
+    name: 'Emerald Night',
+    shortName: 'Emerald',
+    vibe: 'Forest-deep emerald — old money, library, sanctuary.',
+    color: '#0F5742', font: 'Figtree', headingFont: 'Lora',
+    radius: 'Medium', tint: 50, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#0F5742', surface: '#CFE5DC', text: '#0F5742' },
+    moods: ['premium', 'classic', 'sophisticated', 'natural', 'elegant'],
+    categories: ['finance', 'legal', 'luxury retail', 'consulting', 'professional services', 'hotel'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'slate-blue',
+    name: 'Slate Blue',
+    shortName: 'Slate',
+    vibe: 'Muted blue-grey — corporate without the boredom.',
+    color: '#5B6B8E', font: 'Public Sans', headingFont: 'Bitter',
+    radius: 'Medium', tint: 25, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#5B6B8E', surface: '#DCE0EA', text: '#5B6B8E' },
+    moods: ['professional', 'subtle', 'trustworthy', 'minimal', 'classic'],
+    categories: ['b2b', 'consulting', 'finance', 'legal', 'professional services', 'real estate'],
+    surfaceIn: 'copilot',
+  },
+
+  // Coastal & tropical
+  {
+    id: 'coral-reef',
+    name: 'Coral Reef',
+    shortName: 'Coral',
+    vibe: 'Vivid coral — beach, vacation, casual joy.',
+    color: '#F26A55', font: 'Bricolage Grotesque', headingFont: '',
+    radius: 'Large', tint: 50, mode: 'light', harmonyOffset: 170,
+    scheme: { brand: '#F26A55', surface: '#FCDED7', text: '#F26A55' },
+    moods: ['warm', 'vibrant', 'playful', 'energetic', 'casual'],
+    categories: ['travel', 'hospitality', 'restaurant', 'food delivery', 'beauty', 'events', 'hotel'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'turquoise',
+    name: 'Turquoise',
+    shortName: 'Turquoise',
+    vibe: 'Tropical teal — water, ease, holiday brightness.',
+    color: '#16B7B7', font: 'Hanken Grotesk', headingFont: 'Lora',
+    radius: 'Large', tint: 35, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#16B7B7', surface: '#CFEFEF', text: '#16B7B7' },
+    moods: ['cool', 'natural', 'friendly', 'modern', 'serene'],
+    categories: ['travel', 'wellness', 'spa', 'hospitality', 'pets', 'sports', 'hotel'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'ocean-deep',
+    name: 'Ocean Deep',
+    shortName: 'Ocean',
+    vibe: 'Deep ocean blue — premium, deep-water, hotel-lobby.',
+    color: '#155F8A', font: 'DM Sans', headingFont: 'Playfair Display',
+    radius: 'Medium', tint: 30, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#155F8A', surface: '#D4E3EE', text: '#155F8A' },
+    moods: ['premium', 'sophisticated', 'professional', 'classic', 'elegant'],
+    categories: ['hotel', 'travel', 'hospitality', 'real estate', 'finance', 'luxury retail'],
+    surfaceIn: 'copilot',
+  },
+
+  // Within-category variants for crowded existing categories
+  {
+    id: 'espresso',
+    name: 'Espresso',
+    shortName: 'Espresso',
+    vibe: 'Near-black coffee — third-wave roaster, minimalist counter.',
+    color: '#3D2A20', font: 'Geist', headingFont: 'Fraunces',
+    radius: 'Small', tint: 35, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#3D2A20', surface: '#E8DFD9', text: '#3D2A20' },
+    moods: ['minimal', 'premium', 'modern', 'artisanal', 'sophisticated'],
+    categories: ['coffee shop', 'bakery', 'restaurant', 'wine bar', 'craft'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'cool-mint',
+    name: 'Cool Mint',
+    shortName: 'Cool Mint',
+    vibe: 'Cool aqua-mint — modern coffee shop, juice bar, fresh-take.',
+    color: '#3FAFA3', font: 'Geist', headingFont: '',
+    radius: 'Medium', tint: 30, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#3FAFA3', surface: '#D5EEEA', text: '#3FAFA3' },
+    moods: ['modern', 'minimal', 'cool', 'friendly', 'natural'],
+    categories: ['coffee shop', 'bakery', 'wellness', 'spa', 'restaurant', 'food delivery'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'graphite',
+    name: 'Graphite',
+    shortName: 'Graphite',
+    vibe: 'Graphite + accent — portfolio gallery, photographer, architect.',
+    color: '#3A3D44', font: 'Inter', headingFont: 'Fraunces',
+    radius: 'Small', tint: 5, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#3A3D44', surface: '#D8DADD', text: '#3A3D44' },
+    moods: ['minimal', 'professional', 'sophisticated', 'modern', 'subtle'],
+    categories: ['portfolio', 'creative', 'studio', 'design', 'agency', 'arts'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'lavender-fog',
+    name: 'Lavender Fog',
+    shortName: 'Lavender',
+    vibe: 'Soft lavender on dark — therapy app, meditation, gentle premium.',
+    color: '#9B8BD9', font: 'Figtree', headingFont: 'Fraunces',
+    radius: 'XLarge', tint: 55, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#9B8BD9', surface: '#E7E2F4', text: '#9B8BD9' },
+    moods: ['calm', 'serene', 'premium', 'subtle', 'sophisticated'],
+    categories: ['wellness', 'spa', 'beauty', 'healthcare', 'tutoring', 'community'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'arcade',
+    name: 'Arcade',
+    shortName: 'Arcade',
+    vibe: 'Neon purple-pink on dark — esports, streaming, retro-gamer.',
+    color: '#A855F7', font: 'Geist', headingFont: '',
+    radius: 'Medium', tint: 25, mode: 'dark', harmonyOffset: 180,
+    scheme: { brand: '#A855F7', surface: '#EAD8FB', text: '#A855F7' },
+    moods: ['bold', 'vibrant', 'futuristic', 'energetic', 'modern'],
+    categories: ['gaming', 'crypto', 'music', 'nightlife', 'events', 'creative'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'sunflower',
+    name: 'Sunflower',
+    shortName: 'Sunflower',
+    vibe: 'Bright golden yellow — daycare, sunny morning, kindergarten.',
+    color: '#F5C518', font: 'Fredoka', headingFont: '',
+    radius: 'XLarge', tint: 50, mode: 'light', harmonyOffset: 160,
+    scheme: { brand: '#F5C518', surface: '#FDF1C5', text: '#F5C518' },
+    moods: ['warm', 'playful', 'friendly', 'energetic', 'casual', 'vibrant'],
+    categories: ['kids', 'family', 'school', 'tutoring', 'community', 'events'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'rosewood',
+    name: 'Rosewood',
+    shortName: 'Rosewood',
+    vibe: 'Deep rosewood — heritage law firm, fine cigar, sommelier.',
+    color: '#7A2E2E', font: 'DM Sans', headingFont: 'Libre Baskerville',
+    radius: 'Small', tint: 40, mode: 'dark', harmonyOffset: 150,
+    scheme: { brand: '#7A2E2E', surface: '#EFD8D8', text: '#7A2E2E' },
+    moods: ['classic', 'premium', 'sophisticated', 'professional', 'elegant'],
+    categories: ['legal', 'wine bar', 'professional services', 'consulting', 'luxury retail', 'hotel'],
+    surfaceIn: 'copilot',
+  },
+  {
+    id: 'fjord',
+    name: 'Fjord',
+    shortName: 'Fjord',
+    vibe: 'Cold pale blue — Nordic, minimalist, clinical.',
+    color: '#7896A8', font: 'Inter', headingFont: 'Sora',
+    radius: 'Small', tint: 15, mode: 'light', harmonyOffset: 150,
+    scheme: { brand: '#7896A8', surface: '#DEE6EB', text: '#7896A8' },
+    moods: ['minimal', 'cool', 'subtle', 'professional', 'modern'],
+    categories: ['healthcare', 'clinic', 'dental', 'b2b', 'consulting', 'tech', 'saas'],
+    surfaceIn: 'copilot',
+  },
+];
+
+export interface PickThemeInput {
+  category?: string;
+  moodTags?: string[];
+  mode?: ThemeMode;
+  exclude?: string[];
+}
+
+export interface ThemeMatch {
+  theme: AppTheme;
+  score: number;
+  reasons: string[];
+}
+
+const CATEGORY_WEIGHT = 10;
+const MOOD_WEIGHT = 3;
+
+function scoreTheme(theme: AppTheme, input: PickThemeInput): ThemeMatch {
+  const reasons: string[] = [];
+  let score = 0;
+
+  if (input.category) {
+    const c = input.category.toLowerCase().trim();
+    if (theme.categories.includes(c)) {
+      score += CATEGORY_WEIGHT;
+      reasons.push(`category match: ${c}`);
+    }
+  }
+
+  if (input.moodTags?.length) {
+    for (const raw of input.moodTags) {
+      const m = raw.toLowerCase().trim();
+      if (theme.moods.includes(m)) {
+        score += MOOD_WEIGHT;
+        reasons.push(`mood match: ${m}`);
+      }
+    }
+  }
+
+  return { theme, score, reasons };
+}
+
+export function rankThemes(input: PickThemeInput): ThemeMatch[] {
+  const pool = THEME_CATALOG.filter(t => {
+    if (input.mode && t.mode !== input.mode) return false;
+    if (input.exclude?.includes(t.id)) return false;
+    return true;
+  });
+
+  return pool
+    .map(t => scoreTheme(t, input))
+    .sort((a, b) => b.score - a.score);
+}
+
+export function pickTheme(input: PickThemeInput): AppTheme {
+  const ranked = rankThemes(input);
+  if (ranked.length === 0) return THEME_CATALOG[0];
+  return ranked[0].theme;
+}
+
+export function getThemeById(id: string): AppTheme | undefined {
+  return THEME_CATALOG.find(t => t.id === id);
+}

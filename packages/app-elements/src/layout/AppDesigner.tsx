@@ -2,11 +2,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Tabs as DSTabs, DropdownSingle, Segmented, FormField as DSFormField } from '@jf/design-system';
 import { Icon } from '../components/Icon/Icon';
-import { useIconLibrary, type IconLibrary } from '../context/IconLibraryContext';
-import { loadLibrary } from '../utils/iconRegistry';
 import { generatePalette, applySecondaryPaletteToDOM, resetSecondaryPalette } from '../utils/colorPalette';
 import type { PaletteShade } from '../utils/colorPalette';
 import { generateNeutralPalette, applyNeutralToDOM } from '../utils/neutralTint';
+import { THEME_CATALOG, type AppTheme, type RadiusScale } from '../utils/themeCatalog';
 import { ColorPicker } from './components/ColorPicker';
 import { ColorPicker as TokenColorPicker } from '../components/ColorPicker/ColorPicker';
 import { BottomSheet } from './components/BottomSheet';
@@ -19,8 +18,6 @@ const DEFAULT_HEADING_FONT = 'DM Sans';
 const DEFAULT_RADIUS = 'Large';
 const DEFAULT_TINT = 30;
 const DEFAULT_HARMONY = 150;
-
-type RadiusScale = 'Small' | 'Medium' | 'Large' | 'XLarge';
 
 const FONT_OPTIONS = [
   'Bricolage Grotesque',
@@ -53,53 +50,9 @@ const HEADING_FONT_OPTIONS = [
   ...FONT_OPTIONS,
 ].sort();
 
-interface ColorScheme {
-  brand: string;
-  surface: string;
-  text: string;
-}
+type ThemePreset = AppTheme;
 
-interface ThemePreset {
-  name: string;
-  color: string;
-  font: string;
-  headingFont: string;
-  iconLibrary: IconLibrary;
-  radius: RadiusScale;
-  tint: number;
-  mode: 'light' | 'dark';
-  harmonyOffset: number;
-  scheme: ColorScheme;
-}
-
-const LIGHT_PRESETS: ThemePreset[] = [
-  { name: 'Default', color: '#0385C8', font: 'DM Sans', headingFont: 'DM Sans', iconLibrary: 'lucide', radius: 'Large', tint: 30, mode: 'light', harmonyOffset: 150, scheme: { brand: '#0385C8', surface: '#D3E9FF', text: '#0385C8' } },
-  { name: 'Amethyst', color: '#7D38EF', font: 'Inter', headingFont: '', iconLibrary: 'lucide', radius: 'Medium', tint: 50, mode: 'light', harmonyOffset: 150, scheme: { brand: '#7D38EF', surface: '#EDE8FE', text: '#7D38EF' } },
-  { name: 'Sunset', color: '#F97101', font: 'Bricolage Grotesque', headingFont: '', iconLibrary: 'lucide', radius: 'Large', tint: 60, mode: 'light', harmonyOffset: 180, scheme: { brand: '#F97101', surface: '#FEF3C5', text: '#F97101' } },
-  { name: 'Forest', color: '#19A44B', font: 'Public Sans', headingFont: 'Lora', iconLibrary: 'tabler', radius: 'Small', tint: 40, mode: 'light', harmonyOffset: 120, scheme: { brand: '#19A44B', surface: '#DDFBE8', text: '#19A44B' } },
-];
-
-const DARK_PRESETS: ThemePreset[] = [
-  { name: 'Dark Elegance', color: '#8D5DF9', font: 'Figtree', headingFont: 'Playfair Display', iconLibrary: 'phosphor', radius: 'XLarge', tint: 70, mode: 'dark', harmonyOffset: 160, scheme: { brand: '#8D5DF9', surface: '#F0EBFE', text: '#8D5DF9' } },
-  { name: 'Cherry Night', color: '#DF2125', font: 'Instrument Sans', headingFont: 'Merriweather', iconLibrary: 'lucide', radius: 'Medium', tint: 35, mode: 'dark', harmonyOffset: 150, scheme: { brand: '#DF2125', surface: '#FDE8E8', text: '#DF2125' } },
-  { name: 'Aqua Night', color: '#00B5D4', font: 'JetBrains Mono', headingFont: '', iconLibrary: 'lucide', radius: 'Medium', tint: 25, mode: 'dark', harmonyOffset: 150, scheme: { brand: '#00B5D4', surface: '#DDF3FF', text: '#00B5D4' } },
-  { name: 'Cozy', color: '#8B5E3C', font: 'Lora', headingFont: 'Playfair Display', iconLibrary: 'lucide', radius: 'Large', tint: 80, mode: 'dark', harmonyOffset: 150, scheme: { brand: '#8B5E3C', surface: '#F5EDE6', text: '#8B5E3C' } },
-  { name: 'Monochrome', color: '#5A6180', font: 'IBM Plex Mono', headingFont: '', iconLibrary: 'tabler', radius: 'Small', tint: 0, mode: 'dark', harmonyOffset: 150, scheme: { brand: '#5A6180', surface: '#DADEF3', text: '#5A6180' } },
-];
-
-const THEME_PRESETS: ThemePreset[] = [...LIGHT_PRESETS, ...DARK_PRESETS];
-
-const PRESET_SHORT_NAMES: Record<string, string> = {
-  'Default': 'Sky',
-  'Amethyst': 'Amethyst',
-  'Sunset': 'Sunset',
-  'Forest': 'Mint',
-  'Dark Elegance': 'Elegance',
-  'Cherry Night': 'Cherry',
-  'Aqua Night': 'Aqua',
-  'Cozy': 'Cozy',
-  'Monochrome': 'Mono',
-};
+const THEME_PRESETS: ThemePreset[] = THEME_CATALOG.filter(t => t.surfaceIn !== 'copilot');
 
 // ── Token Editor ───────────────────────────────────────────────────────
 
@@ -459,8 +412,6 @@ interface AppDesignerProps {
 }
 
 export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, renderIcon, doneButton, visible = true, namespace }: AppDesignerProps) {
-  const { setLibrary: setIconLibrary, setIconStyle } = useIconLibrary();
-
   const storedSnapshot = namespace ? loadAppDesignerSnapshot(namespace) : null;
 
   // Theme state
@@ -599,10 +550,6 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
     applyHeadingFontToDOM(preset.headingFont, preset.font);
     setRadius(preset.radius);
     applyRadius(preset.radius, getTargets());
-    loadLibrary(preset.iconLibrary, 'outline').then(() => {
-      setIconLibrary(preset.iconLibrary);
-      setIconStyle('outline');
-    });
     setColorMode(preset.mode);
     if (preset.mode === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -610,7 +557,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
       document.documentElement.removeAttribute('data-theme');
     }
     localStorage.setItem('jf-lib-theme', preset.mode);
-  }, [secondaryEnabled, applySecondary, applyHeadingFontToDOM, setIconLibrary, setIconStyle, getTargets]);
+  }, [secondaryEnabled, applySecondary, applyHeadingFontToDOM, getTargets]);
 
   const handleColorChange = useCallback((newColor: string) => {
     setColor(newColor);
@@ -964,7 +911,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
                       >
                         <div className="color-theme-grid__outer" style={{ background: `linear-gradient(145deg, color-mix(in srgb, ${preset.color}, #fff 20%) 0%, ${preset.color} 50%, color-mix(in srgb, ${preset.color}, #000 25%) 100%)` }} />
                       </button>
-                      <span className={`v2-preset-grid__label${isActive ? ' v2-preset-grid__label--active' : ''}`}>{PRESET_SHORT_NAMES[preset.name] || preset.name}</span>
+                      <span className={`v2-preset-grid__label${isActive ? ' v2-preset-grid__label--active' : ''}`}>{preset.shortName || preset.name}</span>
                     </div>
                   );
                 })}
@@ -1215,7 +1162,7 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
                 >
                   <div className="color-theme-grid__outer" style={{ background: `linear-gradient(145deg, color-mix(in srgb, ${preset.color}, #fff 20%) 0%, ${preset.color} 50%, color-mix(in srgb, ${preset.color}, #000 25%) 100%)` }} />
                 </button>
-                <span className={`v2-preset-grid__label${isActive ? ' v2-preset-grid__label--active' : ''}`}>{PRESET_SHORT_NAMES[preset.name] || preset.name}</span>
+                <span className={`v2-preset-grid__label${isActive ? ' v2-preset-grid__label--active' : ''}`}>{preset.shortName || preset.name}</span>
               </div>
             );
           })}
