@@ -1,5 +1,5 @@
 import { ComponentRegistry } from '../../types/registry';
-import { SocialFollow } from './SocialFollow';
+import { SocialFollow, ALL_SOCIAL_PLATFORMS } from './SocialFollow';
 import type { SocialLayout, SocialVariant } from './SocialFollow';
 import type { VariantValues, PropertyValues, StateValues } from '../../types/component';
 import socialScss from './SocialFollow.scss?raw';
@@ -27,11 +27,16 @@ ComponentRegistry.register({
 
   properties: [
     { name: 'Icon Color', type: 'color', default: '' },
-    { name: 'Youtube', type: 'text', default: '' },
-    { name: 'X (Twitter)', type: 'text', default: '' },
+    { name: 'Facebook', type: 'text', default: 'jotform' },
+    { name: 'Youtube', type: 'text', default: 'https://www.youtube.com/@JotForm' },
+    { name: 'Instagram', type: 'text', default: 'jotform' },
+    { name: 'TikTok', type: 'text', default: 'jotform' },
+    { name: 'X (Twitter)', type: 'text', default: 'jotform' },
     { name: 'LinkedIn', type: 'text', default: '' },
-    { name: 'Facebook', type: 'text', default: '' },
-    { name: 'Instagram', type: 'text', default: '' },
+    { name: 'Pinterest', type: 'text', default: '' },
+    { name: 'Tumblr', type: 'text', default: '' },
+    { name: 'Vimeo', type: 'text', default: '' },
+    { name: 'Flickr', type: 'text', default: '' },
     { name: 'Selected', type: 'boolean', default: false },
     { name: 'Shrinked', type: 'boolean', default: false },
     { name: 'Skeleton', type: 'boolean', default: false },
@@ -127,11 +132,15 @@ ComponentRegistry.register({
 
   render(variants: VariantValues, props: PropertyValues, _states: StateValues): React.ReactNode {
     const iconColorRaw = String(props['Icon Color'] ?? '').trim();
+    const platforms = ALL_SOCIAL_PLATFORMS
+      .filter((p) => p.alwaysShow || String(props[p.key] ?? '').trim().length > 0)
+      .map(({ icon, label }) => ({ icon, label }));
     return (
       <SocialFollow
         layout={variants['Layout'] as SocialLayout}
         variant={variants['Variant'] as SocialVariant}
         filled={variants['Filled'] === 'Yes'}
+        platforms={platforms}
         selected={props['Selected'] as boolean}
         shrinked={props['Shrinked'] as boolean}
         skeleton={props['Skeleton'] as boolean}

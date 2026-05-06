@@ -1072,6 +1072,36 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [editingProductIndex, setEditingProductIndex] = useState<number | null>(null)
   const [productSearch, setProductSearch] = useState('')
   useEffect(() => { setEditingProductIndex(null); setProductSearch('') }, [selectedElementId, propertyTab])
+
+  const migratedSocialFollowIds = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    if (!selectedElementId) return
+    if (migratedSocialFollowIds.current.has(selectedElementId)) return
+    const all = [...pagesRef.current.flatMap((p) => p.elements), ...headerActionsRef.current]
+    const el = all.find((e) => e.id === selectedElementId)
+    if (!el || el.componentId !== 'social-follow') return
+    const comp = ComponentRegistry.get('social-follow')
+    if (!comp) return
+    const updates: Record<string, string | boolean | number> = {}
+    for (const prop of comp.properties) {
+      const current = el.properties[prop.name]
+      if ((current === undefined || current === '') && prop.default !== undefined && prop.default !== '') {
+        updates[prop.name] = prop.default as string | boolean | number
+      }
+    }
+    migratedSocialFollowIds.current.add(selectedElementId)
+    if (Object.keys(updates).length === 0) return
+    setPages((prev) =>
+      prev.map((page) => ({
+        ...page,
+        elements: page.elements.map((e) =>
+          e.id === selectedElementId
+            ? { ...e, properties: { ...e.properties, ...updates } }
+            : e,
+        ),
+      })),
+    )
+  }, [selectedElementId])
   const [canvasElementWidth, setCanvasElementWidth] = useState<number | null>(null)
   useEffect(() => {
     if (!selectedElementId) { setCanvasElementWidth(null); return }
@@ -2352,11 +2382,16 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                   const isProductList = selectedComponent.id === 'product-list'
                   const isSocialFollow = selectedComponent.id === 'social-follow'
                   const socialPlatforms = [
-                    { key: 'Youtube', icon: <Icon name="youtube-filled" category="brands" size={20} />, placeholder: '@jotform' },
-                    { key: 'X (Twitter)', icon: <Icon name="twitter" category="brands" size={20} />, placeholder: 'jotform' },
-                    { key: 'LinkedIn', icon: <Icon name="linkedin-square-filled" category="brands" size={20} />, placeholder: 'jotform' },
-                    { key: 'Facebook', icon: <Icon name="facebook-square-filled" category="brands" size={20} />, placeholder: 'jotform' },
-                    { key: 'Instagram', icon: <Icon name="instagram" category="brands" size={20} />, placeholder: '@jotform' },
+                    { key: 'Facebook', icon: <Icon name="facebook-square-filled" category="brands" size={20} />, placeholder: 'Enter your Facebook username' },
+                    { key: 'Youtube', icon: <Icon name="youtube-filled" category="brands" size={20} />, placeholder: 'Enter your YouTube channel URL' },
+                    { key: 'Instagram', icon: <Icon name="instagram" category="brands" size={20} />, placeholder: 'Enter your Instagram username' },
+                    { key: 'TikTok', icon: <Icon name="tiktok" category="brands" size={20} />, placeholder: 'Enter your TikTok username' },
+                    { key: 'X (Twitter)', icon: <Icon name="twitter" category="brands" size={20} />, placeholder: 'Enter your X handle' },
+                    { key: 'LinkedIn', icon: <Icon name="linkedin-square-filled" category="brands" size={20} />, placeholder: 'Enter your LinkedIn profile URL' },
+                    { key: 'Pinterest', icon: <Icon name="pinterest-circle-filled" category="brands" size={20} />, placeholder: 'Enter your Pinterest username' },
+                    { key: 'Tumblr', icon: <Icon name="tumblr-circle-filled" category="brands" size={20} />, placeholder: 'Enter your Tumblr blog name' },
+                    { key: 'Vimeo', icon: <Icon name="vimeo-circle-filled" category="brands" size={20} />, placeholder: 'Enter your Vimeo username' },
+                    { key: 'Flickr', icon: <Icon name="flickr-circle-filled" category="brands" size={20} />, placeholder: 'Enter your Flickr username' },
                   ]
                   const cardActionOptions = [
                     { value: 'Do Nothing', label: 'Do Nothing', icon: 'minus-sm', iconCategory: 'general' },
@@ -3340,18 +3375,23 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                   if (isSocialFollow && propertyTab === 'general') {
                     return (
                       <div className="property-panel__body">
-                        {socialPlatforms.map((p) => (
-                          <div key={p.key} className="property-panel__field">
-                            <DSFormField title={p.key} size="md" showDescription={false} showHelpText={false}>
-                              <DSInput
-                                leftContent={p.icon}
-                                value={String(selectedElement.properties[p.key] || '')}
-                                placeholder={p.placeholder}
-                                onChange={(e) => handlePropertyChange(selectedElement.id, p.key, e.target.value)}
-                              />
-                            </DSFormField>
-                          </div>
-                        ))}
+                        {socialPlatforms.map((p) => {
+                          const saved = selectedElement.properties[p.key]
+                          const fallback = selectedComponent.properties.find((d) => d.name === p.key)?.default
+                          const value = String(saved ?? fallback ?? '')
+                          return (
+                            <div key={p.key} className="property-panel__field">
+                              <DSFormField title={p.key} size="md" showDescription={false} showHelpText={false}>
+                                <DSInput
+                                  leftContent={p.icon}
+                                  value={value}
+                                  placeholder={p.placeholder}
+                                  onChange={(e) => handlePropertyChange(selectedElement.id, p.key, e.target.value)}
+                                />
+                              </DSFormField>
+                            </div>
+                          )
+                        })}
                         <div className="property-panel__field property-panel__field--inline">
                           <DSFormField
                             title="Shrink"
