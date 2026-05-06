@@ -210,7 +210,7 @@
   }
 
   &:hover {
-    border-color: color-mix(in srgb, var(--bg-fill-brand) 40%, var(--border));
+    border-color: var(--border-hover);
   }
 
   &:focus {

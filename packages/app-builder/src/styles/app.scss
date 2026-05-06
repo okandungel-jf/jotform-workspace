@@ -1586,7 +1586,7 @@ body {
   }
 
   &:hover {
-    border-color: color-mix(in srgb, var(--bg-fill-brand) 40%, var(--border));
+    border-color: var(--border-hover);
   }
 
   &:focus {
@@ -1620,7 +1620,7 @@ body {
   margin-top: var(--space-2);
   padding: 0 var(--space-4);
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-lg);
   background: var(--bg-fill-brand);
   color: var(--fg-inverse);
   font-family: var(--font-family);
