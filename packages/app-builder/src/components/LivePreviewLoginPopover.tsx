@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Icon } from '@jf/design-system'
+import { Icon, Checkbox } from '@jf/design-system'
 
-type View = 'login' | 'signup'
+type View = 'login' | 'signup' | 'email-signup'
 
 interface LivePreviewLoginPopoverProps {
   open: boolean
@@ -30,6 +30,14 @@ export function LivePreviewLoginPopover({
   const [view, setView] = useState<View>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [signupName, setSignupName] = useState('')
+  const [signupEmail, setSignupEmail] = useState('')
+  const [signupPassword, setSignupPassword] = useState('')
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState('')
+  const [signupAgreed, setSignupAgreed] = useState(false)
+  const [showLoginPassword, setShowLoginPassword] = useState(false)
+  const [showSignupPassword, setShowSignupPassword] = useState(false)
+  const [showSignupConfirmPassword, setShowSignupConfirmPassword] = useState(false)
 
   useEffect(() => {
     if (open) setView('login')
@@ -64,9 +72,10 @@ export function LivePreviewLoginPopover({
       ref={ref}
       className="live-preview__login-popover app-scope"
       role="dialog"
-      aria-label={view === 'login' ? 'Log in' : 'Sign up'}
+      aria-label={view === 'login' ? 'Log in' : view === 'signup' ? 'Sign up' : 'Sign up with Email'}
     >
-      {view === 'login' ? (
+      <div className="live-preview__login-popover-inner">
+      {view === 'login' && (
         <>
           <div className="live-preview__login-popover-providers">
             {PROVIDERS.map((p) => (
@@ -106,13 +115,27 @@ export function LivePreviewLoginPopover({
               <label htmlFor="login-popover-password" className="live-preview__login-popover-label">
                 Password
               </label>
-              <input
-                id="login-popover-password"
-                type="password"
-                className="live-preview__login-popover-input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="live-preview__login-popover-password-wrap">
+                <input
+                  id="login-popover-password"
+                  type={showLoginPassword ? 'text' : 'password'}
+                  className="live-preview__login-popover-input live-preview__login-popover-input--password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="live-preview__login-popover-password-toggle"
+                  aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                  onClick={() => setShowLoginPassword((v) => !v)}
+                >
+                  <Icon
+                    name={showLoginPassword ? 'eye-filled' : 'eye-slash-filled'}
+                    category="general"
+                    size={20}
+                  />
+                </button>
+              </div>
             </div>
 
             <button type="button" className="live-preview__login-popover-forgot">
@@ -135,7 +158,8 @@ export function LivePreviewLoginPopover({
             </button>
           </div>
         </>
-      ) : (
+      )}
+      {view === 'signup' && (
         <>
           <div className="live-preview__login-popover-signup-providers">
             {SIGNUP_PROVIDERS.map((p) => (
@@ -154,7 +178,11 @@ export function LivePreviewLoginPopover({
             <span>OR</span>
           </div>
 
-          <button type="button" className="live-preview__login-popover-email-signup">
+          <button
+            type="button"
+            className="live-preview__login-popover-email-signup"
+            onClick={() => setView('email-signup')}
+          >
             <Icon name="envelope-closed-filled" category="communication" size={20} />
             <span>Sign up with Email</span>
           </button>
@@ -171,6 +199,166 @@ export function LivePreviewLoginPopover({
           </div>
         </>
       )}
+      {view === 'email-signup' && (
+        <>
+          <h2 className="live-preview__login-popover-title">Sign up with Email</h2>
+
+          <button
+            type="button"
+            className="live-preview__login-popover-back"
+            onClick={() => setView('signup')}
+          >
+            <Icon name="angle-left-circle-filled" category="arrows" size={20} />
+            <span>More sign up options</span>
+          </button>
+
+          <form
+            className="live-preview__login-popover-form"
+            onSubmit={(e) => {
+              e.preventDefault()
+              onLoggedIn?.()
+              onClose()
+            }}
+          >
+            <div className="live-preview__login-popover-field">
+              <label htmlFor="signup-popover-name" className="live-preview__login-popover-label">
+                Name
+              </label>
+              <input
+                id="signup-popover-name"
+                type="text"
+                className="live-preview__login-popover-input"
+                value={signupName}
+                onChange={(e) => setSignupName(e.target.value)}
+                autoFocus
+              />
+            </div>
+
+            <div className="live-preview__login-popover-field">
+              <label htmlFor="signup-popover-email" className="live-preview__login-popover-label">
+                Email
+              </label>
+              <input
+                id="signup-popover-email"
+                type="email"
+                className="live-preview__login-popover-input"
+                value={signupEmail}
+                onChange={(e) => setSignupEmail(e.target.value)}
+              />
+            </div>
+
+            <div className="live-preview__login-popover-field">
+              <label htmlFor="signup-popover-password" className="live-preview__login-popover-label">
+                Password
+              </label>
+              <div className="live-preview__login-popover-password-wrap">
+                <input
+                  id="signup-popover-password"
+                  type={showSignupPassword ? 'text' : 'password'}
+                  className="live-preview__login-popover-input live-preview__login-popover-input--password"
+                  value={signupPassword}
+                  onChange={(e) => setSignupPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="live-preview__login-popover-password-toggle"
+                  aria-label={showSignupPassword ? 'Hide password' : 'Show password'}
+                  onClick={() => setShowSignupPassword((v) => !v)}
+                >
+                  <Icon
+                    name={showSignupPassword ? 'eye-filled' : 'eye-slash-filled'}
+                    category="general"
+                    size={20}
+                  />
+                </button>
+              </div>
+              <div className="live-preview__login-popover-password-hint">
+                <Icon name="info-circle-filled" category="general" size={16} />
+                <span>Your password must include at least</span>
+              </div>
+              <div
+                className={`live-preview__login-popover-password-rule${
+                  signupPassword.length >= 1 ? ' live-preview__login-popover-password-rule--met' : ''
+                }`}
+              >
+                <Icon name="info-circle-filled" category="general" size={16} />
+                <span>1 characters</span>
+              </div>
+            </div>
+
+            <div className="live-preview__login-popover-field">
+              <label htmlFor="signup-popover-confirm" className="live-preview__login-popover-label">
+                Confirm Password
+              </label>
+              <div className="live-preview__login-popover-password-wrap">
+                <input
+                  id="signup-popover-confirm"
+                  type={showSignupConfirmPassword ? 'text' : 'password'}
+                  className="live-preview__login-popover-input live-preview__login-popover-input--password"
+                  value={signupConfirmPassword}
+                  onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="live-preview__login-popover-password-toggle"
+                  aria-label={showSignupConfirmPassword ? 'Hide password' : 'Show password'}
+                  onClick={() => setShowSignupConfirmPassword((v) => !v)}
+                >
+                  <Icon
+                    name={showSignupConfirmPassword ? 'eye-filled' : 'eye-slash-filled'}
+                    category="general"
+                    size={20}
+                  />
+                </button>
+              </div>
+            </div>
+
+            <div className="live-preview__login-popover-terms">
+              <Checkbox
+                size="sm"
+                id="signup-popover-terms"
+                label=""
+                checked={signupAgreed}
+                onChange={(e) => setSignupAgreed(e.target.checked)}
+              />
+              <label
+                htmlFor="signup-popover-terms"
+                className="live-preview__login-popover-terms-text"
+              >
+                I agree to the{' '}
+                <a href="#" className="live-preview__login-popover-terms-link">
+                  Terms of Service
+                </a>
+                ,{' '}
+                <a href="#" className="live-preview__login-popover-terms-link">
+                  Privacy Policy
+                </a>{' '}
+                and{' '}
+                <a href="#" className="live-preview__login-popover-terms-link">
+                  Cookie Policy
+                </a>
+                .
+              </label>
+            </div>
+
+            <button type="submit" className="live-preview__login-popover-submit">
+              Sign up
+            </button>
+          </form>
+
+          <div className="live-preview__login-popover-footer">
+            Already have an account?{' '}
+            <button
+              type="button"
+              className="live-preview__login-popover-link"
+              onClick={() => setView('login')}
+            >
+              Log in
+            </button>
+          </div>
+        </>
+      )}
+      </div>
     </div>
   )
 }

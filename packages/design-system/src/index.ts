@@ -60,6 +60,8 @@ export type {
   SegmentedAccent,
   SegmentedVariant,
 } from './components/Segmented';
+export { Checkbox } from './components/Checkbox';
+export type { CheckboxProps } from './components/Checkbox';
 export type {
   DropdownSingleProps,
   DropdownMultiProps,

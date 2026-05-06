@@ -1470,20 +1470,22 @@ body {
 
 .live-preview__login-popover {
   position: absolute;
-  top: calc(100% + 10px);
+  top: calc(54px + 48px + 10px);
   left: var(--space-2);
   right: var(--space-2);
+  max-height: calc(100% - 54px - 48px - 10px - var(--space-10));
   z-index: 4;
+  display: flex;
+  flex-direction: column;
   background: var(--bg-fill);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
-  padding: var(--space-4);
 
   &::before {
     content: '';
     position: absolute;
-    bottom: 100%;
+    top: -5px;
     right: 24px;
     width: 10px;
     height: 10px;
@@ -1491,7 +1493,21 @@ body {
     border-top: 1px solid var(--border);
     border-left: 1px solid var(--border);
     border-radius: 2px 0 0 0;
-    transform: translateY(50%) rotate(45deg);
+    transform: rotate(45deg);
+  }
+}
+
+.live-preview__login-popover-inner {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-4) 0;
+  border-radius: var(--radius-md);
+
+  &::after {
+    content: '';
+    display: block;
+    height: var(--space-4);
   }
 }
 
@@ -1654,7 +1670,7 @@ body {
   margin-top: var(--space-4);
   text-align: center;
   font-family: var(--font-family);
-  font-size: var(--font-size-paragraph-xs);
+  font-size: var(--font-size-paragraph-sm);
   color: var(--fg-primary);
 }
 
@@ -1699,6 +1715,139 @@ body {
   &:hover {
     border-color: var(--border-hover);
     background: var(--bg-fill-hover);
+  }
+}
+
+.live-preview__login-popover-title {
+  margin: 0 0 var(--space-3);
+  text-align: center;
+  font-family: var(--font-family);
+  font-size: var(--font-size-paragraph-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--fg-primary);
+}
+
+.live-preview__login-popover-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-family);
+  font-size: var(--font-size-paragraph-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--fg-tertiary);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--fg-secondary);
+  }
+}
+
+.live-preview__login-popover-password-wrap {
+  position: relative;
+}
+
+.live-preview__login-popover-input--password {
+  padding-right: calc(var(--space-3) + 32px);
+}
+
+.live-preview__login-popover-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: var(--space-2);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--fg-tertiary);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--fg-secondary);
+  }
+}
+
+.live-preview__login-popover-password-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-family: var(--font-family);
+  font-size: var(--font-size-paragraph-xs);
+  color: var(--fg-tertiary);
+
+  .jf-icon {
+    color: var(--fg-tertiary);
+    flex-shrink: 0;
+  }
+}
+
+.live-preview__login-popover-password-rule {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-family);
+  font-size: var(--font-size-paragraph-xs);
+  color: var(--fg-tertiary);
+
+  .jf-icon {
+    color: var(--fg-tertiary);
+    flex-shrink: 0;
+  }
+
+  &--met .jf-icon {
+    color: var(--bg-fill-brand);
+  }
+}
+
+.live-preview__login-popover-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+
+  // Map DS Checkbox color tokens to app-elements equivalents
+  --background-white: var(--bg-fill);
+  --border-medium: var(--border);
+  --accent-default: var(--bg-fill-brand);
+  --accent-dark: var(--bg-fill-brand-hover);
+  --core-white: var(--fg-inverse);
+  --gray-700: var(--bg-fill);
+  --gray-400: var(--border);
+
+  .jf-checkbox {
+    width: auto;
+    flex-shrink: 0;
+  }
+
+  .jf-checkbox__label-wrapper {
+    display: none;
+  }
+}
+
+.live-preview__login-popover-terms-text {
+  flex: 1;
+  font-family: var(--font-family);
+  font-size: var(--font-size-paragraph-xs);
+  color: var(--fg-primary);
+  cursor: pointer;
+}
+
+.live-preview__login-popover-terms-link {
+  color: var(--fg-brand);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
   }
 }
 

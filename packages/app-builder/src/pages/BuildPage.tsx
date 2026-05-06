@@ -3867,23 +3867,23 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                               />
                             </>
                           ) : (
-                            <>
-                              <button
-                                type="button"
-                                className="live-preview__top-header-login-btn"
-                                onClick={() => setIsLoginPopoverOpen((v) => !v)}
-                              >
-                                Login
-                              </button>
-                              <LivePreviewLoginPopover
-                                open={isLoginPopoverOpen}
-                                onClose={() => setIsLoginPopoverOpen(false)}
-                                onLoggedIn={() => setIsPreviewLoggedIn(true)}
-                              />
-                            </>
+                            <button
+                              type="button"
+                              className="live-preview__top-header-login-btn"
+                              onClick={() => setIsLoginPopoverOpen((v) => !v)}
+                            >
+                              Login
+                            </button>
                           )}
                         </div>
                       </div>
+                      {!isPreviewLoggedIn && (
+                        <LivePreviewLoginPopover
+                          open={isLoginPopoverOpen}
+                          onClose={() => setIsLoginPopoverOpen(false)}
+                          onLoggedIn={() => setIsPreviewLoggedIn(true)}
+                        />
+                      )}
                       <div ref={setPreviewContentScalerEl} className="live-preview__content-scaler app-scope">
                         <div className="live-preview__content app-scope">
                           {(() => {
