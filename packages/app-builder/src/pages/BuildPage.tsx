@@ -33,6 +33,7 @@ import { LivePreviewCartPage } from '../components/LivePreviewCartPage'
 import { LivePreviewCheckoutPage } from '../components/LivePreviewCheckoutPage'
 import { LivePreviewOrderBar } from '../components/LivePreviewOrderBar'
 import { LivePreviewAvatarPopover } from '../components/LivePreviewAvatarPopover'
+import { LivePreviewLoginPopover } from '../components/LivePreviewLoginPopover'
 import { MobileBottomBar } from '../components/MobileBottomBar'
 import {
   draggable,
@@ -1174,6 +1175,8 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [isPreviewCartOpen, setIsPreviewCartOpen] = useState(false)
   const [isPreviewCheckoutOpen, setIsPreviewCheckoutOpen] = useState(false)
   const [isAvatarPopoverOpen, setIsAvatarPopoverOpen] = useState(false)
+  const [isLoginPopoverOpen, setIsLoginPopoverOpen] = useState(false)
+  const [isPreviewLoggedIn, setIsPreviewLoggedIn] = useState(false)
 
   useEffect(() => {
     if (!preset) return
@@ -3834,23 +3837,42 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                           {pages.some((p) => p.elements.some((el) => el.componentId === 'product-list')) && (
                             <LivePreviewCartButton onClick={() => setIsPreviewCartOpen(true)} />
                           )}
-                          <button
-                            type="button"
-                            className="live-preview__top-header-avatar-btn"
-                            aria-label="Account menu"
-                            onClick={() => setIsAvatarPopoverOpen((v) => !v)}
-                          >
-                            <img
-                              className="live-preview__top-header-avatar"
-                              src={previewUserAvatar}
-                              alt=""
-                              aria-hidden="true"
-                            />
-                          </button>
-                          <LivePreviewAvatarPopover
-                            open={isAvatarPopoverOpen}
-                            onClose={() => setIsAvatarPopoverOpen(false)}
-                          />
+                          {isPreviewLoggedIn ? (
+                            <>
+                              <button
+                                type="button"
+                                className="live-preview__top-header-avatar-btn"
+                                aria-label="Account menu"
+                                onClick={() => setIsAvatarPopoverOpen((v) => !v)}
+                              >
+                                <img
+                                  className="live-preview__top-header-avatar"
+                                  src={previewUserAvatar}
+                                  alt=""
+                                  aria-hidden="true"
+                                />
+                              </button>
+                              <LivePreviewAvatarPopover
+                                open={isAvatarPopoverOpen}
+                                onClose={() => setIsAvatarPopoverOpen(false)}
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                className="live-preview__top-header-login-btn"
+                                onClick={() => setIsLoginPopoverOpen((v) => !v)}
+                              >
+                                Login
+                              </button>
+                              <LivePreviewLoginPopover
+                                open={isLoginPopoverOpen}
+                                onClose={() => setIsLoginPopoverOpen(false)}
+                                onLoggedIn={() => setIsPreviewLoggedIn(true)}
+                              />
+                            </>
+                          )}
                         </div>
                       </div>
                       <div ref={setPreviewContentScalerEl} className="live-preview__content-scaler app-scope">
