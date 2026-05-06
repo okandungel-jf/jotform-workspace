@@ -1452,6 +1452,22 @@ body {
   flex-shrink: 0;
 }
 
+.live-preview__popover-scrim {
+  position: absolute;
+  top: 54px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  background: rgb(0 0 0 / 0.4);
+  animation: livePreviewPopoverScrimIn 0.2s ease;
+}
+
+@keyframes livePreviewPopoverScrimIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .live-preview__login-popover {
   position: absolute;
   top: calc(100% + 10px);
@@ -1481,7 +1497,7 @@ body {
 
 .live-preview__login-popover-providers {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
@@ -1534,7 +1550,7 @@ body {
   font-family: var(--font-family);
   font-size: var(--font-size-paragraph-sm);
   font-weight: var(--font-weight-bold);
-  color: var(--fg-primary);
+  color: var(--fg-tertiary);
 
   &::before,
   &::after {
@@ -1642,18 +1658,70 @@ body {
   color: var(--fg-primary);
 }
 
-.live-preview__login-popover-signup {
+.live-preview__login-popover-link {
   padding: 0;
   border: 0;
   background: transparent;
   font-family: inherit;
   font-size: inherit;
   font-weight: var(--font-weight-bold);
-  color: var(--fg-link);
+  color: var(--fg-brand);
   cursor: pointer;
 
   &:hover {
     text-decoration: underline;
+  }
+}
+
+.live-preview__login-popover-signup-providers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.live-preview__login-popover-signup-provider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-fill);
+  color: var(--fg-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-paragraph-md);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+
+  &:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-fill-hover);
+  }
+}
+
+.live-preview__login-popover-email-signup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--bg-fill-brand);
+  color: var(--fg-inverse);
+  font-family: var(--font-family);
+  font-size: var(--font-size-paragraph-md);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: background 150ms ease;
+
+  &:hover {
+    background: var(--bg-fill-brand-hover);
   }
 }
 

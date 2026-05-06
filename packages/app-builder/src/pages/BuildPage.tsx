@@ -3798,6 +3798,15 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                     <div className="live-preview__phone-screen">
                       <div className="live-preview__status-bar-bg app-scope" />
                       <PhoneStatusBar className="live-preview__status-bar app-scope" style={{ color: 'var(--fg-primary, #000)' }} />
+                      {(isLoginPopoverOpen || isAvatarPopoverOpen) && (
+                        <div
+                          className="live-preview__popover-scrim"
+                          onClick={() => {
+                            setIsLoginPopoverOpen(false)
+                            setIsAvatarPopoverOpen(false)
+                          }}
+                        />
+                      )}
                       <div className="live-preview__top-header app-scope">
                         {(() => {
                           const isFirstPage = activePageId === pages[0]?.id
