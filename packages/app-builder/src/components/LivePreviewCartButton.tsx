@@ -1,4 +1,5 @@
-import { useCart, AppIcon } from '@jf/app-elements'
+import { useCart } from '@jf/app-elements'
+import { Icon } from '@jf/design-system'
 
 interface LivePreviewCartButtonProps {
   onClick?: () => void
@@ -14,7 +15,7 @@ export function LivePreviewCartButton({ onClick }: LivePreviewCartButtonProps) {
       aria-label={count > 0 ? `Cart, ${count} items` : 'Cart'}
       onClick={onClick}
     >
-      <AppIcon name="ShoppingCart" size={20} />
+      <Icon name="cart-shopping-filled" category="finance" size={20} />
       {count > 0 && (
         <span className="live-preview__cart-badge" aria-hidden="true">
           {count > 99 ? '99+' : count}

@@ -2020,7 +2020,12 @@ body {
   z-index: 2;
   padding: var(--space-3) var(--space-4);
   background: var(--bg-surface);
+  border-top: 1px solid var(--border);
   box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.03);
+
+  [data-theme='dark'] & {
+    background: var(--bg-surface-hover);
+  }
 
   &--with-nav {
     bottom: 77px;
@@ -2168,7 +2173,11 @@ body {
   gap: var(--space-2);
   height: 48px;
   padding: 0 var(--space-3);
-  border-bottom: 1px solid var(--border-tertiary);
+  border-bottom: 1px solid var(--border);
+
+  [data-theme='dark'] & {
+    background: var(--bg-surface-hover);
+  }
 }
 
 .live-preview__cart-back {
@@ -2427,7 +2436,11 @@ body {
 .live-preview__cart-cta {
   flex-shrink: 0;
   padding: var(--space-3) var(--space-4) var(--space-10);
-  border-top: 1px solid var(--border-tertiary);
+  border-top: 1px solid var(--border);
+
+  [data-theme='dark'] & {
+    background: var(--bg-surface-hover);
+  }
 }
 
 // ---- Side Menu Drawer ----

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { AppIcon, Button, useCart, useFavorites, type CartItem, type FavoriteItem } from '@jf/app-elements'
+import { Icon } from '@jf/design-system'
 
 type CartTab = 'order' | 'favorites'
 
@@ -165,7 +166,7 @@ export function LivePreviewCartPage({
             <div className="live-preview__cart-empty">
               <div className="live-preview__cart-empty-icon">
                 <span className="live-preview__cart-empty-badge">0</span>
-                <AppIcon name="ShoppingCart" size={36} />
+                <Icon name="cart-shopping-filled" category="finance" size={36} />
               </div>
               <p className="live-preview__cart-empty-text">Your cart is empty</p>
             </div>
@@ -183,7 +184,7 @@ export function LivePreviewCartPage({
             <div className="live-preview__cart-empty">
               <div className="live-preview__cart-empty-icon">
                 <span className="live-preview__cart-empty-badge">0</span>
-                <AppIcon name="Heart" size={36} />
+                <Icon name="heart-filled" category="general" size={36} />
               </div>
               <p className="live-preview__cart-empty-text">You haven&apos;t favorited any product yet</p>
             </div>
