@@ -1719,12 +1719,31 @@ body {
 }
 
 .live-preview__login-popover-title {
-  margin: 0 0 var(--space-3);
+  margin: 0 0 var(--space-4);
   text-align: center;
   font-family: var(--font-family);
   font-size: var(--font-size-paragraph-lg);
   font-weight: var(--font-weight-bold);
   color: var(--fg-primary);
+}
+
+.live-preview__login-popover-goback {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-4);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-family);
+  font-size: var(--font-size-paragraph-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--fg-tertiary);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--fg-secondary);
+  }
 }
 
 .live-preview__login-popover-back {

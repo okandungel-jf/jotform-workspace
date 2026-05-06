@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Icon, Checkbox } from '@jf/design-system'
 
-type View = 'login' | 'signup' | 'email-signup'
+type View = 'login' | 'signup' | 'email-signup' | 'forgot-password'
 
 interface LivePreviewLoginPopoverProps {
   open: boolean
@@ -38,6 +38,7 @@ export function LivePreviewLoginPopover({
   const [showLoginPassword, setShowLoginPassword] = useState(false)
   const [showSignupPassword, setShowSignupPassword] = useState(false)
   const [showSignupConfirmPassword, setShowSignupConfirmPassword] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState('')
 
   useEffect(() => {
     if (open) setView('login')
@@ -72,7 +73,15 @@ export function LivePreviewLoginPopover({
       ref={ref}
       className="live-preview__login-popover app-scope"
       role="dialog"
-      aria-label={view === 'login' ? 'Log in' : view === 'signup' ? 'Sign up' : 'Sign up with Email'}
+      aria-label={
+        view === 'login'
+          ? 'Log in'
+          : view === 'signup'
+          ? 'Sign up'
+          : view === 'email-signup'
+          ? 'Sign up with Email'
+          : 'Forgot password'
+      }
     >
       <div className="live-preview__login-popover-inner">
       {view === 'login' && (
@@ -138,7 +147,11 @@ export function LivePreviewLoginPopover({
               </div>
             </div>
 
-            <button type="button" className="live-preview__login-popover-forgot">
+            <button
+              type="button"
+              className="live-preview__login-popover-forgot"
+              onClick={() => setView('forgot-password')}
+            >
               Forgot password?
             </button>
 
@@ -356,6 +369,46 @@ export function LivePreviewLoginPopover({
               Log in
             </button>
           </div>
+        </>
+      )}
+      {view === 'forgot-password' && (
+        <>
+          <h2 className="live-preview__login-popover-title">Forgot password?</h2>
+
+          <form
+            className="live-preview__login-popover-form"
+            onSubmit={(e) => {
+              e.preventDefault()
+              setView('login')
+            }}
+          >
+            <div className="live-preview__login-popover-field">
+              <label htmlFor="forgot-popover-email" className="live-preview__login-popover-label">
+                Email address or username
+              </label>
+              <input
+                id="forgot-popover-email"
+                type="text"
+                className="live-preview__login-popover-input"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                autoFocus
+              />
+            </div>
+
+            <button type="submit" className="live-preview__login-popover-submit">
+              Send Reset Instructions
+            </button>
+          </form>
+
+          <button
+            type="button"
+            className="live-preview__login-popover-goback"
+            onClick={() => setView('login')}
+          >
+            <Icon name="chevron-left" category="arrows" size={16} />
+            <span>Go back</span>
+          </button>
         </>
       )}
       </div>
