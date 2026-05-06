@@ -1260,6 +1260,10 @@ body {
   height: 54px;
   z-index: 1;
   background: var(--bg-surface);
+
+  [data-theme='dark'] & {
+    background: var(--bg-surface-hover);
+  }
 }
 
 .live-preview__status-bar {
@@ -1288,7 +1292,12 @@ body {
   padding: 0 12px;
   background: var(--bg-surface);
   color: var(--fg-primary);
+  border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
+
+  [data-theme='dark'] & {
+    background: var(--bg-surface-hover);
+  }
 }
 
 .live-preview__top-header-btn {
@@ -2027,6 +2036,10 @@ body {
   z-index: 2;
   padding-bottom: 21px;
   background: var(--bg-surface);
+
+  [data-theme='dark'] & {
+    background: var(--bg-surface-hover);
+  }
 
   .bottom-nav__item:hover {
     color: inherit;

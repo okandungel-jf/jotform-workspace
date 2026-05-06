@@ -5,6 +5,10 @@
   background: var(--bg-surface);
   border-top: 1px solid var(--border);
   box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.03);
+
+  [data-theme='dark'] & {
+    background: var(--bg-surface-hover);
+  }
 }
 
 .bottom-nav__item {
