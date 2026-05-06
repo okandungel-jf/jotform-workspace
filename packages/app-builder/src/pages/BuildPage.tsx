@@ -23,7 +23,6 @@ import {
   HsvColorPicker,
 } from '@jf/app-elements'
 import { Icon, Button as DSButton, Tabs as DSTabs, Segmented, Input as DSInput, Toggle as DSToggle, NumberInput as DSNumberInput, FormField as DSFormField, TextArea as DSTextArea, DropdownSingle as DSDropdownSingle, FieldMapper as DSFieldMapper, FieldComposer as DSFieldComposer, type FieldToken, Link as DSLink, Modal as DSModal, SearchInput as DSSearchInput, ColorInput as DSColorInput } from '@jf/design-system'
-import { Youtube as YoutubeIcon, Twitter as TwitterIcon, Linkedin as LinkedinIcon, Facebook as FacebookIcon, Instagram as InstagramIcon } from 'lucide-react'
 import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicator.svg'
 import previewUserAvatar from '../assets/preview-user-avatar.jpg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
@@ -2353,11 +2352,11 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                   const isProductList = selectedComponent.id === 'product-list'
                   const isSocialFollow = selectedComponent.id === 'social-follow'
                   const socialPlatforms = [
-                    { key: 'Youtube', icon: <YoutubeIcon size={20} />, placeholder: '@jotform' },
-                    { key: 'X (Twitter)', icon: <TwitterIcon size={20} />, placeholder: 'jotform' },
-                    { key: 'LinkedIn', icon: <LinkedinIcon size={20} />, placeholder: 'jotform' },
-                    { key: 'Facebook', icon: <FacebookIcon size={20} />, placeholder: 'jotform' },
-                    { key: 'Instagram', icon: <InstagramIcon size={20} />, placeholder: '@jotform' },
+                    { key: 'Youtube', icon: <Icon name="youtube-filled" category="brands" size={20} />, placeholder: '@jotform' },
+                    { key: 'X (Twitter)', icon: <Icon name="twitter" category="brands" size={20} />, placeholder: 'jotform' },
+                    { key: 'LinkedIn', icon: <Icon name="linkedin-square-filled" category="brands" size={20} />, placeholder: 'jotform' },
+                    { key: 'Facebook', icon: <Icon name="facebook-square-filled" category="brands" size={20} />, placeholder: 'jotform' },
+                    { key: 'Instagram', icon: <Icon name="instagram" category="brands" size={20} />, placeholder: '@jotform' },
                   ]
                   const cardActionOptions = [
                     { value: 'Do Nothing', label: 'Do Nothing', icon: 'minus-sm', iconCategory: 'general' },

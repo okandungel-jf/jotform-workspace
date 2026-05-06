@@ -8,6 +8,10 @@ export interface IconProps {
 }
 
 const cache = new Map<string, string>();
+const iconModules = import.meta.glob('../../assets/icons/**/*.svg', {
+  query: '?raw',
+  import: 'default',
+}) as Record<string, () => Promise<string>>;
 
 export function Icon({
   name,
@@ -24,17 +28,14 @@ export function Icon({
       return;
     }
 
-    const url = new URL(
-      `../../assets/icons/${category}/${name}.svg`,
-      import.meta.url
-    ).href;
+    const path = `../../assets/icons/${category}/${name}.svg`;
+    const loader = iconModules[path];
+    if (!loader) return;
 
-    fetch(url)
-      .then((res) => res.text())
-      .then((text) => {
-        cache.set(key, text);
-        setSvg(text);
-      });
+    loader().then((text) => {
+      cache.set(key, text);
+      setSvg(text);
+    });
   }, [key, category, name]);
 
   return (
