@@ -45,7 +45,7 @@ export function App() {
   }, [search])
 
   const [activePage, setActivePage] = useState<Page>('build')
-  const [previewMode, setPreviewMode] = useState(true)
+  const previewMode = false
   const [activePresetId, setActivePresetId] = useState<string>(urlPreset ?? EMPTY_PRESET_ID)
   const preset = useMemo(() => getPresetById(activePresetId), [activePresetId])
   // Empty App is a sandbox — never restore from storage.
@@ -82,7 +82,10 @@ export function App() {
         activePage={activePage}
         onPageChange={setActivePage}
         previewMode={previewMode}
-        onPreviewToggle={() => setPreviewMode(!previewMode)}
+        onPreviewToggle={() => {
+          // Toggle is intentionally non-functional; live preview is closed/reopened
+          // from the header close button + floating phone button inside BuildPage.
+        }}
         appName={appTitle}
         presets={APP_PRESETS.map((p) => {
           if (p.id === activePresetId) {
@@ -103,7 +106,6 @@ export function App() {
             // BuildPage re-derives its initial state from the new URL params.
             key={`${activePresetId}:${urlPage ?? ''}`}
             preset={preset}
-            previewMode={previewMode}
             appTitle={appTitle}
             onAppTitleChange={setAppTitle}
             initialPageId={urlPage ?? undefined}

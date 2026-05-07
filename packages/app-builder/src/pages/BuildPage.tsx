@@ -1060,7 +1060,7 @@ function AddPageDivider({ onClick }: { onClick: () => void }) {
 
 type RightPanelMode = 'preview' | 'designer' | 'properties'
 
-export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Title', onAppTitleChange, preset, initialPageId, chromeless = false }: { previewMode?: boolean; appTitle?: string; onAppTitleChange?: (title: string) => void; preset?: AppPreset; initialPageId?: string; chromeless?: boolean }) {
+export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChange, preset, initialPageId, chromeless = false }: { appTitle?: string; onAppTitleChange?: (title: string) => void; preset?: AppPreset; initialPageId?: string; chromeless?: boolean }) {
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
   const [propertyTab, setPropertyTab] = useState<string>('general')
   const appHeaderImageInputRef = useRef<HTMLInputElement>(null)
@@ -1180,6 +1180,7 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [isPreviewLoggedIn, setIsPreviewLoggedIn] = useState(false)
   const [viewingAsRole, setViewingAsRole] = useState<'anyone' | 'admin' | 'user'>('admin')
   const [previewDevice, setPreviewDevice] = useState<'phone' | 'tablet' | 'desktop'>('phone')
+  const [isLivePreviewVisible, setIsLivePreviewVisible] = useState(true)
   const [isQrPopoverOpen, setIsQrPopoverOpen] = useState(false)
   const qrPopoverWrapperRef = useRef<HTMLDivElement>(null)
 
@@ -2079,6 +2080,16 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
               <Icon name="paint-roller-vertical-filled" category="editor" size={32} />
               <span className="build-page__design-btn-tooltip">App Designer</span>
             </button>
+            <button
+              className={`build-page__preview-btn${isLivePreviewVisible || rightPanel === 'designer' ? ' build-page__preview-btn--hidden' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsLivePreviewVisible(true)
+              }}
+            >
+              <Icon name="mobile" category="technology" size={32} />
+              <span className="build-page__preview-btn-tooltip">Live Preview</span>
+            </button>
           </div>
           <div className="app-scope">
             <div className="themes-view__device">
@@ -2255,10 +2266,10 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
       )}
 
       {/* Right Panel - Designer/Properties or Live Preview */}
-      <aside className={`build-page__right ${previewMode || rightPanel === 'designer' ? '' : 'build-page__right--hidden'}`}>
+      <aside className={`build-page__right ${isLivePreviewVisible || rightPanel === 'designer' ? '' : 'build-page__right--hidden'}`}>
 
         {/* Sliding content wrapper */}
-        <div className={`build-page__right-slider${rightPanel === 'designer' || !previewMode ? ' build-page__right-slider--designer' : ''}`}>
+        <div className={`build-page__right-slider${rightPanel === 'designer' || !isLivePreviewVisible ? ' build-page__right-slider--designer' : ''}`}>
 
           {/* Slide 1: Live Preview / Properties */}
           <div className="build-page__right-slide">
@@ -3789,8 +3800,8 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
               <FavoritesProvider>
               <div className="live-preview">
                 <div className="live-preview__header" data-theme="dark">
-                  <div className="live-preview__viewing">
-                    <span className="live-preview__viewing-label">Viewing as</span>
+                  <span className="live-preview__title">Live Preview</span>
+                  <div className="live-preview__toolbar">
                     <div className="live-preview__role-dropdown">
                       <DSDropdownSingle
                         size="sm"
@@ -3803,8 +3814,6 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                         ]}
                       />
                     </div>
-                  </div>
-                  <div className="live-preview__toolbar">
                     <div className="live-preview__device-dropdown">
                       <DSDropdownSingle
                         size="sm"
@@ -3875,6 +3884,15 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
                         </div>
                       )}
                     </div>
+                    <DSButton
+                      className="live-preview__tool-btn"
+                      variant="ghost"
+                      size="sm"
+                      iconOnly
+                      aria-label="Close live preview"
+                      leftIcon={<Icon name="xmark" size={16} />}
+                      onClick={() => setIsLivePreviewVisible(false)}
+                    />
                   </div>
                 </div>
                 <div className="live-preview__body">

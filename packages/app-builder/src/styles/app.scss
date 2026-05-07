@@ -922,6 +922,84 @@ body {
   }
 }
 
+.build-page__preview-btn {
+  position: absolute;
+  // 24px (design-btn top) + 56px (design-btn height) + 12px gap
+  top: calc(24px + 56px + 12px);
+  right: 16px;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-rounded);
+  background: var(--tooltip-fg);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  color: var(--btn-brand);
+  transition: transform 0.3s ease 0.3s, opacity 0.3s ease 0.3s, background 0.15s, color 0.15s;
+
+  .jf-icon {
+    transform-origin: 50% 80%;
+  }
+
+  &:hover .jf-icon {
+    animation: phone-tilt 0.9s ease-out 1;
+  }
+
+  @keyframes phone-tilt {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(-12deg); }
+    50% { transform: rotate(8deg); }
+    75% { transform: rotate(-4deg); }
+    100% { transform: rotate(0deg); }
+  }
+
+  &:hover {
+    background: var(--btn-primary-fg);
+  }
+
+  &--hidden {
+    transform: translateX(calc(100% + 16px));
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+}
+
+.build-page__preview-btn-tooltip {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--btn-primary-bg);
+  color: var(--tooltip-fg);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-medium);
+  padding: var(--ds-space-xs) var(--ds-space-sm);
+  border-radius: var(--ds-radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-left-color: var(--btn-primary-bg);
+  }
+
+  .build-page__preview-btn:hover & {
+    opacity: 1;
+  }
+}
+
 .build-page__design-btn-tooltip {
   position: absolute;
   right: calc(100% + 10px);
@@ -1121,21 +1199,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--ds-space-xs) var(--ds-space-md);
+  padding: var(--ds-space-xs);
   background: color-mix(in srgb, var(--gray-900) 16%, var(--secondary-background-medium));
   flex-shrink: 0;
   height: 48px;
   gap: var(--ds-space-sm);
 }
 
-.live-preview__viewing {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-sm);
-  min-width: 0;
-}
-
-.live-preview__viewing-label {
+.live-preview__title {
+  padding-left: var(--ds-space-xs);
   font-size: var(--ds-font-size-md);
   font-weight: var(--ds-font-weight-medium);
   line-height: var(--ds-line-height-md);
@@ -1157,6 +1229,8 @@ body {
 }
 
 .live-preview__device-dropdown {
+  // Temporarily hidden — JSX is kept for later re-enable
+  display: none;
   // Hide the value label so trigger is icon + chevron only
   .jf-dropdown__value {
     display: none;
