@@ -315,7 +315,7 @@
   --border-error: #F24346;
 
   // ---- Form field border (more contrast than --border) ----
-  --form-field-border: var(--neutral-200);
+  --form-field-border: color-mix(in oklch, var(--neutral-300) 70%, transparent);
   --form-field-border-hover: var(--neutral-300);
 
   // ---- App Shell (library UI only) ----
@@ -439,7 +439,7 @@
   --border-error: oklch(0.65 0.18 25);
 
   // ---- Form field border (more contrast than --border) ----
-  --form-field-border: var(--neutral-200);
+  --form-field-border: color-mix(in oklch, var(--neutral-300) 70%, transparent);
   --form-field-border-hover: var(--neutral-300);
 
   // ---- Shadows ----
