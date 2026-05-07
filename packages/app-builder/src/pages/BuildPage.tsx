@@ -3875,6 +3875,9 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                         leftIcon={<Icon name="qr" category="media" size={16} />}
                         onClick={() => setIsQrPopoverOpen((v) => !v)}
                       />
+                      {!isQrPopoverOpen && (
+                        <span className="live-preview__tooltip live-preview__tooltip--qr" role="tooltip">Try it on your device</span>
+                      )}
                       {isQrPopoverOpen && (
                         <div className="qr-popover" role="dialog" aria-label="Preview QR code">
                           <div className="qr-popover__header">
@@ -3907,15 +3910,18 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                         </div>
                       )}
                     </div>
-                    <DSButton
-                      className="live-preview__tool-btn"
-                      variant="ghost"
-                      size="sm"
-                      iconOnly
-                      aria-label="Close live preview"
-                      leftIcon={<Icon name="xmark" size={16} />}
-                      onClick={() => setIsLivePreviewVisible(false)}
-                    />
+                    <div className="live-preview__close-wrapper">
+                      <DSButton
+                        className="live-preview__tool-btn"
+                        variant="ghost"
+                        size="sm"
+                        iconOnly
+                        aria-label="Close live preview"
+                        leftIcon={<Icon name="xmark" size={16} />}
+                        onClick={() => setIsLivePreviewVisible(false)}
+                      />
+                      <span className="live-preview__tooltip live-preview__tooltip--close" role="tooltip">Close</span>
+                    </div>
                   </div>
                 </div>
                 <div className="live-preview__body">
