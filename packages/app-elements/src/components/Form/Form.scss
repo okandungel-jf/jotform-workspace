@@ -149,6 +149,7 @@
   gap: var(--space-8);
 
   &--no-border {
+    background: transparent;
     border: none;
     padding: 0;
   }
@@ -192,7 +193,7 @@
 .jf-form-open__input {
   height: 44px;
   background: var(--bg-surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--form-field-border);
   border-radius: var(--radius-md);
   padding: var(--space-2) var(--space-3);
   display: flex;
@@ -210,7 +211,7 @@
   }
 
   &:hover {
-    border-color: var(--border-hover);
+    border-color: var(--form-field-border-hover);
   }
 
   &:focus {
@@ -226,6 +227,88 @@
   color: var(--fg-tertiary);
 }
 
+.jf-form-open__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.jf-form-open__option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.jf-form-open__option-label {
+  font-size: var(--font-size-paragraph-sm);
+  line-height: var(--line-height-label-lg);
+  font-weight: var(--font-weight-regular);
+  color: var(--fg-primary);
+}
+
+.jf-form-open__checkbox,
+.jf-form-open__radio {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--form-field-border);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: border-color 150ms ease, background-color 150ms ease;
+
+  &:hover {
+    border-color: var(--form-field-border-hover);
+  }
+
+  &:checked {
+    background: var(--bg-fill-brand);
+    border-color: var(--bg-fill-brand);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bg-fill-brand);
+    outline-offset: 2px;
+  }
+}
+
+.jf-form-open__checkbox {
+  border-radius: var(--radius-sm);
+
+  &:checked::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 5px;
+    width: 5px;
+    height: 9px;
+    border: solid var(--fg-inverse);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+}
+
+.jf-form-open__radio {
+  border-radius: var(--radius-rounded);
+
+  &:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-rounded);
+    background: var(--fg-inverse);
+    transform: translate(-50%, -50%);
+  }
+}
+
 .jf-form-open__upload {
   display: flex;
   flex-direction: column;
@@ -234,18 +317,18 @@
   gap: 8px;
   height: 132px;
   background: var(--bg-surface);
-  border: 1px dashed var(--border);
+  border: 1px dashed var(--form-field-border);
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: border-color 150ms ease;
 
   &:hover {
-    border-color: var(--bg-fill-brand);
+    border-color: var(--form-field-border-hover);
   }
 }
 
 .jf-form-open__upload-icon {
-  color: color-mix(in srgb, var(--bg-fill-brand) 40%, var(--border));
+  color: color-mix(in srgb, var(--bg-fill-brand) 40%, var(--form-field-border));
 }
 
 .jf-form-open__upload-text {

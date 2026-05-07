@@ -314,6 +314,10 @@
   --border-warning: #F49F1F;
   --border-error: #F24346;
 
+  // ---- Form field border (more contrast than --border) ----
+  --form-field-border: var(--neutral-200);
+  --form-field-border-hover: var(--neutral-300);
+
   // ---- App Shell (library UI only) ----
   --sidebar-width-left: 260px;
   --sidebar-width-right: 300px;
@@ -433,6 +437,10 @@
   --border-success: oklch(0.70 0.18 155);
   --border-warning: oklch(0.75 0.15 70);
   --border-error: oklch(0.65 0.18 25);
+
+  // ---- Form field border (more contrast than --border) ----
+  --form-field-border: var(--neutral-200);
+  --form-field-border-hover: var(--neutral-300);
 
   // ---- Shadows ----
   --shadow-sm: 0 1px 2px -1px rgba(0, 0, 0, 0.4), 0 1px 3px 0 rgba(0, 0, 0, 0.4);

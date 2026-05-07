@@ -130,6 +130,44 @@ export const Form: FC<FormProps> = ({
             <input type="tel" className="jf-form-open__input" placeholder="(000) 000-0000" />
             <span className="jf-form-open__hint">Please enter a valid phone number</span>
           </div>
+
+          {/* Subject (Radio) */}
+          <div className="jf-form-open__field">
+            <label className="jf-form-open__label">Subject</label>
+            <div className="jf-form-open__options">
+              <label className="jf-form-open__option">
+                <input type="radio" name="subject" className="jf-form-open__radio" defaultChecked />
+                <span className="jf-form-open__option-label">General Inquiry</span>
+              </label>
+              <label className="jf-form-open__option">
+                <input type="radio" name="subject" className="jf-form-open__radio" />
+                <span className="jf-form-open__option-label">Support</span>
+              </label>
+              <label className="jf-form-open__option">
+                <input type="radio" name="subject" className="jf-form-open__radio" />
+                <span className="jf-form-open__option-label">Feedback</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Interests (Checkbox) */}
+          <div className="jf-form-open__field">
+            <label className="jf-form-open__label">Interests</label>
+            <div className="jf-form-open__options">
+              <label className="jf-form-open__option">
+                <input type="checkbox" className="jf-form-open__checkbox" defaultChecked />
+                <span className="jf-form-open__option-label">Newsletter</span>
+              </label>
+              <label className="jf-form-open__option">
+                <input type="checkbox" className="jf-form-open__checkbox" />
+                <span className="jf-form-open__option-label">Promotions</span>
+              </label>
+              <label className="jf-form-open__option">
+                <input type="checkbox" className="jf-form-open__checkbox" />
+                <span className="jf-form-open__option-label">Product Updates</span>
+              </label>
+            </div>
+          </div>
         </div>
 
         {/* Image Upload */}
