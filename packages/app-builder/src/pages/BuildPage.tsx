@@ -1181,6 +1181,29 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
   const [viewingAsRole, setViewingAsRole] = useState<'anyone' | 'admin' | 'user'>('admin')
   const [previewDevice, setPreviewDevice] = useState<'phone' | 'tablet' | 'desktop'>('phone')
   const [isLivePreviewVisible, setIsLivePreviewVisible] = useState(true)
+  // Slider position is "sticky": only updated when its target slot is visible.
+  // Prevents preview content from flashing when designer closes while preview
+  // is hidden (slider stays at designer until aside finishes sliding out).
+  const [sliderMode, setSliderMode] = useState<'preview' | 'designer'>('preview')
+  // When aside visibility flips, snap the slider to its new slot without
+  // animation so the user sees a clean aside slide-in/out without the inner
+  // slide also transitioning across.
+  const [skipSliderTransition, setSkipSliderTransition] = useState(false)
+  const prevAsideVisibleRef = useRef(true)
+  useLayoutEffect(() => {
+    const isAsideVisible = isLivePreviewVisible || rightPanel === 'designer'
+    if (prevAsideVisibleRef.current !== isAsideVisible) {
+      setSkipSliderTransition(true)
+      prevAsideVisibleRef.current = isAsideVisible
+    }
+    if (rightPanel === 'designer') setSliderMode('designer')
+    else if (isLivePreviewVisible) setSliderMode('preview')
+  }, [rightPanel, isLivePreviewVisible])
+  useEffect(() => {
+    if (!skipSliderTransition) return
+    const t = setTimeout(() => setSkipSliderTransition(false), 350)
+    return () => clearTimeout(t)
+  }, [skipSliderTransition])
   const [isQrPopoverOpen, setIsQrPopoverOpen] = useState(false)
   const qrPopoverWrapperRef = useRef<HTMLDivElement>(null)
 
@@ -2269,7 +2292,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
       <aside className={`build-page__right ${isLivePreviewVisible || rightPanel === 'designer' ? '' : 'build-page__right--hidden'}`}>
 
         {/* Sliding content wrapper */}
-        <div className={`build-page__right-slider${rightPanel === 'designer' || !isLivePreviewVisible ? ' build-page__right-slider--designer' : ''}`}>
+        <div className={`build-page__right-slider${sliderMode === 'designer' ? ' build-page__right-slider--designer' : ''}${skipSliderTransition ? ' build-page__right-slider--no-transition' : ''}`}>
 
           {/* Slide 1: Live Preview / Properties */}
           <div className="build-page__right-slide">

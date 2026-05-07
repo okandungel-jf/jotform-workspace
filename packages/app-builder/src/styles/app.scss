@@ -1163,6 +1163,9 @@ body {
     transform: translateX(-50%);
   }
 
+  &--no-transition {
+    transition: none;
+  }
 }
 
 .build-page__right-slide {
