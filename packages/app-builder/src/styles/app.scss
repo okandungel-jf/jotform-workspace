@@ -1125,14 +1125,53 @@ body {
   background: color-mix(in srgb, var(--gray-900) 16%, var(--secondary-background-medium));
   flex-shrink: 0;
   height: 48px;
+  gap: var(--ds-space-sm);
 }
 
-.live-preview__title {
+.live-preview__viewing {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-sm);
+  min-width: 0;
+}
+
+.live-preview__viewing-label {
   font-size: var(--ds-font-size-md);
   font-weight: var(--ds-font-weight-medium);
   line-height: var(--ds-line-height-md);
   letter-spacing: var(--letter-spacing-md);
   color: var(--secondary-text-white);
+  flex-shrink: 0;
+}
+
+.live-preview__role-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.live-preview__role-dropdown {
+  min-width: 140px;
+}
+
+.live-preview__device-dropdown {
+  // Hide the value label so trigger is icon + chevron only
+  .jf-dropdown__value {
+    display: none;
+  }
+  // Trigger is narrow; let the menu expand to fit option labels
+  .jf-dropdown__menu {
+    left: auto;
+    right: 0;
+    min-width: 160px;
+  }
+  // Trigger icons (device + chevron) use --fg-inverse; SVGs use currentColor
+  .jf-dropdown__leading,
+  .jf-dropdown__trailing {
+    color: var(--fg-inverse);
+  }
 }
 
 .live-preview__toolbar {
@@ -1141,47 +1180,88 @@ body {
   gap: var(--ds-space-xs);
 }
 
-.live-preview__dropdown {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-xs);
+// Match the dropdown trigger style so QR button looks identical to the device dropdown
+.jf-btn.live-preview__tool-btn {
+  width: 32px;
   height: 32px;
-  padding: 0 var(--ds-space-xs);
-  background: var(--secondary-background-light);
-  border: none;
-  border-radius: var(--ds-radius-sm);
-  color: var(--secondary-text-white);
-  font-family: var(--ds-font-family);
-  font-size: var(--ds-font-size-sm);
-  font-weight: var(--ds-font-weight-book);
-  line-height: var(--ds-line-height-xs);
-  letter-spacing: var(--letter-spacing-lg);
-  cursor: pointer;
-  min-width: 140px;
+  background: var(--gray-500);
+  border-color: transparent;
+  color: var(--fg-inverse);
 
-  span {
-    flex: 1;
-    text-align: left;
+  &:hover {
+    background: var(--gray-500);
+    border-color: var(--gray-300);
   }
 }
 
-.live-preview__tool-btn {
+.live-preview__qr-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.qr-popover {
+  position: absolute;
+  top: calc(100% + var(--ds-space-xs));
+  right: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-md);
+  padding: var(--ds-space-md);
+  width: 264px;
+  background: var(--gray-500);
+  border-radius: 4px;
+  box-shadow: var(--shadow-lg);
+}
+
+.qr-popover__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-xs);
+}
+
+.qr-popover__title {
+  margin: 0;
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-sm);
+  font-weight: var(--ds-font-weight-medium);
+  line-height: var(--line-height-sm);
+  letter-spacing: var(--letter-spacing-lg);
+  color: var(--secondary-text-white);
+}
+
+.qr-popover__description {
+  margin: 0;
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-xs);
+  font-weight: var(--ds-font-weight-book);
+  line-height: var(--ds-line-height-xs);
+  letter-spacing: var(--letter-spacing-lg);
+  color: var(--text-lightest);
+}
+
+.qr-popover__qr-area {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: var(--ds-space-xs);
-  background: var(--secondary-background-light);
-  border: none;
-  border-radius: var(--ds-radius-sm);
-  color: var(--secondary-text-white);
-  cursor: pointer;
-  transition: border 0.15s;
+  height: 157px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--gray-700) 50%, transparent);
+}
 
-  &:hover {
-    border: 1px solid var(--secondary-text-medium);
-  }
+.qr-popover__qr-icon {
+  color: var(--secondary-text-white);
+}
+
+.qr-popover__actions {
+  display: flex;
+  gap: 6px;
+}
+
+// Layout-only: equal-width buttons inside the popover actions row
+.qr-popover__action {
+  flex: 1;
 }
 
 .live-preview__body {

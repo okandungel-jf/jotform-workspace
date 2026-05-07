@@ -34,6 +34,7 @@ import { LivePreviewCheckoutPage } from '../components/LivePreviewCheckoutPage'
 import { LivePreviewOrderBar } from '../components/LivePreviewOrderBar'
 import { LivePreviewAvatarPopover } from '../components/LivePreviewAvatarPopover'
 import { LivePreviewLoginPopover } from '../components/LivePreviewLoginPopover'
+import { QrPlaceholder } from '../components/QrPlaceholder'
 import { MobileBottomBar } from '../components/MobileBottomBar'
 import {
   draggable,
@@ -1177,6 +1178,21 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
   const [isAvatarPopoverOpen, setIsAvatarPopoverOpen] = useState(false)
   const [isLoginPopoverOpen, setIsLoginPopoverOpen] = useState(false)
   const [isPreviewLoggedIn, setIsPreviewLoggedIn] = useState(false)
+  const [viewingAsRole, setViewingAsRole] = useState<'anyone' | 'admin' | 'user'>('admin')
+  const [previewDevice, setPreviewDevice] = useState<'phone' | 'tablet' | 'desktop'>('phone')
+  const [isQrPopoverOpen, setIsQrPopoverOpen] = useState(false)
+  const qrPopoverWrapperRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!isQrPopoverOpen) return
+    const onDocMouseDown = (e: MouseEvent) => {
+      if (qrPopoverWrapperRef.current && !qrPopoverWrapperRef.current.contains(e.target as Node)) {
+        setIsQrPopoverOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDocMouseDown)
+    return () => document.removeEventListener('mousedown', onDocMouseDown)
+  }, [isQrPopoverOpen])
 
   useEffect(() => {
     if (!preset) return
@@ -3772,20 +3788,93 @@ export function BuildPage({ previewMode = true, appTitle: appTitleProp = 'App Ti
               <CartProvider>
               <FavoritesProvider>
               <div className="live-preview">
-                <div className="live-preview__header">
-                  <span className="live-preview__title">Live Preview</span>
+                <div className="live-preview__header" data-theme="dark">
+                  <div className="live-preview__viewing">
+                    <span className="live-preview__viewing-label">Viewing as</span>
+                    <div className="live-preview__role-dropdown">
+                      <DSDropdownSingle
+                        size="sm"
+                        value={viewingAsRole}
+                        onChange={(v) => setViewingAsRole(v as 'anyone' | 'admin' | 'user')}
+                        options={[
+                          { value: 'anyone', label: 'Anyone', leading: <span className="live-preview__role-dot" style={{ background: 'var(--green-300)' }} /> },
+                          { value: 'admin', label: 'Admin', leading: <span className="live-preview__role-dot" style={{ background: 'var(--purple-300)' }} /> },
+                          { value: 'user', label: 'User', leading: <span className="live-preview__role-dot" style={{ background: 'var(--blue-300)' }} /> },
+                        ]}
+                      />
+                    </div>
+                  </div>
                   <div className="live-preview__toolbar">
-                    <button className="live-preview__dropdown">
-                      <Icon name="mobile" category="technology" size={16} />
-                      <span>Phone</span>
-                      <Icon name="angle-down" category="arrows" size={16} />
-                    </button>
-                    <button className="live-preview__tool-btn">
-                      <Icon name="magnifying-glass-plus" size={16} />
-                    </button>
-                    <button className="live-preview__tool-btn">
-                      <Icon name="qr" category="media" size={16} />
-                    </button>
+                    <div className="live-preview__device-dropdown">
+                      <DSDropdownSingle
+                        size="sm"
+                        value={previewDevice}
+                        onChange={(v) => setPreviewDevice(v as 'phone' | 'tablet' | 'desktop')}
+                        options={[
+                          {
+                            value: 'phone',
+                            label: 'Phone',
+                            leading: <Icon name="mobile" category="technology" size={16} />,
+                            trailing: previewDevice === 'phone' ? <Icon name="check" size={16} /> : undefined,
+                          },
+                          {
+                            value: 'tablet',
+                            label: 'Tablet',
+                            leading: <Icon name="tablet" category="technology" size={16} />,
+                            trailing: <Icon name="arrow-up-right-from-square" category="arrows" size={16} />,
+                          },
+                          {
+                            value: 'desktop',
+                            label: 'Desktop',
+                            leading: <Icon name="desktop" category="technology" size={16} />,
+                            trailing: <Icon name="arrow-up-right-from-square" category="arrows" size={16} />,
+                          },
+                        ]}
+                      />
+                    </div>
+                    <div className="live-preview__qr-wrapper" ref={qrPopoverWrapperRef}>
+                      <DSButton
+                        className="live-preview__tool-btn"
+                        variant="ghost"
+                        size="sm"
+                        iconOnly
+                        aria-label="Show QR code"
+                        aria-expanded={isQrPopoverOpen}
+                        leftIcon={<Icon name="qr" category="media" size={16} />}
+                        onClick={() => setIsQrPopoverOpen((v) => !v)}
+                      />
+                      {isQrPopoverOpen && (
+                        <div className="qr-popover" role="dialog" aria-label="Preview QR code">
+                          <div className="qr-popover__header">
+                            <p className="qr-popover__title">See app in action</p>
+                            <p className="qr-popover__description">Use your camera to scan the QR code and preview the app on your device.</p>
+                          </div>
+                          <div className="qr-popover__qr-area">
+                            <QrPlaceholder size={120} className="qr-popover__qr-icon" />
+                          </div>
+                          <div className="qr-popover__actions">
+                            <DSButton
+                              className="qr-popover__action"
+                              variant="filled"
+                              colorScheme="secondary"
+                              size="sm"
+                              leftIcon={<Icon name="arrow-up-right-from-square" category="arrows" size={16} />}
+                            >
+                              Open
+                            </DSButton>
+                            <DSButton
+                              className="qr-popover__action"
+                              variant="filled"
+                              colorScheme="secondary"
+                              size="sm"
+                              leftIcon={<Icon name="arrow-down-to-line" category="arrows" size={16} />}
+                            >
+                              Download
+                            </DSButton>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="live-preview__body">
