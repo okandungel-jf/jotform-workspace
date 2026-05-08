@@ -46,7 +46,7 @@ export function LivePreviewMenuDrawer({
         <header className="live-preview__menu-header">
           <div className="live-preview__menu-app">
             {appHeader.imageStyle !== 'None' && (
-              <span className="live-preview__menu-app-icon">
+              <span className={`live-preview__menu-app-icon${appHeader.imageStyle === 'Image' && appHeader.imageUrl ? ' live-preview__menu-app-icon--image' : ''}`}>
                 {appHeader.imageStyle === 'Image' && appHeader.imageUrl ? (
                   <img src={appHeader.imageUrl} alt="" />
                 ) : (

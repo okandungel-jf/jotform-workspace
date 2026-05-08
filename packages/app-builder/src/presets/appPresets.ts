@@ -13,6 +13,18 @@ export interface PresetPage {
   elements: PresetElement[]
 }
 
+export interface AppHeaderPresetConfig {
+  layout?: 'Left' | 'Center' | 'Right'
+  icon?: string
+  imageStyle?: 'Icon' | 'Image' | 'None'
+  imageUrl?: string | null
+  imageName?: string | null
+  textColor?: string
+  backgroundImageUrl?: string | null
+  backgroundImageName?: string | null
+  show?: boolean
+}
+
 export interface AppPreset {
   id: string
   name: string
@@ -20,6 +32,7 @@ export interface AppPreset {
   appSubtitle: string
   pages: PresetPage[]
   headerActions: PresetElement[]
+  appHeader?: AppHeaderPresetConfig
 }
 
 export const EMPTY_PRESET_ID = 'empty'
@@ -1015,52 +1028,392 @@ export const APP_PRESETS: AppPreset[] = [
   {
     id: 'online-store',
     name: 'Online Store',
-    appTitle: 'Shop',
-    appSubtitle: 'Curated products, delivered fast',
+    appTitle: 'Jukebox',
+    appSubtitle: 'Bright scents. Clean care.',
+    appHeader: {
+      imageStyle: 'Image',
+      imageUrl: 'https://myjukebox.com/cdn/shop/files/jukebox-logo.svg',
+      imageName: 'jukebox-logo.svg',
+      backgroundImageUrl: 'https://myjukebox.com/cdn/shop/files/Throwback_Thurs_1.png',
+      backgroundImageName: 'fruity-edit-banner.png',
+    },
     pages: [
       {
         id: 'page-1',
-        name: 'Shop',
-        icon: 'ShoppingBag',
+        name: 'Home',
+        icon: 'House',
         elements: [
           {
             componentId: 'heading',
-            variants: { Size: 'Large' },
+            variants: { Size: 'Large', Alignment: 'Center' },
             properties: {
-              Heading: 'New Arrivals',
-              Subheading: 'Fresh picks for the season.',
+              Heading: 'The Fruity Edit',
+              Subheading: 'Mango No. 5 × That’s Limone — today only.',
             },
           },
           {
-            componentId: 'product-list',
-            variants: { Layout: 'Grid' },
+            componentId: 'paragraph',
+            variants: { Size: 'Medium', Alignment: 'Center' },
             properties: {
-              Title: 'Featured Products',
-              Subtitle: 'Hand-selected favorites',
-              Currency: '$',
-              Products: JSON.stringify([
-                { name: 'Classic Tote Bag', price: '48.00' },
-                { name: 'Linen Shirt', price: '72.00' },
-                { name: 'Ceramic Mug Set', price: '36.00' },
-                { name: 'Wool Throw Blanket', price: '120.00' },
-              ]),
+              Text: 'Bright citrus. Mouthwatering mango. Two limited drops, paired for the perfect summer duo.',
             },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 8 },
+          },
+          {
+            componentId: 'button',
+            variants: { Type: 'Standard', Variant: 'Default' },
+            properties: {
+              Label: 'Shop the Drop',
+              'Right Icon': 'ArrowRight',
+              'Full Width': true,
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Today’s Pick', Subheading: '' },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Square', Layout: 'Vertical', Action: 'Button' },
+            properties: {
+              Title: 'Watermelon Rush Body Soap · $7',
+              Description: 'Notes of watermelon and agave. 4.7★ across 860 reviews.',
+              'Button Label': 'Add to Bag',
+              'Image URL': 'https://myjukebox.com/cdn/shop/files/watermelon-rush-body-soap-1.png',
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Why Jukebox', Subheading: '' },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Plant-Powered', Description: 'Naturally derived ingredients', Icon: 'Leaf', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Cruelty-Free', Description: 'Never tested on animals', Icon: 'Heart', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Subscribe & Save', Description: '15% off every refill', Icon: 'RefreshCw', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Free Shipping', Description: 'On orders over $45', Icon: 'Truck', Shrinked: true },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'What Customers Say', Subheading: '' },
+          },
+          {
+            componentId: 'testimonial',
+            properties: { 'Show Avatars': true },
           },
         ],
       },
       {
         id: 'page-2',
+        name: 'Shop',
+        icon: 'ShoppingBag',
+        elements: [
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Left' },
+            properties: {
+              Heading: 'Shop',
+              Subheading: 'Bright scents. Clean care.',
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 8 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Body Soap', Subheading: '' },
+          },
+          {
+            componentId: 'product-list',
+            variants: { Layout: 'Grid' },
+            properties: {
+              Title: '',
+              'Show Toolbar': false,
+              'Show Images': true,
+              'Add New Card': false,
+              Currency: '$',
+              'Button Label': 'Add to Bag',
+              Products: JSON.stringify([
+                { name: 'Watermelon Rush Body Soap', price: '7.00', image: 'https://myjukebox.com/cdn/shop/files/watermelon-rush-body-soap-1.png' },
+                { name: 'Sky Blue Malibu Body Soap', price: '7.00', image: 'https://myjukebox.com/cdn/shop/files/sky-blue-malibu-body-soap-1.jpg' },
+                { name: 'Coconut Dreamin’ Body Soap', price: '7.00', image: 'https://myjukebox.com/cdn/shop/files/Jukebox_PDP_Coconut_Dreamin_Soap_FRONT_W_BOX.jpg' },
+                { name: 'Island in the Sun Body Soap', price: '7.00', image: 'https://myjukebox.com/cdn/shop/files/island-in-the-sun-body-soap-1.jpg' },
+              ]),
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Deodorant', Subheading: '' },
+          },
+          {
+            componentId: 'product-list',
+            variants: { Layout: 'Grid' },
+            properties: {
+              Title: '',
+              'Show Toolbar': false,
+              'Show Images': true,
+              'Add New Card': false,
+              Currency: '$',
+              'Button Label': 'Add to Bag',
+              Products: JSON.stringify([
+                { name: 'Watermelon Rush Deodorant', price: '13.00', image: 'https://myjukebox.com/cdn/shop/files/watermelon-rush-deo-1.jpg' },
+                { name: 'Sky Blue Malibu Deodorant', price: '13.00', image: 'https://myjukebox.com/cdn/shop/files/sky-blue-malibu-deo-1.jpg' },
+              ]),
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Body Lotion', Subheading: '' },
+          },
+          {
+            componentId: 'product-list',
+            variants: { Layout: 'Grid' },
+            properties: {
+              Title: '',
+              'Show Toolbar': false,
+              'Show Images': true,
+              'Add New Card': false,
+              Currency: '$',
+              'Button Label': 'Add to Bag',
+              Products: JSON.stringify([
+                { name: 'Watermelon Rush Body Lotion', price: '15.00', image: 'https://myjukebox.com/cdn/shop/files/Jukebox_PDP_Watermelon_Rush_Lotion_FRONT.jpg' },
+                { name: 'Sky Blue Malibu Body Lotion', price: '15.00', image: 'https://myjukebox.com/cdn/shop/files/Jukebox_PDP_Sky_Blue_Malibu_Lotion_FRONT.jpg' },
+              ]),
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Body Mist', Subheading: '' },
+          },
+          {
+            componentId: 'product-list',
+            variants: { Layout: 'Grid' },
+            properties: {
+              Title: '',
+              'Show Toolbar': false,
+              'Show Images': true,
+              'Add New Card': false,
+              Currency: '$',
+              'Button Label': 'Add to Bag',
+              Products: JSON.stringify([
+                { name: 'Watermelon Rush Body Mist', price: '13.00', image: 'https://myjukebox.com/cdn/shop/files/Jukebox_PDP_Watermelon_Rush_Mist_FRONT.jpg' },
+                { name: 'Sky Blue Malibu Body Mist', price: '13.00', image: 'https://myjukebox.com/cdn/shop/files/Jukebox_PDP_Sky_Blue_Malibu_Mist_FRONT.jpg' },
+              ]),
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Sets & Bundles', Subheading: '' },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Square', Layout: 'Vertical', Action: 'Button' },
+            properties: {
+              Title: 'Custom Deo 4-Pack · $52 → $45',
+              Description: 'Build your scent lineup. Save $7 when you bundle four.',
+              'Button Label': 'Build Your Pack',
+              'Image URL': 'https://myjukebox.com/cdn/shop/files/custom-deo-pack_3.jpg',
+            },
+          },
+        ],
+      },
+      {
+        id: 'page-3',
         name: 'Cart',
         icon: 'ShoppingCart',
         elements: [
           {
             componentId: 'heading',
-            variants: { Size: 'Medium' },
-            properties: { Heading: 'Your Cart' },
+            variants: { Size: 'Large', Alignment: 'Left' },
+            properties: {
+              Heading: 'Your Cart',
+              Subheading: '2 items · free shipping unlocked',
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 8 },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Square', Layout: 'Horizontal', Action: 'None' },
+            properties: {
+              Title: 'Watermelon Rush Body Soap',
+              Description: '$7.00 · Qty 1',
+              'Image URL': 'https://myjukebox.com/cdn/shop/files/watermelon-rush-body-soap-1.png',
+            },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Square', Layout: 'Horizontal', Action: 'None' },
+            properties: {
+              Title: 'Sky Blue Malibu Deodorant',
+              Description: '$13.00 · Qty 1',
+              'Image URL': 'https://myjukebox.com/cdn/shop/files/sky-blue-malibu-deo-1.jpg',
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 8 },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Subtotal $20.00 · Total $20.00', Description: 'Shipping and taxes calculated at checkout.', Icon: 'Receipt', Shrinked: true },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 8 },
           },
           {
             componentId: 'button',
-            properties: { Label: 'Checkout', 'Full Width': true },
+            variants: { Type: 'Standard', Variant: 'Outlined' },
+            properties: {
+              Label: 'Continue Shopping',
+              'Full Width': true,
+            },
+          },
+          {
+            componentId: 'button',
+            variants: { Type: 'Standard', Variant: 'Default' },
+            properties: {
+              Label: 'Checkout',
+              'Right Icon': 'ArrowRight',
+              'Full Width': true,
+            },
+          },
+        ],
+      },
+      {
+        id: 'page-4',
+        name: 'Account',
+        icon: 'CircleUser',
+        elements: [
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Left' },
+            properties: {
+              Heading: 'Hello, Maya',
+              Subheading: 'Member since 2024 · 12 orders',
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Account', Subheading: '' },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Subscriptions', Description: '2 active · next refill Mar 21', Icon: 'RefreshCw', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Orders', Description: '3 in progress', Icon: 'Package', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Addresses', Description: 'Home · Office', Icon: 'MapPin', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Payment', Description: 'Visa •••• 4242', Icon: 'CreditCard', Shrinked: true },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Help', Subheading: '' },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'FAQ', Description: 'Common questions', Icon: 'HelpCircle', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Returns & Refunds', Description: '30-day window', Icon: 'Undo2', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Contact Us', Description: 'We’re here to help', Icon: 'Mail', Shrinked: true },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'button',
+            variants: { Type: 'Standard', Variant: 'Outlined' },
+            properties: {
+              Label: 'Sign Out',
+              'Full Width': true,
+            },
           },
         ],
       },
@@ -1859,6 +2212,316 @@ export const APP_PRESETS: AppPreset[] = [
           {
             componentId: 'social-follow',
             variants: { Layout: 'Wrap', Variant: 'Secondary', Filled: 'No' },
+          },
+        ],
+      },
+    ],
+    headerActions: [],
+  },
+  {
+    id: 'beverage-shop',
+    name: 'Beverage Shop',
+    appTitle: 'Esprizio',
+    appSubtitle: 'Sparkling espresso spritz',
+    appHeader: {
+      imageStyle: 'Image',
+      imageUrl: 'https://drinkesprizio.com/cdn/shop/files/Esprizio_Logo.svg',
+      imageName: 'esprizio-logo.svg',
+      backgroundImageUrl: 'https://drinkesprizio.com/cdn/shop/files/Espritzio-website-hero2_6804bc1e-c28b-4715-ba03-fab8e0ff3230.webp',
+      backgroundImageName: 'esprizio-hero.webp',
+    },
+    pages: [
+      {
+        id: 'page-1',
+        name: 'Home',
+        icon: 'House',
+        elements: [
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: {
+              Heading: 'Meet the Sparkling Espresso Spritz',
+              Subheading: 'Perk up & chill out with us.',
+            },
+          },
+          {
+            componentId: 'paragraph',
+            variants: { Size: 'Medium', Alignment: 'Center' },
+            properties: {
+              Text: 'Bold organic espresso, fair-trade beans, real fruit, and a fizz that lifts. 75 mg of caffeine, zero alcohol — bottled for the afternoon.',
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 8 },
+          },
+          {
+            componentId: 'button',
+            variants: { Type: 'Standard', Variant: 'Default' },
+            properties: {
+              Label: 'Shop Flavors',
+              'Right Icon': 'ArrowRight',
+              'Full Width': true,
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Today’s Pick', Subheading: '' },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Square', Layout: 'Vertical', Action: 'Button' },
+            properties: {
+              Title: 'Blood Orange · $72.99',
+              Description: 'Bold espresso meets sun-ripened blood orange — Italy’s spritz, reimagined.',
+              'Button Label': 'Add to Cart',
+              'Image URL': 'https://drinkesprizio.com/cdn/shop/files/can_product-blood_orange_01bdda05-03b8-409d-b7f1-c9f40abe1388.webp',
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Why Esprizio', Subheading: '' },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Organic', Description: 'Real fruit, real coffee', Icon: 'Leaf', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Fair Trade', Description: 'Ethically sourced beans', Icon: 'HeartHandshake', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: '75 mg Caffeine', Description: 'A clean afternoon lift', Icon: 'Zap', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: '0% Alcohol', Description: 'Spritz vibes, all-day ready', Icon: 'GlassWater', Shrinked: true },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'What People Say', Subheading: '' },
+          },
+          {
+            componentId: 'testimonial',
+            properties: { 'Show Avatars': true },
+          },
+        ],
+      },
+      {
+        id: 'page-2',
+        name: 'Shop',
+        icon: 'ShoppingBag',
+        elements: [
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Left' },
+            properties: {
+              Heading: 'Shop',
+              Subheading: 'Three flavors, one fizz.',
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 8 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Single Flavors', Subheading: '6-pack · 75mg caffeine' },
+          },
+          {
+            componentId: 'product-list',
+            variants: { Layout: 'Grid' },
+            properties: {
+              Title: '',
+              'Show Toolbar': false,
+              'Show Images': true,
+              'Add New Card': false,
+              Currency: '$',
+              'Button Label': 'Add to Cart',
+              Products: JSON.stringify([
+                { name: 'Blood Orange', price: '72.99', image: 'https://drinkesprizio.com/cdn/shop/files/can_product-blood_orange_01bdda05-03b8-409d-b7f1-c9f40abe1388.webp' },
+                { name: 'Tangerine Chocolate', price: '72.99', image: 'https://drinkesprizio.com/cdn/shop/files/can_product-tangerine_chocolate_29a5ab11-c68c-4572-ab25-8865f48a3f17.webp' },
+                { name: 'Grapefruit', price: '72.99', image: 'https://drinkesprizio.com/cdn/shop/files/can_product-grapefruit_84ce4528-da43-4dca-b80b-5850edf13111.webp' },
+              ]),
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Bundles', Subheading: '' },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Square', Layout: 'Vertical', Action: 'Button' },
+            properties: {
+              Title: 'Variety Pack · $36.99',
+              Description: 'Try all three flavors — one of each, ready to chill.',
+              'Button Label': 'Add to Cart',
+              'Image URL': 'https://drinkesprizio.com/cdn/shop/files/can_product-pack_6ba6f9a2-018a-4ac8-8424-07ce5938fcff.webp',
+            },
+          },
+        ],
+      },
+      {
+        id: 'page-3',
+        name: 'Cart',
+        icon: 'ShoppingCart',
+        elements: [
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Left' },
+            properties: {
+              Heading: 'Your Cart',
+              Subheading: '1 item · free shipping unlocked',
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 8 },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Square', Layout: 'Horizontal', Action: 'None' },
+            properties: {
+              Title: 'Variety Pack',
+              Description: '$36.99 · Qty 1',
+              'Image URL': 'https://drinkesprizio.com/cdn/shop/files/can_product-pack_6ba6f9a2-018a-4ac8-8424-07ce5938fcff.webp',
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 8 },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Subtotal $36.99 · Total $36.99', Description: 'Shipping and taxes calculated at checkout.', Icon: 'Receipt', Shrinked: true },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 8 },
+          },
+          {
+            componentId: 'button',
+            variants: { Type: 'Standard', Variant: 'Outlined' },
+            properties: {
+              Label: 'Continue Shopping',
+              'Full Width': true,
+            },
+          },
+          {
+            componentId: 'button',
+            variants: { Type: 'Standard', Variant: 'Default' },
+            properties: {
+              Label: 'Checkout',
+              'Right Icon': 'ArrowRight',
+              'Full Width': true,
+            },
+          },
+        ],
+      },
+      {
+        id: 'page-4',
+        name: 'Account',
+        icon: 'CircleUser',
+        elements: [
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Left' },
+            properties: {
+              Heading: 'Hello, Alex',
+              Subheading: 'Member since 2024 · Club Esprizio',
+            },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Account', Subheading: '' },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Subscriptions', Description: 'Monthly variety pack · next Mar 21', Icon: 'RefreshCw', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Orders', Description: '2 in progress', Icon: 'Package', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Addresses', Description: 'Home · Office', Icon: 'MapPin', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Payment', Description: 'Visa •••• 4242', Icon: 'CreditCard', Shrinked: true },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'heading',
+            variants: { Size: 'Small', Alignment: 'Left' },
+            properties: { Heading: 'Help', Subheading: '' },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'FAQ', Description: 'Common questions', Icon: 'HelpCircle', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Shipping & Returns', Description: '30-day window', Icon: 'Truck', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
+            properties: { Title: 'Contact Us', Description: 'We’re here to help', Icon: 'Mail', Shrinked: true },
+          },
+          {
+            componentId: 'spacer',
+            properties: { Height: 16 },
+          },
+          {
+            componentId: 'button',
+            variants: { Type: 'Standard', Variant: 'Outlined' },
+            properties: {
+              Label: 'Sign Out',
+              'Full Width': true,
+            },
           },
         ],
       },

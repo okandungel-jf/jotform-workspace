@@ -1508,7 +1508,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px;
+  padding: 0 var(--space-4);
   background: var(--bg-surface);
   color: var(--fg-primary);
   border-bottom: 1px solid var(--border);
@@ -1517,6 +1517,7 @@ body {
   [data-theme='dark'] & {
     background: var(--bg-surface-hover);
   }
+
 }
 
 .live-preview__top-header-btn {
@@ -1541,6 +1542,24 @@ body {
   padding-right: 12px;
 }
 
+.live-preview__top-header-page {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.live-preview__top-header-page-name {
+  font-family: var(--font-family-heading);
+  font-size: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: inherit;
+  min-width: 0;
+}
+
 .live-preview__top-header-compact-icon {
   display: flex;
   align-items: center;
@@ -1550,11 +1569,23 @@ body {
   border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
+  background: var(--bg-fill-brand);
+  color: var(--fg-inverse);
+
+  &--image {
+    width: auto;
+    max-width: 120px;
+    border-radius: 0;
+    overflow: visible;
+    background: transparent;
+    color: inherit;
+  }
 
   img {
-    width: 100%;
+    width: auto;
     height: 100%;
-    object-fit: cover;
+    max-width: 100%;
+    object-fit: contain;
     display: block;
   }
 }
@@ -1593,7 +1624,7 @@ body {
   display: inline-flex;
   align-items: center;
   height: 32px;
-  padding: 0 var(--space-2);
+  padding: 0 0 0 var(--space-2);
   border: 0;
   background: transparent;
   color: inherit;
@@ -2733,10 +2764,18 @@ body {
   border-radius: var(--radius-sm);
   overflow: hidden;
 
+  &--image {
+    width: auto;
+    max-width: 120px;
+    border-radius: 0;
+    overflow: visible;
+  }
+
   img {
-    width: 100%;
+    width: auto;
     height: 100%;
-    object-fit: cover;
+    max-width: 100%;
+    object-fit: contain;
     display: block;
   }
 }
@@ -5581,4 +5620,166 @@ body.builder--phone-only {
     border-style: solid;
     background: color-mix(in srgb, var(--_jf-ahdr-inverse) 15%, transparent);
   }
+}
+
+// ----------------------------------------------------------------------------
+// App Preview Screen — full-screen overlay shown when the top-bar "Preview App"
+// toggle is on. Purple gradient chrome bar (Back / device tabs / Try-on-device
+// share button) over a dark canvas (--gray-600) with a device-sized viewport.
+// ----------------------------------------------------------------------------
+.app-preview-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: var(--gray-600);
+  font-family: var(--ds-font-family);
+}
+
+.app-preview-screen__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  padding: var(--ds-space-sm) var(--ds-space-md) var(--ds-space-sm) var(--ds-space-sm);
+  background: linear-gradient(to right, var(--product-apps-light), var(--product-apps-default));
+  position: relative;
+  flex-shrink: 0;
+}
+
+.app-preview-screen__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-xs);
+  height: 40px;
+  min-width: 96px;
+  padding: 0 var(--ds-space-sm);
+  background: transparent;
+  border: none;
+  border-radius: var(--ds-radius-sm);
+  color: var(--secondary-text-white);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-md);
+  font-weight: var(--ds-font-weight-medium);
+  line-height: var(--ds-line-height-xs);
+  letter-spacing: var(--letter-spacing-sm);
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--core-white) 12%, transparent);
+  }
+}
+
+.app-preview-screen__tabs {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: stretch;
+}
+
+.app-preview-screen__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-2xs);
+  width: 96px;
+  padding: var(--ds-space-sm) var(--ds-space-lg);
+  background: transparent;
+  border: none;
+  color: var(--secondary-text-white);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-md);
+  font-weight: var(--ds-font-weight-book);
+  line-height: var(--ds-line-height-md);
+  letter-spacing: var(--letter-spacing-sm);
+  cursor: pointer;
+  opacity: 0.64;
+  transition: opacity 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &--active {
+    opacity: 1;
+    background: color-mix(in srgb, var(--core-white) 20%, transparent);
+  }
+}
+
+.app-preview-screen__share-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.app-preview-screen__share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-xs);
+  height: 40px;
+  min-width: 96px;
+  padding: 0 var(--ds-space-sm);
+  background: var(--background-darkest);
+  border: none;
+  border-radius: var(--ds-radius-sm);
+  color: var(--secondary-text-white);
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-md);
+  font-weight: var(--ds-font-weight-medium);
+  line-height: var(--ds-line-height-xs);
+  letter-spacing: var(--letter-spacing-sm);
+  cursor: pointer;
+  transition: filter 0.15s ease;
+
+  &:hover {
+    filter: brightness(1.15);
+  }
+}
+
+.app-preview-screen__share-popover {
+  position: absolute;
+  top: calc(100% + var(--ds-space-xs));
+  right: 0;
+  z-index: 1;
+}
+
+.app-preview-screen__canvas {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: var(--ds-space-lg);
+  overflow: auto;
+}
+
+.app-preview-screen__viewport {
+  background: var(--core-white);
+  border-radius: var(--ds-radius-lg);
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.app-preview-screen__viewport--phone {
+  width: 393px;
+  max-width: 100%;
+  align-self: center;
+  height: min(852px, 100%);
+}
+
+.app-preview-screen__viewport--tablet {
+  width: 820px;
+  max-width: 100%;
+  align-self: center;
+  height: min(1180px, 100%);
+}
+
+.app-preview-screen__viewport--desktop {
+  width: 100%;
+  height: 100%;
 }

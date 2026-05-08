@@ -36,6 +36,7 @@ import { LivePreviewAvatarPopover } from '../components/LivePreviewAvatarPopover
 import { LivePreviewLoginPopover } from '../components/LivePreviewLoginPopover'
 import { QrPlaceholder } from '../components/QrPlaceholder'
 import { MobileBottomBar } from '../components/MobileBottomBar'
+import { AppPreviewScreen } from '../components/AppPreviewScreen'
 import {
   draggable,
   dropTargetForElements,
@@ -197,6 +198,8 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
         textColor: storedHeader.textColor ?? APP_HEADER_DEFAULTS.textColor,
         backgroundImageUrl: storedHeader.backgroundImageUrl ?? APP_HEADER_DEFAULTS.backgroundImageUrl,
         backgroundImageName: storedHeader.backgroundImageName ?? APP_HEADER_DEFAULTS.backgroundImageName,
+        title: storedHeader.title,
+        subtitle: storedHeader.subtitle,
       },
     }
   }
@@ -212,7 +215,7 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
     headerActions: headerBuilt.elements,
     activePageId: pages[0].id,
     appSubtitle: preset.appSubtitle,
-    appHeader: { ...APP_HEADER_DEFAULTS },
+    appHeader: { ...APP_HEADER_DEFAULTS, ...(preset.appHeader ?? {}) },
   }
 }
 
@@ -236,6 +239,11 @@ interface AppHeaderState {
   textColor: string
   backgroundImageUrl: string | null
   backgroundImageName: string | null
+  // Optional overrides — when set (including empty string), they take precedence
+  // over appTitle/appSubtitle so users can hide the header text without clearing
+  // the chrome-level app name.
+  title?: string
+  subtitle?: string
 }
 const APP_HEADER_DEFAULTS: AppHeaderState = {
   layout: 'Center',
@@ -1060,7 +1068,7 @@ function AddPageDivider({ onClick }: { onClick: () => void }) {
 
 type RightPanelMode = 'preview' | 'designer' | 'properties'
 
-export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChange, preset, initialPageId, chromeless = false }: { appTitle?: string; onAppTitleChange?: (title: string) => void; preset?: AppPreset; initialPageId?: string; chromeless?: boolean }) {
+export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChange, preset, initialPageId, chromeless = false, previewMode = false, onPreviewClose }: { appTitle?: string; onAppTitleChange?: (title: string) => void; preset?: AppPreset; initialPageId?: string; chromeless?: boolean; previewMode?: boolean; onPreviewClose?: () => void }) {
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
   const [propertyTab, setPropertyTab] = useState<string>('general')
   const appHeaderImageInputRef = useRef<HTMLInputElement>(null)
@@ -1595,8 +1603,8 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
 
   const handlePropertyChange = useCallback((elementId: string, name: string, value: string | boolean | number) => {
     if (elementId === APP_HEADER_ID) {
-      if (name === 'Title') setAppTitle(String(value))
-      else if (name === 'Subtitle') setAppSubtitle(String(value))
+      if (name === 'Title') setAppHeaderState((s) => ({ ...s, title: String(value) }))
+      else if (name === 'Subtitle') setAppHeaderState((s) => ({ ...s, subtitle: String(value) }))
       else if (name === 'Icon') setAppHeaderState((s) => ({ ...s, icon: String(value) }))
       else if (name === 'Skeleton') setAppHeaderState((s) => ({ ...s, skeleton: Boolean(value) }))
       return
@@ -1979,8 +1987,8 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
         variants: { Layout: appHeaderState.layout },
         properties: {
           Icon: appHeaderState.icon,
-          Title: appTitle,
-          Subtitle: appSubtitle,
+          Title: appHeaderState.title ?? appTitle,
+          Subtitle: appHeaderState.subtitle ?? appSubtitle,
           Skeleton: appHeaderState.skeleton,
         },
         states: {},
@@ -2006,6 +2014,13 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
 
   return (
     <>
+    {previewMode && (
+      <AppPreviewScreen
+        device={previewDevice}
+        onDeviceChange={setPreviewDevice}
+        onBack={() => onPreviewClose?.()}
+      />
+    )}
     <div className="build-page">
       {/* Left Panel - App Elements */}
       {!chromeless && (
@@ -2125,8 +2140,8 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                   textColor={appHeaderState.textColor}
                   backgroundImageUrl={appHeaderState.backgroundImageUrl}
                   skeleton={appHeaderState.skeleton}
-                  title={appTitle}
-                  subtitle={appSubtitle}
+                  title={appHeaderState.title ?? appTitle}
+                  subtitle={appHeaderState.subtitle ?? appSubtitle}
                   iconSelected={selectedElementId === APP_HEADER_ID}
                   onIconClick={(e) => {
                     e.stopPropagation()
@@ -3951,7 +3966,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                             return (
                               <div className="live-preview__top-header-compact">
                                 {appHeaderState.imageStyle !== 'None' && (
-                                  <div className="live-preview__top-header-compact-icon">
+                                  <div className={`live-preview__top-header-compact-icon${appHeaderState.imageStyle === 'Image' && appHeaderState.imageUrl ? ' live-preview__top-header-compact-icon--image' : ''}`}>
                                     {appHeaderState.imageStyle === 'Image' && appHeaderState.imageUrl ? (
                                       <img src={appHeaderState.imageUrl} alt="" />
                                     ) : (
@@ -3963,17 +3978,11 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                               </div>
                             )
                           }
-                          return pages.length > 0 ? (
-                            <button
-                              type="button"
-                              className="live-preview__top-header-btn"
-                              aria-label="Menu"
-                              onClick={() => setIsPreviewMenuOpen(true)}
-                            >
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                              </svg>
-                            </button>
+                          const activePage = pages.find((p) => p.id === activePageId)
+                          return activePage ? (
+                            <div className="live-preview__top-header-page">
+                              <span className="live-preview__top-header-page-name">{activePage.name}</span>
+                            </div>
                           ) : (
                             <span className="live-preview__top-header-btn" aria-hidden="true" />
                           )

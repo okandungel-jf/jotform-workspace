@@ -84,10 +84,12 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             )}
           </div>
         )}
-        <div className="jf-app-header__text" style={textColor ? { color: textColor } : undefined}>
-          <h1 className="jf-app-header__title">{title}</h1>
-          <p className={`jf-app-header__subtitle ${!subtitle ? 'jf-app-header__subtitle--empty' : ''}`}>{subtitle}</p>
-        </div>
+        {(title || subtitle) && (
+          <div className="jf-app-header__text" style={textColor ? { color: textColor } : undefined}>
+            {title && <h1 className="jf-app-header__title">{title}</h1>}
+            {subtitle && <p className="jf-app-header__subtitle">{subtitle}</p>}
+          </div>
+        )}
       </div>
       <div ref={actionsSlotRef} className="jf-app-header__actions">
         {actions}

@@ -60,6 +60,8 @@
   transition: outline-color 150ms ease;
 
   &--image {
+    width: auto;
+    height: 80px;
     background: transparent;
     border-radius: 0;
     overflow: visible;
@@ -87,9 +89,10 @@
 }
 
 .jf-app-header__image {
-  width: 100%;
+  width: auto;
   height: 100%;
-  object-fit: cover;
+  max-width: 240px;
+  object-fit: contain;
   display: block;
 }
 
