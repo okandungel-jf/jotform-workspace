@@ -2012,6 +2012,190 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
     }
   }
 
+  const phoneScreenContent = (
+    <>
+      <div className="live-preview__status-bar-bg app-scope" />
+      <PhoneStatusBar className="live-preview__status-bar app-scope" style={{ color: 'var(--fg-primary, #000)' }} />
+      {(isLoginPopoverOpen || isAvatarPopoverOpen) && (
+        <div
+          className="live-preview__popover-scrim"
+          onClick={() => {
+            setIsLoginPopoverOpen(false)
+            setIsAvatarPopoverOpen(false)
+          }}
+        />
+      )}
+      <div className="live-preview__top-header app-scope">
+        {(() => {
+          const isFirstPage = activePageId === pages[0]?.id
+          const showCompact = isFirstPage && appHeaderState.show && !isPreviewAppHeaderVisible
+          if (showCompact) {
+            return (
+              <div className="live-preview__top-header-compact">
+                {appHeaderState.imageStyle !== 'None' && (
+                  <div className={`live-preview__top-header-compact-icon${appHeaderState.imageStyle === 'Image' && appHeaderState.imageUrl ? ' live-preview__top-header-compact-icon--image' : ''}`}>
+                    {appHeaderState.imageStyle === 'Image' && appHeaderState.imageUrl ? (
+                      <img src={appHeaderState.imageUrl} alt="" />
+                    ) : (
+                      <AppIcon name={appHeaderState.icon} size={24} />
+                    )}
+                  </div>
+                )}
+                <span className="live-preview__top-header-compact-title">{appTitle}</span>
+              </div>
+            )
+          }
+          const activePage = pages.find((p) => p.id === activePageId)
+          return activePage ? (
+            <div className="live-preview__top-header-page">
+              <span className="live-preview__top-header-page-name">{activePage.name}</span>
+            </div>
+          ) : (
+            <span className="live-preview__top-header-btn" aria-hidden="true" />
+          )
+        })()}
+        <div className="live-preview__top-header-right">
+          {pages.some((p) => p.elements.some((el) => el.componentId === 'product-list')) && (
+            <LivePreviewCartButton onClick={() => setIsPreviewCartOpen(true)} />
+          )}
+          {isPreviewLoggedIn ? (
+            <>
+              <button
+                type="button"
+                className="live-preview__top-header-avatar-btn"
+                aria-label="Account menu"
+                onClick={() => setIsAvatarPopoverOpen((v) => !v)}
+              >
+                <img
+                  className="live-preview__top-header-avatar"
+                  src={previewUserAvatar}
+                  alt=""
+                  aria-hidden="true"
+                />
+              </button>
+              <LivePreviewAvatarPopover
+                open={isAvatarPopoverOpen}
+                onClose={() => setIsAvatarPopoverOpen(false)}
+              />
+            </>
+          ) : (
+            <button
+              type="button"
+              className="live-preview__top-header-login-btn"
+              onClick={() => setIsLoginPopoverOpen((v) => !v)}
+            >
+              Login
+            </button>
+          )}
+        </div>
+      </div>
+      {!isPreviewLoggedIn && (
+        <LivePreviewLoginPopover
+          open={isLoginPopoverOpen}
+          onClose={() => setIsLoginPopoverOpen(false)}
+          onLoggedIn={() => setIsPreviewLoggedIn(true)}
+        />
+      )}
+      <div ref={setPreviewContentScalerEl} className="live-preview__content-scaler app-scope">
+        <div className="live-preview__content app-scope">
+          {(() => {
+            const activePage = pages.find((p) => p.id === activePageId) || pages[0]
+            const isFirstPage = activePage?.id === pages[0]?.id
+            return activePage ? (
+              <>
+              {isFirstPage && appHeaderState.show && (
+                <div ref={setPreviewAppHeaderEl}>
+                <AppHeader
+                  layout={appHeaderState.layout as 'Center' | 'Left' | 'Right'}
+                  icon={appHeaderState.icon}
+                  imageStyle={appHeaderState.imageStyle}
+                  imageUrl={appHeaderState.imageUrl}
+                  textColor={appHeaderState.textColor}
+                  backgroundImageUrl={appHeaderState.backgroundImageUrl}
+                  skeleton={appHeaderState.skeleton}
+                  title={appTitle}
+                  subtitle={appSubtitle}
+                  actions={headerActions.map((el) => {
+                    const comp = ComponentRegistry.get(el.componentId)
+                    if (!comp) return null
+                    const isShrinked = el.componentId === 'button' && el.properties['Shrinked'] === true
+                    return (
+                      <div
+                        key={el.id}
+                        className={`live-preview__header-action${isShrinked ? ' live-preview__header-action--shrinked' : ''}`}
+                      >
+                        {comp.render(el.variants, el.properties, el.states)}
+                      </div>
+                    )
+                  })}
+                />
+                </div>
+              )}
+              <div className={`themes-view__canvas${isFirstPage ? ' themes-view__canvas--first' : ''}`}>
+                <div className="themes-view__app">
+                  {activePage.elements.map((element) => {
+                    const comp = ComponentRegistry.get(element.componentId)
+                    if (!comp) return null
+                    const previewProps = {
+                      ...element.properties,
+                      'Add New Card': false,
+                      // Strip Shrinked in mobile preview so elements stretch full-width.
+                      // Button keeps its shrinked state — a full-width button is worse than a compact one.
+                      Shrinked: element.componentId === 'button' ? element.properties['Shrinked'] : false,
+                    }
+                    const isButtonShrinked = element.componentId === 'button' && element.properties['Shrinked'] === true
+                    return (
+                      <section key={element.id} className={`themes-view__section${isButtonShrinked ? ' themes-view__section--shrinked' : ''}`}>
+                        {comp.render(element.variants, previewProps, element.states)}
+                      </section>
+                    )
+                  })}
+                </div>
+              </div>
+              </>
+            ) : null
+          })()}
+        </div>
+      </div>
+      {pages.length > 1 && !isPreviewCartOpen && !isPreviewCheckoutOpen && (
+        <div className="live-preview__bottom-nav app-scope">
+          <BottomNavigation
+            items={pages.slice(0, 5).map((p, i) => ({ icon: getPageIconName(p, i), label: p.name }))}
+            activeIndex={pages.slice(0, 5).findIndex((p) => p.id === activePageId)}
+            onItemClick={(index) => setActivePageId(pages[index].id)}
+          />
+        </div>
+      )}
+      <img src={phoneHomeIndicator} alt="" className="live-preview__home-indicator" />
+      <FormSheet />
+      <LivePreviewMenuDrawer
+        open={isPreviewMenuOpen}
+        onClose={() => setIsPreviewMenuOpen(false)}
+        pages={pages}
+        activePageId={activePageId}
+        onPageSelect={setActivePageId}
+        appTitle={appTitle}
+        appHeader={appHeaderState}
+      />
+      <LivePreviewCartPage
+        open={isPreviewCartOpen}
+        onClose={() => setIsPreviewCartOpen(false)}
+        onContinue={() => setIsPreviewCheckoutOpen(true)}
+        avatarUrl={previewUserAvatar}
+      />
+      <LivePreviewCheckoutPage
+        open={isPreviewCheckoutOpen}
+        onClose={() => setIsPreviewCheckoutOpen(false)}
+        avatarUrl={previewUserAvatar}
+      />
+      <LivePreviewOrderBar
+        hidden={isPreviewCartOpen || isPreviewCheckoutOpen}
+        hasBottomNav={pages.length > 1}
+        onClick={() => setIsPreviewCheckoutOpen(true)}
+      />
+    </>
+  )
+
   return (
     <>
     {previewMode && (
@@ -2019,6 +2203,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
         device={previewDevice}
         onDeviceChange={setPreviewDevice}
         onBack={() => onPreviewClose?.()}
+        phoneScreen={phoneScreenContent}
       />
     )}
     <div className="build-page">
@@ -3947,6 +4132,8 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                     <div className="live-preview__phone-bezel" />
                     {/* Layer 4: Screen */}
                     <div className="live-preview__phone-screen">
+                      {!previewMode && (
+                      <>
                       <div className="live-preview__status-bar-bg app-scope" />
                       <PhoneStatusBar className="live-preview__status-bar app-scope" style={{ color: 'var(--fg-primary, #000)' }} />
                       {(isLoginPopoverOpen || isAvatarPopoverOpen) && (
@@ -4126,6 +4313,8 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                         hasBottomNav={pages.length > 1}
                         onClick={() => setIsPreviewCheckoutOpen(true)}
                       />
+                      </>
+                      )}
                     </div>
                   </div>
                 </div>

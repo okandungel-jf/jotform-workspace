@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Icon } from '@jf/design-system'
 import { QuickSharePanel } from './QuickSharePanel'
 
@@ -8,6 +8,7 @@ interface AppPreviewScreenProps {
   device: PreviewDevice
   onDeviceChange: (device: PreviewDevice) => void
   onBack: () => void
+  phoneScreen?: ReactNode
 }
 
 const DEVICE_TABS: { id: PreviewDevice; label: string; icon: string }[] = [
@@ -16,7 +17,7 @@ const DEVICE_TABS: { id: PreviewDevice; label: string; icon: string }[] = [
   { id: 'desktop', label: 'Desktop', icon: 'desktop' },
 ]
 
-export function AppPreviewScreen({ device, onDeviceChange, onBack }: AppPreviewScreenProps) {
+export function AppPreviewScreen({ device, onDeviceChange, onBack, phoneScreen }: AppPreviewScreenProps) {
   const [shareOpen, setShareOpen] = useState(false)
   const shareWrapRef = useRef<HTMLDivElement>(null)
 
@@ -35,7 +36,7 @@ export function AppPreviewScreen({ device, onDeviceChange, onBack }: AppPreviewS
     <div className="app-preview-screen" role="dialog" aria-label="App preview">
       <header className="app-preview-screen__bar">
         <button type="button" className="app-preview-screen__back" onClick={onBack}>
-          <Icon name="angle-left" category="arrows" size={20} />
+          <Icon name="chevron-left" category="arrows" size={20} />
           <span>Back to builder</span>
         </button>
         <div className="app-preview-screen__tabs" role="tablist">
@@ -75,7 +76,15 @@ export function AppPreviewScreen({ device, onDeviceChange, onBack }: AppPreviewS
         </div>
       </header>
       <div className="app-preview-screen__canvas">
-        <div className={`app-preview-screen__viewport app-preview-screen__viewport--${device}`} />
+        {device === 'phone' ? (
+          <div className="live-preview__phone app-preview-screen__phone">
+            <div className="live-preview__phone-shell app-scope" />
+            <div className="live-preview__phone-bezel" />
+            <div className="live-preview__phone-screen">{phoneScreen}</div>
+          </div>
+        ) : (
+          <div className={`app-preview-screen__viewport app-preview-screen__viewport--${device}`} />
+        )}
       </div>
     </div>
   )

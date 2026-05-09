@@ -80,6 +80,7 @@
   --ds-font-size-md: var(--font-size-md);
   --ds-font-size-lg: var(--font-size-lg);
   --ds-line-height-xs: var(--line-height-xs);
+  --ds-line-height-sm: var(--line-height-sm);
   --ds-line-height-md: var(--line-height-md);
   --ds-font-weight-book: var(--font-weight-book);
   --ds-font-weight-medium: var(--font-weight-medium);
@@ -1467,6 +1468,7 @@ body {
   inset: 16px;
   border-radius: 56px;
   overflow: hidden;
+  background: var(--gray-900);
   z-index: 1;
 }
 
@@ -2190,6 +2192,7 @@ body {
   position: absolute;
   inset: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-width: none;
   background: var(--bg-surface);
   padding-top: 102px;
@@ -5642,7 +5645,7 @@ body.builder--phone-only {
   align-items: center;
   justify-content: space-between;
   height: 72px;
-  padding: var(--ds-space-sm) var(--ds-space-md) var(--ds-space-sm) var(--ds-space-sm);
+  padding: 0 var(--ds-space-md);
   background: linear-gradient(to right, var(--product-apps-light), var(--product-apps-default));
   position: relative;
   flex-shrink: 0;
@@ -5654,16 +5657,16 @@ body.builder--phone-only {
   gap: var(--ds-space-xs);
   height: 40px;
   min-width: 96px;
-  padding: 0 var(--ds-space-sm);
+  padding: 0 var(--ds-space-xs);
   background: transparent;
   border: none;
   border-radius: var(--ds-radius-sm);
   color: var(--secondary-text-white);
   font-family: var(--ds-font-family);
-  font-size: var(--ds-font-size-md);
+  font-size: var(--ds-font-size-sm);
   font-weight: var(--ds-font-weight-medium);
   line-height: var(--ds-line-height-xs);
-  letter-spacing: var(--letter-spacing-sm);
+  letter-spacing: var(--letter-spacing-lg);
   cursor: pointer;
   transition: background 0.15s ease;
 
@@ -5687,15 +5690,15 @@ body.builder--phone-only {
   align-items: center;
   gap: var(--ds-space-2xs);
   width: 96px;
-  padding: var(--ds-space-sm) var(--ds-space-lg);
+  padding: var(--ds-space-sm) var(--ds-space-xl);
   background: transparent;
   border: none;
   color: var(--secondary-text-white);
   font-family: var(--ds-font-family);
-  font-size: var(--ds-font-size-md);
+  font-size: var(--ds-font-size-sm);
   font-weight: var(--ds-font-weight-book);
-  line-height: var(--ds-line-height-md);
-  letter-spacing: var(--letter-spacing-sm);
+  line-height: var(--ds-line-height-sm);
+  letter-spacing: var(--letter-spacing-lg);
   cursor: pointer;
   opacity: 0.64;
   transition: opacity 0.15s ease, background 0.15s ease;
@@ -5721,16 +5724,16 @@ body.builder--phone-only {
   gap: var(--ds-space-xs);
   height: 40px;
   min-width: 96px;
-  padding: 0 var(--ds-space-sm);
+  padding: 0 var(--ds-space-xs);
   background: var(--background-darkest);
   border: none;
   border-radius: var(--ds-radius-sm);
   color: var(--secondary-text-white);
   font-family: var(--ds-font-family);
-  font-size: var(--ds-font-size-md);
+  font-size: var(--ds-font-size-sm);
   font-weight: var(--ds-font-weight-medium);
   line-height: var(--ds-line-height-xs);
-  letter-spacing: var(--letter-spacing-sm);
+  letter-spacing: var(--letter-spacing-lg);
   cursor: pointer;
   transition: filter 0.15s ease;
 
@@ -5770,6 +5773,15 @@ body.builder--phone-only {
   max-width: 100%;
   align-self: center;
   height: min(852px, 100%);
+}
+
+.app-preview-screen__phone {
+  width: auto;
+  height: 100%;
+  max-width: 472px;
+  max-height: 988px;
+  aspect-ratio: 472 / 988;
+  align-self: center;
 }
 
 .app-preview-screen__viewport--tablet {
