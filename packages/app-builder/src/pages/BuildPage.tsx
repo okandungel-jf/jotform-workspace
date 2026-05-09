@@ -1243,6 +1243,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
   const [previewAppHeaderEl, setPreviewAppHeaderEl] = useState<HTMLDivElement | null>(null)
   const [previewContentScalerEl, setPreviewContentScalerEl] = useState<HTMLDivElement | null>(null)
   const [isPreviewAppHeaderVisible, setIsPreviewAppHeaderVisible] = useState(true)
+  const [isPreviewContentScrolled, setIsPreviewContentScrolled] = useState(false)
   useEffect(() => {
     if (!previewAppHeaderEl || !previewContentScalerEl) {
       setIsPreviewAppHeaderVisible(true)
@@ -1259,6 +1260,19 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
     observer.observe(previewAppHeaderEl)
     return () => observer.disconnect()
   }, [previewAppHeaderEl, previewContentScalerEl])
+
+  useEffect(() => {
+    if (!previewContentScalerEl) {
+      setIsPreviewContentScrolled(false)
+      return
+    }
+    const onScroll = () => {
+      setIsPreviewContentScrolled(previewContentScalerEl.scrollTop > 0)
+    }
+    onScroll()
+    previewContentScalerEl.addEventListener('scroll', onScroll, { passive: true })
+    return () => previewContentScalerEl.removeEventListener('scroll', onScroll)
+  }, [previewContentScalerEl])
 
   useEffect(() => {
     return ComponentRegistry.subscribe(() => {
@@ -2025,7 +2039,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
           }}
         />
       )}
-      <div className="live-preview__top-header app-scope">
+      <div className={`live-preview__top-header app-scope${isPreviewContentScrolled ? ' live-preview__top-header--scrolled' : ''}`}>
         {(() => {
           const isFirstPage = activePageId === pages[0]?.id
           const showCompact = isFirstPage && appHeaderState.show && !isPreviewAppHeaderVisible
@@ -4145,7 +4159,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                           }}
                         />
                       )}
-                      <div className="live-preview__top-header app-scope">
+                      <div className={`live-preview__top-header app-scope${isPreviewContentScrolled ? ' live-preview__top-header--scrolled' : ''}`}>
                         {(() => {
                           const isFirstPage = activePageId === pages[0]?.id
                           const showCompact = isFirstPage && appHeaderState.show && !isPreviewAppHeaderVisible

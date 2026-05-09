@@ -1513,13 +1513,18 @@ body {
   padding: 0 var(--space-4);
   background: var(--bg-surface);
   color: var(--fg-primary);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  border-bottom: 1px solid transparent;
+  box-shadow: none;
+  transition: border-bottom-color 0.15s ease, box-shadow 0.15s ease;
 
   [data-theme='dark'] & {
     background: var(--bg-surface-hover);
   }
 
+  &--scrolled {
+    border-bottom-color: var(--border);
+    box-shadow: var(--shadow-sm);
+  }
 }
 
 .live-preview__top-header-btn {
@@ -1553,8 +1558,10 @@ body {
 
 .live-preview__top-header-page-name {
   font-family: var(--font-family-heading);
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--font-size-heading-sm);
+  line-height: var(--line-height-heading-sm);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.48px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
