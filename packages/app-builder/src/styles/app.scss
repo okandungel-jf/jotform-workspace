@@ -1567,6 +1567,13 @@ body {
   text-overflow: ellipsis;
   color: inherit;
   min-width: 0;
+  transition: font-size 0.15s ease, line-height 0.15s ease, letter-spacing 0.15s ease;
+
+  .live-preview__top-header--scrolled & {
+    font-size: var(--font-size-heading-xs);
+    line-height: var(--line-height-heading-xs);
+    letter-spacing: -0.4px;
+  }
 }
 
 .live-preview__top-header-compact-icon {
