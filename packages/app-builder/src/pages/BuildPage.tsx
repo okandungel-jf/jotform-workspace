@@ -2069,6 +2069,18 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
           )
         })()}
         <div className="live-preview__top-header-right">
+          <nav className="live-preview__top-header-nav">
+            {pages.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                className={`live-preview__top-header-nav-link${p.id === activePageId ? ' live-preview__top-header-nav-link--active' : ''}`}
+                onClick={() => setActivePageId(p.id)}
+              >
+                {p.name}
+              </button>
+            ))}
+          </nav>
           {pages.some((p) => p.elements.some((el) => el.componentId === 'product-list')) && (
             <LivePreviewCartButton onClick={() => setIsPreviewCartOpen(true)} />
           )}
@@ -2096,9 +2108,10 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
             <button
               type="button"
               className="live-preview__top-header-login-btn"
+              aria-label="Login"
               onClick={() => setIsLoginPopoverOpen((v) => !v)}
             >
-              Login
+              <Icon name="circle-user-filled" category="users" size={20} />
             </button>
           )}
         </div>
@@ -2217,7 +2230,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
         device={previewDevice}
         onDeviceChange={setPreviewDevice}
         onBack={() => onPreviewClose?.()}
-        phoneScreen={phoneScreenContent}
+        appScreen={phoneScreenContent}
       />
     )}
     <div className="build-page">
@@ -4216,9 +4229,10 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                             <button
                               type="button"
                               className="live-preview__top-header-login-btn"
+                              aria-label="Login"
                               onClick={() => setIsLoginPopoverOpen((v) => !v)}
                             >
-                              Login
+                              <Icon name="circle-user-filled" category="users" size={20} />
                             </button>
                           )}
                         </div>

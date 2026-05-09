@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Icon } from '@jf/design-system'
 import { QuickSharePanel } from './QuickSharePanel'
+import { TabletStatusBar } from './TabletStatusBar'
 
 export type PreviewDevice = 'phone' | 'tablet' | 'desktop'
 
@@ -8,7 +9,7 @@ interface AppPreviewScreenProps {
   device: PreviewDevice
   onDeviceChange: (device: PreviewDevice) => void
   onBack: () => void
-  phoneScreen?: ReactNode
+  appScreen?: ReactNode
 }
 
 const DEVICE_TABS: { id: PreviewDevice; label: string; icon: string }[] = [
@@ -17,7 +18,7 @@ const DEVICE_TABS: { id: PreviewDevice; label: string; icon: string }[] = [
   { id: 'desktop', label: 'Desktop', icon: 'desktop' },
 ]
 
-export function AppPreviewScreen({ device, onDeviceChange, onBack, phoneScreen }: AppPreviewScreenProps) {
+export function AppPreviewScreen({ device, onDeviceChange, onBack, appScreen }: AppPreviewScreenProps) {
   const [shareOpen, setShareOpen] = useState(false)
   const shareWrapRef = useRef<HTMLDivElement>(null)
 
@@ -75,15 +76,27 @@ export function AppPreviewScreen({ device, onDeviceChange, onBack, phoneScreen }
           )}
         </div>
       </header>
-      <div className="app-preview-screen__canvas">
-        {device === 'phone' ? (
+      <div className={`app-preview-screen__canvas app-preview-screen__canvas--${device}`}>
+        {device === 'phone' && (
           <div className="live-preview__phone app-preview-screen__phone">
             <div className="live-preview__phone-shell app-scope" />
             <div className="live-preview__phone-bezel" />
-            <div className="live-preview__phone-screen">{phoneScreen}</div>
+            <div className="live-preview__phone-screen">{appScreen}</div>
           </div>
-        ) : (
-          <div className={`app-preview-screen__viewport app-preview-screen__viewport--${device}`} />
+        )}
+        {device === 'tablet' && (
+          <div className="live-preview__tablet app-preview-screen__tablet">
+            <div className="live-preview__tablet-shell app-scope" />
+            <div className="live-preview__tablet-bezel" />
+            <div className="live-preview__tablet-screen">
+              <div className="live-preview__tablet-status-bar-bg app-scope" />
+              <TabletStatusBar className="live-preview__tablet-status-bar app-scope" />
+              {appScreen}
+            </div>
+          </div>
+        )}
+        {device === 'desktop' && (
+          <div className="app-preview-screen__desktop">{appScreen}</div>
         )}
       </div>
     </div>

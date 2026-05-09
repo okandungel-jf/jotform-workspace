@@ -1472,6 +1472,115 @@ body {
   z-index: 1;
 }
 
+// ---- Tablet Mockup (iPad mini portrait) ----
+.live-preview__tablet {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 816 / 1205;
+}
+
+.live-preview__tablet-shell {
+  position: absolute;
+  inset: 0;
+  border-radius: 44px;
+  background: var(--bg-fill-brand-hover);
+  box-shadow:
+    0px 4px 22px 0px rgba(0, 0, 0, 0.24),
+    0px 1.46px 8.03px 0px rgba(0, 0, 0, 0.17),
+    0px 0.709px 3.899px 0px rgba(0, 0, 0, 0.13),
+    0px 0.347px 1.911px 0px rgba(0, 0, 0, 0.11),
+    0px 0.137px 0.756px 0px rgba(0, 0, 0, 0.07),
+    inset 0px 0px 1px 1px rgba(0, 0, 0, 0.2),
+    inset 0px 0px 5px 1px rgba(0, 0, 0, 0.5);
+}
+
+.live-preview__tablet-bezel {
+  position: absolute;
+  inset: 4px;
+  border-radius: 40px;
+  background: var(--gray-900);
+  border: 1px solid #000;
+  box-shadow:
+    0px 0px 2px 2px rgba(255, 255, 255, 0.24);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow:
+      inset 0px 0px 2px 1px rgba(255, 255, 255, 0.25),
+      inset 0px 0px 6px 0px rgba(255, 255, 255, 0.5);
+  }
+}
+
+.live-preview__tablet-screen {
+  position: absolute;
+  inset: 36px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--gray-900);
+  z-index: 1;
+
+  .live-preview__status-bar-bg,
+  .live-preview__status-bar {
+    display: none;
+  }
+
+  .live-preview__top-header {
+    top: 32px;
+    height: 56px;
+  }
+
+  .live-preview__content-scaler {
+    padding-top: 88px;
+  }
+
+  // iPad renders content at native pixel sizes — bypass the live preview
+  // 0.9x scale + 1/0.9 width hack used in phone for integer-pixel capture.
+  .live-preview__content {
+    width: 100%;
+    transform: none;
+  }
+
+  // iPad's home indicator is the same physical width as iPhone's (~134pt).
+  // Asset is 427px wide with a 139px indicator inside, so a 412px wrapper
+  // makes the visible bar render at ~134px (matching phone). Don't stretch
+  // to full tablet width.
+  .live-preview__home-indicator {
+    width: 412px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+}
+
+.live-preview__tablet-status-bar-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  z-index: 1;
+  background: var(--bg-surface);
+
+  [data-theme='dark'] & {
+    background: var(--bg-surface-hover);
+  }
+}
+
+.live-preview__tablet-status-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: block;
+  width: 100%;
+  height: 32px;
+  color: var(--fg-primary);
+}
+
 // ---- Status Bar ----
 .live-preview__status-bar-bg {
   position: absolute;
@@ -1639,16 +1748,15 @@ body {
 .live-preview__top-header-login-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 32px;
   height: 32px;
-  padding: 0 0 0 var(--space-2);
+  padding: 0;
   border: 0;
   background: transparent;
   color: inherit;
   cursor: pointer;
-  font-family: var(--font-family);
-  font-size: var(--font-size-paragraph-sm);
-  font-weight: var(--font-weight-medium);
-  line-height: 1;
+  line-height: 0;
 }
 
 .live-preview__avatar-popover {
@@ -5769,8 +5877,12 @@ body.builder--phone-only {
   display: flex;
   align-items: stretch;
   justify-content: center;
-  padding: var(--ds-space-lg);
+  padding: var(--ds-space-xl);
   overflow: auto;
+
+  &--desktop {
+    padding: 0;
+  }
 }
 
 .app-preview-screen__viewport {
@@ -5791,11 +5903,113 @@ body.builder--phone-only {
 
 .app-preview-screen__phone {
   width: auto;
-  height: 100%;
-  max-width: 472px;
-  max-height: 988px;
+  height: clamp(880px, 100%, 988px);
   aspect-ratio: 472 / 988;
-  align-self: center;
+  align-self: safe center;
+  flex-shrink: 0;
+}
+
+.app-preview-screen__tablet {
+  width: auto;
+  height: clamp(1100px, 100%, 1205px);
+  aspect-ratio: 816 / 1205;
+  align-self: safe center;
+  flex-shrink: 0;
+}
+
+.app-preview-screen__desktop {
+  position: relative;
+  flex: 1;
+  align-self: stretch;
+  width: 100%;
+  background: var(--bg-page, #f3f3fe);
+  overflow: hidden;
+
+  .live-preview__status-bar-bg,
+  .live-preview__status-bar,
+  .live-preview__home-indicator,
+  .live-preview__bottom-nav {
+    display: none;
+  }
+
+  .live-preview__top-header {
+    top: 0;
+  }
+
+  .live-preview__content-scaler {
+    padding-top: 48px;
+    padding-bottom: 40px;
+    background: var(--bg-page, #f3f3fe);
+  }
+
+  .live-preview__content {
+    width: 100%;
+    transform: none;
+  }
+
+  // Desktop preview: page nav links are visible in the top-header
+  .live-preview__top-header-nav {
+    display: flex;
+  }
+
+  // Desktop layout matches the builder canvas — max 644px page container
+  .themes-view__canvas {
+    width: 100%;
+    max-width: 644px;
+    margin: 40px auto 0 auto;
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-xl);
+
+    &--first {
+      margin-top: -16px;
+    }
+  }
+
+  .themes-view__app {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    position: relative;
+  }
+
+  .themes-view__section {
+    flex: 1 1 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .themes-view__section--shrinked {
+    flex: 1 1 calc(50% - var(--space-4) / 2);
+    max-width: calc(50% - var(--space-4) / 2);
+  }
+}
+
+.live-preview__top-header-nav {
+  display: none;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.live-preview__top-header-nav-link {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fg-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--fg-primary);
+  }
+
+  &--active {
+    color: var(--fg-primary);
+    font-weight: 600;
+  }
 }
 
 .app-preview-screen__viewport--tablet {
