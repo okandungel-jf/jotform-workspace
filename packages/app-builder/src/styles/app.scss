@@ -1762,7 +1762,7 @@ body {
 
 .live-preview__top-header-compact-title {
   font-family: var(--font-family-heading);
-  font-size: 16px;
+  font-size: var(--font-size-paragraph-lg);
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
