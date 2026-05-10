@@ -220,15 +220,39 @@ function isDarkMode(): boolean {
   return document.documentElement.getAttribute('data-theme') === 'dark';
 }
 
-function applyRadius(scale: RadiusScale, targets: NodeListOf<HTMLElement> | null) {
-  if (!targets || targets.length === 0) return;
-  targets.forEach((target) => {
-    if (scale === 'Medium') {
-      target.removeAttribute('data-radius');
-    } else {
-      target.setAttribute('data-radius', scale.toLowerCase());
+// Track the active radius scale so the MutationObserver below can apply it
+// to .app-scope elements that mount AFTER applyRadius runs (e.g. popovers,
+// drawers, and other lazily-rendered chrome).
+let currentRadiusScale: RadiusScale = 'Medium';
+let radiusObserver: MutationObserver | null = null;
+
+function setRadiusAttribute(el: HTMLElement) {
+  if (currentRadiusScale === 'Medium') {
+    el.removeAttribute('data-radius');
+  } else {
+    el.setAttribute('data-radius', currentRadiusScale.toLowerCase());
+  }
+}
+
+function ensureRadiusObserver() {
+  if (radiusObserver || typeof document === 'undefined') return;
+  radiusObserver = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      m.addedNodes.forEach((node) => {
+        if (!(node instanceof HTMLElement)) return;
+        if (node.classList.contains('app-scope')) setRadiusAttribute(node);
+        node.querySelectorAll<HTMLElement>('.app-scope').forEach(setRadiusAttribute);
+      });
     }
   });
+  radiusObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+function applyRadius(scale: RadiusScale, targets: NodeListOf<HTMLElement> | null) {
+  currentRadiusScale = scale;
+  ensureRadiusObserver();
+  if (!targets || targets.length === 0) return;
+  targets.forEach(setRadiusAttribute);
 }
 
 /**

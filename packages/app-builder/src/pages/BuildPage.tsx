@@ -1260,11 +1260,14 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
     return () => previewContentScalerEl.removeEventListener('scroll', onScroll)
   }, [previewContentScalerEl])
 
-  // Top-header compact (app icon + title) shown the moment the first page
-  // starts scrolling — skips the page-name shrink intermediate state.
+  // Top-header compact (app icon + title) shown the moment scrolling starts.
+  // On mobile/tablet it's first-page only (AppHeader lives there). Desktop
+  // preview promotes every page so the chrome reads "app branding" consistently
+  // across pages once you scroll.
   // Keep the element in the DOM 250ms after dismissal so the exit animation runs.
   const previewIsFirstPage = activePageId === pages[0]?.id
-  const showCompactTitle = previewIsFirstPage && appHeaderState.show && isPreviewContentScrolled
+  const isDesktopFullPreview = previewMode && previewDevice === 'desktop'
+  const showCompactTitle = appHeaderState.show && isPreviewContentScrolled && (previewIsFirstPage || isDesktopFullPreview)
   const [compactTitleInDom, setCompactTitleInDom] = useState(false)
   useEffect(() => {
     if (showCompactTitle) {

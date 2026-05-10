@@ -1960,6 +1960,7 @@ body {
   justify-content: center;
   width: 100%;
   aspect-ratio: 1;
+  max-height: 48px;
   padding: var(--space-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
