@@ -2479,6 +2479,19 @@ body {
   }
 }
 
+.live-preview__attribution {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 21px;
+  z-index: 3;
+  pointer-events: none;
+
+  &--with-nav {
+    bottom: 77px;
+  }
+}
+
 // ---- Checkout Page ----
 .live-preview__checkout-page {
   position: absolute;
@@ -5979,6 +5992,11 @@ body.builder--phone-only {
   .live-preview__home-indicator,
   .live-preview__bottom-nav {
     display: none;
+  }
+
+  .live-preview__attribution,
+  .live-preview__attribution--with-nav {
+    bottom: 0;
   }
 
   // Top-header: 64px tall, left-aligned content (compact + nav), right group

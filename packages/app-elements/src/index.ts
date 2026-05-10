@@ -56,6 +56,7 @@ export { Chart } from './components/Chart';
 export { Paragraph } from './components/Paragraph';
 export { AppHeader } from './components/AppHeader';
 export { BottomNavigation } from './components/BottomNavigation';
+export { AttributionBar } from './components/AttributionBar';
 export { LoginSignup } from './components/LoginSignup';
 export { ProductList } from './components/ProductList';
 export { ImageGallery } from './components/ImageGallery';
