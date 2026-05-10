@@ -7,6 +7,7 @@ interface LivePreviewLoginPopoverProps {
   open: boolean
   onClose: () => void
   onLoggedIn?: () => void
+  initialView?: View
 }
 
 const PROVIDERS = [
@@ -25,9 +26,10 @@ export function LivePreviewLoginPopover({
   open,
   onClose,
   onLoggedIn,
+  initialView = 'login',
 }: LivePreviewLoginPopoverProps) {
   const ref = useRef<HTMLDivElement>(null)
-  const [view, setView] = useState<View>('login')
+  const [view, setView] = useState<View>(initialView)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [signupName, setSignupName] = useState('')
@@ -41,8 +43,8 @@ export function LivePreviewLoginPopover({
   const [forgotEmail, setForgotEmail] = useState('')
 
   useEffect(() => {
-    if (open) setView('login')
-  }, [open])
+    if (open) setView(initialView)
+  }, [open, initialView])
 
   useEffect(() => {
     if (!open) return
@@ -71,7 +73,7 @@ export function LivePreviewLoginPopover({
   return (
     <div
       ref={ref}
-      className="live-preview__login-popover app-scope"
+      className={`live-preview__login-popover app-scope live-preview__login-popover--anchor-${initialView === 'signup' ? 'signup' : 'login'}`}
       role="dialog"
       aria-label={
         view === 'login'

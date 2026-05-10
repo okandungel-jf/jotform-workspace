@@ -6032,6 +6032,30 @@ body.builder--phone-only {
     display: flex;
   }
 
+  // Login popover stays mobile-width and anchors to the right (under the Login
+  // button) instead of stretching across the desktop viewport.
+  .live-preview__login-popover {
+    top: calc(64px + 10px);
+    left: auto;
+    right: var(--space-4);
+    width: min(400px, calc(100% - var(--space-8)));
+    max-height: calc(100% - 64px - 10px - var(--space-10));
+  }
+
+  // Position the popover arrow under whichever button opened it.
+  .live-preview__login-popover--anchor-signup::before {
+    right: 44px;
+  }
+
+  .live-preview__login-popover--anchor-login::before {
+    right: 144px;
+  }
+
+  // Desktop: no dimming scrim behind the auth popover.
+  .live-preview__popover-scrim {
+    display: none;
+  }
+
   // Desktop cart button shows label next to icon
   .live-preview__cart-btn {
     width: auto;

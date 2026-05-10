@@ -1186,6 +1186,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
   const [isPreviewCheckoutOpen, setIsPreviewCheckoutOpen] = useState(false)
   const [isAvatarPopoverOpen, setIsAvatarPopoverOpen] = useState(false)
   const [isLoginPopoverOpen, setIsLoginPopoverOpen] = useState(false)
+  const [loginPopoverView, setLoginPopoverView] = useState<'login' | 'signup'>('login')
   const [isPreviewLoggedIn, setIsPreviewLoggedIn] = useState(false)
   const [viewingAsRole, setViewingAsRole] = useState<'anyone' | 'admin' | 'user'>('admin')
   const [previewDevice, setPreviewDevice] = useState<'phone' | 'tablet' | 'desktop'>('phone')
@@ -2139,8 +2140,8 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                 <Icon name="circle-user-filled" category="users" size={20} />
               </button>
               <div className="live-preview__top-header-auth">
-                <AppButton variant="Outlined" size="Small" leftIcon="none" rightIcon="none" label="Login" onClick={() => setIsLoginPopoverOpen((v) => !v)} />
-                <AppButton variant="Default" size="Small" leftIcon="none" rightIcon="none" label="Sign up" onClick={() => setIsLoginPopoverOpen((v) => !v)} />
+                <AppButton variant="Outlined" size="Small" leftIcon="none" rightIcon="none" label="Login" onClick={() => { setLoginPopoverView('login'); setIsLoginPopoverOpen(true) }} />
+                <AppButton variant="Default" size="Small" leftIcon="none" rightIcon="none" label="Sign up" onClick={() => { setLoginPopoverView('signup'); setIsLoginPopoverOpen(true) }} />
               </div>
             </>
           )}
@@ -2151,6 +2152,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
           open={isLoginPopoverOpen}
           onClose={() => setIsLoginPopoverOpen(false)}
           onLoggedIn={() => setIsPreviewLoggedIn(true)}
+          initialView={loginPopoverView}
         />
       )}
       <div ref={setPreviewContentScalerEl} className="live-preview__content-scaler app-scope">
