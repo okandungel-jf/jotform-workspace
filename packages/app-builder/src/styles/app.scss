@@ -1656,6 +1656,51 @@ body {
   flex: 1;
   min-width: 0;
   padding-right: 12px;
+  animation: live-preview-top-header-compact-in 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+
+  &--exiting {
+    animation: live-preview-top-header-compact-out 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  // Desktop "persistent" compact stays mounted — disable mount/unmount animations.
+  &--persistent {
+    animation: none;
+  }
+}
+
+.live-preview__top-header-compact-title {
+  transition:
+    opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.live-preview__top-header-compact--icon-only .live-preview__top-header-compact-title {
+  opacity: 0;
+  max-width: 0;
+  margin-left: -8px; // collapse the gap
+}
+
+@keyframes live-preview-top-header-compact-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes live-preview-top-header-compact-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
 }
 
 .live-preview__top-header-page {
@@ -2288,6 +2333,10 @@ body {
   background: transparent;
   color: var(--fg-primary);
   cursor: pointer;
+}
+
+.live-preview__cart-label {
+  display: none;
 }
 
 .live-preview__cart-badge {
@@ -5932,12 +5981,17 @@ body.builder--phone-only {
     display: none;
   }
 
+  // Top-header: 64px tall, left-aligned content (compact + nav), right group
+  // pinned far right via margin-left:auto.
   .live-preview__top-header {
     top: 0;
+    height: 64px;
+    justify-content: flex-start;
+    gap: var(--space-6);
   }
 
   .live-preview__content-scaler {
-    padding-top: 48px;
+    padding-top: 64px;
     padding-bottom: 40px;
     background: var(--bg-page, #f3f3fe);
   }
@@ -5947,9 +6001,49 @@ body.builder--phone-only {
     transform: none;
   }
 
-  // Desktop preview: page nav links are visible in the top-header
-  .live-preview__top-header-nav {
+  // Desktop preview: page name hidden — nav links replace the title.
+  .live-preview__top-header-page,
+  .live-preview__top-header-btn {
+    display: none;
+  }
+
+  // Desktop compact is a flex item with content-fit width so the nav sits
+  // right next to the title — no fixed padding, layout adapts to the app name.
+  .live-preview__top-header-compact {
+    flex: 0 0 auto;
+    max-width: 240px;
+    padding-right: 0;
+  }
+
+  .live-preview__top-header-compact-title {
+    font-size: 20px;
+  }
+
+  .live-preview__top-header-right {
+    margin-left: auto;
+  }
+
+  // Desktop swaps the avatar icon for paired Login + Sign up buttons
+  .live-preview__top-header-login-btn {
+    display: none;
+  }
+
+  .live-preview__top-header-auth {
     display: flex;
+  }
+
+  // Desktop cart button shows label next to icon
+  .live-preview__cart-btn {
+    width: auto;
+    gap: var(--space-2);
+    padding: 0 var(--space-2);
+  }
+
+  .live-preview__cart-label {
+    display: inline;
+    font-family: var(--font-family);
+    font-size: 16px;
+    font-weight: 500;
   }
 
   // Desktop layout matches the builder canvas — max 644px page container
@@ -5986,9 +6080,26 @@ body.builder--phone-only {
 }
 
 .live-preview__top-header-nav {
-  display: none;
+  display: flex;
   align-items: center;
   gap: var(--space-4);
+}
+
+// Hide nav on mobile/tablet device frames — bottom nav handles paging there.
+.live-preview__phone-screen .live-preview__top-header-nav,
+.live-preview__tablet-screen .live-preview__top-header-nav {
+  display: none;
+}
+
+.live-preview__top-header-auth {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+
+  .jf-btn,
+  .jf-btn__label {
+    font-family: var(--font-family);
+  }
 }
 
 .live-preview__top-header-nav-link {
@@ -5996,19 +6107,24 @@ body.builder--phone-only {
   border: none;
   padding: 0;
   font-family: var(--font-family);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
-  color: var(--fg-secondary);
+  color: var(--fg-tertiary);
   cursor: pointer;
   white-space: nowrap;
+  transition: color 150ms ease;
 
   &:hover {
-    color: var(--fg-primary);
+    color: var(--fg-secondary);
   }
 
   &--active {
-    color: var(--fg-primary);
+    color: var(--fg-brand);
     font-weight: 600;
+
+    &:hover {
+      color: var(--fg-brand-hover);
+    }
   }
 }
 

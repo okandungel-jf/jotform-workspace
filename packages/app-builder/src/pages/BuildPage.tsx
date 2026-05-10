@@ -7,6 +7,7 @@ import {
   AppDesigner,
   applyStoredOrDefaultTheme,
   BottomNavigation,
+  Button as AppButton,
   EmptyState,
   BottomSheet,
   AppIcon,
@@ -1274,6 +1275,21 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
     return () => previewContentScalerEl.removeEventListener('scroll', onScroll)
   }, [previewContentScalerEl])
 
+  // Top-header compact (app icon + title) shown when AppHeader is scrolled past.
+  // Keep the element in the DOM 250ms after dismissal so the exit animation runs.
+  const previewIsFirstPage = activePageId === pages[0]?.id
+  const showCompactTitle = previewIsFirstPage && appHeaderState.show && !isPreviewAppHeaderVisible
+  const [compactTitleInDom, setCompactTitleInDom] = useState(false)
+  useEffect(() => {
+    if (showCompactTitle) {
+      setCompactTitleInDom(true)
+      return
+    }
+    if (!compactTitleInDom) return
+    const t = setTimeout(() => setCompactTitleInDom(false), 250)
+    return () => clearTimeout(t)
+  }, [showCompactTitle, compactTitleInDom])
+
   useEffect(() => {
     return ComponentRegistry.subscribe(() => {
       setComponents(ComponentRegistry.getAll())
@@ -2041,11 +2057,19 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
       )}
       <div className={`live-preview__top-header app-scope${isPreviewContentScrolled ? ' live-preview__top-header--scrolled' : ''}`}>
         {(() => {
-          const isFirstPage = activePageId === pages[0]?.id
-          const showCompact = isFirstPage && appHeaderState.show && !isPreviewAppHeaderVisible
-          if (showCompact) {
+          const compactPersistent = previewDevice === 'desktop'
+          const compactDomReady = compactTitleInDom || compactPersistent
+          const compactExiting = !compactPersistent && compactTitleInDom && !showCompactTitle
+          const titleCollapsed = compactPersistent && !showCompactTitle
+          if (compactDomReady) {
+            const compactClass = [
+              'live-preview__top-header-compact',
+              compactExiting && 'live-preview__top-header-compact--exiting',
+              compactPersistent && 'live-preview__top-header-compact--persistent',
+              titleCollapsed && 'live-preview__top-header-compact--icon-only',
+            ].filter(Boolean).join(' ')
             return (
-              <div className="live-preview__top-header-compact">
+              <div className={compactClass}>
                 {appHeaderState.imageStyle !== 'None' && (
                   <div className={`live-preview__top-header-compact-icon${appHeaderState.imageStyle === 'Image' && appHeaderState.imageUrl ? ' live-preview__top-header-compact-icon--image' : ''}`}>
                     {appHeaderState.imageStyle === 'Image' && appHeaderState.imageUrl ? (
@@ -2068,19 +2092,19 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
             <span className="live-preview__top-header-btn" aria-hidden="true" />
           )
         })()}
+        <nav className="live-preview__top-header-nav">
+          {pages.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              className={`live-preview__top-header-nav-link${p.id === activePageId ? ' live-preview__top-header-nav-link--active' : ''}`}
+              onClick={() => setActivePageId(p.id)}
+            >
+              {p.name}
+            </button>
+          ))}
+        </nav>
         <div className="live-preview__top-header-right">
-          <nav className="live-preview__top-header-nav">
-            {pages.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className={`live-preview__top-header-nav-link${p.id === activePageId ? ' live-preview__top-header-nav-link--active' : ''}`}
-                onClick={() => setActivePageId(p.id)}
-              >
-                {p.name}
-              </button>
-            ))}
-          </nav>
           {pages.some((p) => p.elements.some((el) => el.componentId === 'product-list')) && (
             <LivePreviewCartButton onClick={() => setIsPreviewCartOpen(true)} />
           )}
@@ -2105,14 +2129,20 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
               />
             </>
           ) : (
-            <button
-              type="button"
-              className="live-preview__top-header-login-btn"
-              aria-label="Login"
-              onClick={() => setIsLoginPopoverOpen((v) => !v)}
-            >
-              <Icon name="circle-user-filled" category="users" size={20} />
-            </button>
+            <>
+              <button
+                type="button"
+                className="live-preview__top-header-login-btn"
+                aria-label="Login"
+                onClick={() => setIsLoginPopoverOpen((v) => !v)}
+              >
+                <Icon name="circle-user-filled" category="users" size={20} />
+              </button>
+              <div className="live-preview__top-header-auth">
+                <AppButton variant="Outlined" size="Small" leftIcon="none" rightIcon="none" label="Login" onClick={() => setIsLoginPopoverOpen((v) => !v)} />
+                <AppButton variant="Default" size="Small" leftIcon="none" rightIcon="none" label="Sign up" onClick={() => setIsLoginPopoverOpen((v) => !v)} />
+              </div>
+            </>
           )}
         </div>
       </div>
