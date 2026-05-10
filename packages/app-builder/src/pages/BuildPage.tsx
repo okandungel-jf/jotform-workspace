@@ -36,7 +36,7 @@ import { LivePreviewCheckoutPage } from '../components/LivePreviewCheckoutPage'
 import { LivePreviewOrderBar } from '../components/LivePreviewOrderBar'
 import { LivePreviewAvatarPopover } from '../components/LivePreviewAvatarPopover'
 import { LivePreviewLoginPopover } from '../components/LivePreviewLoginPopover'
-import { QrPlaceholder } from '../components/QrPlaceholder'
+import { QrPopover } from '../components/QrPopover'
 import { MobileBottomBar } from '../components/MobileBottomBar'
 import { AppPreviewScreen } from '../components/AppPreviewScreen'
 import {
@@ -2256,6 +2256,8 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
         onDeviceChange={setPreviewDevice}
         onBack={() => onPreviewClose?.()}
         appScreen={phoneScreenContent}
+        role={viewingAsRole}
+        onRoleChange={setViewingAsRole}
       />
     )}
     <div className="build-page">
@@ -4083,9 +4085,9 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                         value={viewingAsRole}
                         onChange={(v) => setViewingAsRole(v as 'anyone' | 'admin' | 'user')}
                         options={[
-                          { value: 'anyone', label: 'Anyone', leading: <span className="live-preview__role-dot" style={{ background: 'var(--green-300)' }} /> },
-                          { value: 'admin', label: 'Admin', leading: <span className="live-preview__role-dot" style={{ background: 'var(--purple-300)' }} /> },
-                          { value: 'user', label: 'User', leading: <span className="live-preview__role-dot" style={{ background: 'var(--blue-300)' }} /> },
+                          { value: 'anyone', label: 'Anyone', leading: <span className="live-preview__role-dot" style={{ background: 'var(--green-200)' }} /> },
+                          { value: 'admin', label: 'Admin', leading: <span className="live-preview__role-dot" style={{ background: 'var(--purple-200)' }} /> },
+                          { value: 'user', label: 'User', leading: <span className="live-preview__role-dot" style={{ background: 'var(--blue-200)' }} /> },
                         ]}
                       />
                     </div>
@@ -4130,37 +4132,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                       {!isQrPopoverOpen && (
                         <span className="live-preview__tooltip live-preview__tooltip--qr" role="tooltip">Try it on your device</span>
                       )}
-                      {isQrPopoverOpen && (
-                        <div className="qr-popover" role="dialog" aria-label="Preview QR code">
-                          <div className="qr-popover__header">
-                            <p className="qr-popover__title">See app in action</p>
-                            <p className="qr-popover__description">Use your camera to scan the QR code and preview the app on your device.</p>
-                          </div>
-                          <div className="qr-popover__qr-area">
-                            <QrPlaceholder size={120} className="qr-popover__qr-icon" />
-                          </div>
-                          <div className="qr-popover__actions">
-                            <DSButton
-                              className="qr-popover__action"
-                              variant="filled"
-                              colorScheme="secondary"
-                              size="sm"
-                              leftIcon={<Icon name="arrow-up-right-from-square" category="arrows" size={16} />}
-                            >
-                              Open
-                            </DSButton>
-                            <DSButton
-                              className="qr-popover__action"
-                              variant="filled"
-                              colorScheme="secondary"
-                              size="sm"
-                              leftIcon={<Icon name="arrow-down-to-line" category="arrows" size={16} />}
-                            >
-                              Download
-                            </DSButton>
-                          </div>
-                        </div>
-                      )}
+                      {isQrPopoverOpen && <QrPopover />}
                     </div>
                     <div className="live-preview__close-wrapper">
                       <DSButton
