@@ -1241,28 +1241,11 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
   const designBtnRef = useRef<HTMLButtonElement>(null)
   const [designBtnOnHeader, setDesignBtnOnHeader] = useState(true)
 
-  // Live preview: detect when the in-canvas AppHeader scrolls out of view so the
-  // top-header chrome can collapse to show its icon + title (iOS large-title pattern).
-  const [previewAppHeaderEl, setPreviewAppHeaderEl] = useState<HTMLDivElement | null>(null)
+  // Live preview: track scroll so the top-header chrome can collapse to show
+  // its icon + title (iOS large-title pattern) the moment the first page
+  // starts scrolling.
   const [previewContentScalerEl, setPreviewContentScalerEl] = useState<HTMLDivElement | null>(null)
-  const [isPreviewAppHeaderVisible, setIsPreviewAppHeaderVisible] = useState(true)
   const [isPreviewContentScrolled, setIsPreviewContentScrolled] = useState(false)
-  useEffect(() => {
-    if (!previewAppHeaderEl || !previewContentScalerEl) {
-      setIsPreviewAppHeaderVisible(true)
-      return
-    }
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsPreviewAppHeaderVisible(entry.isIntersecting),
-      // Status bar (54px) + top-header (48px) = 102px chrome at the top of the
-      // scroll container. Negative top rootMargin treats that area as outside
-      // the viewport so the compact title appears the moment AppHeader passes
-      // behind the chrome.
-      { root: previewContentScalerEl, rootMargin: '-102px 0px 0px 0px', threshold: 0 }
-    )
-    observer.observe(previewAppHeaderEl)
-    return () => observer.disconnect()
-  }, [previewAppHeaderEl, previewContentScalerEl])
 
   useEffect(() => {
     if (!previewContentScalerEl) {
@@ -1277,10 +1260,11 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
     return () => previewContentScalerEl.removeEventListener('scroll', onScroll)
   }, [previewContentScalerEl])
 
-  // Top-header compact (app icon + title) shown when AppHeader is scrolled past.
+  // Top-header compact (app icon + title) shown the moment the first page
+  // starts scrolling — skips the page-name shrink intermediate state.
   // Keep the element in the DOM 250ms after dismissal so the exit animation runs.
   const previewIsFirstPage = activePageId === pages[0]?.id
-  const showCompactTitle = previewIsFirstPage && appHeaderState.show && !isPreviewAppHeaderVisible
+  const showCompactTitle = previewIsFirstPage && appHeaderState.show && isPreviewContentScrolled
   const [compactTitleInDom, setCompactTitleInDom] = useState(false)
   useEffect(() => {
     if (showCompactTitle) {
@@ -2164,7 +2148,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
             return activePage ? (
               <>
               {isFirstPage && appHeaderState.show && (
-                <div ref={setPreviewAppHeaderEl}>
+                <div>
                 <AppHeader
                   layout={appHeaderState.layout as 'Center' | 'Left' | 'Right'}
                   icon={appHeaderState.icon}
@@ -4213,7 +4197,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                       <div className={`live-preview__top-header app-scope${isPreviewContentScrolled ? ' live-preview__top-header--scrolled' : ''}`}>
                         {(() => {
                           const isFirstPage = activePageId === pages[0]?.id
-                          const showCompact = isFirstPage && appHeaderState.show && !isPreviewAppHeaderVisible
+                          const showCompact = isFirstPage && appHeaderState.show && isPreviewContentScrolled
                           if (showCompact) {
                             return (
                               <div className="live-preview__top-header-compact">
@@ -4290,7 +4274,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                             return activePage ? (
                               <>
                               {isFirstPage && appHeaderState.show && (
-                                <div ref={setPreviewAppHeaderEl}>
+                                <div>
                                 <AppHeader
                                   layout={appHeaderState.layout as 'Center' | 'Left' | 'Right'}
                                   icon={appHeaderState.icon}
