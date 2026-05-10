@@ -1,14 +1,45 @@
-import type React from 'react';
+import { useEffect, useRef, useState, type FC, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
+import { Icon } from '../Icon/Icon';
+import { Button } from '../Button';
 import './AttributionBar.scss';
 
+const openExternal = (href: string) => {
+  window.open(href, '_blank', 'noopener,noreferrer');
+};
+
+type PreviewMode = 'phone' | 'tablet' | 'desktop';
+
+const CONTAINER_MODE_MAP: Record<string, PreviewMode> = {
+  'live-preview__phone-screen': 'phone',
+  'live-preview__tablet-screen': 'tablet',
+  'app-preview-screen__desktop': 'desktop',
+};
+
+const findPreviewContainer = (
+  start: HTMLElement | null,
+): { container: HTMLElement; mode: PreviewMode } | null => {
+  let el: HTMLElement | null = start;
+  while (el) {
+    for (const cls of Object.keys(CONTAINER_MODE_MAP)) {
+      if (el.classList.contains(cls)) {
+        return { container: el, mode: CONTAINER_MODE_MAP[cls] };
+      }
+    }
+    el = el.parentElement;
+  }
+  return null;
+};
+
 export interface AttributionBarProps {
-  href?: string;
+  ctaHref?: string;
+  templatesHref?: string;
   label?: string;
 }
 
-const JotformLogomark = () => (
+const JotformLogomark: FC<{ className?: string }> = ({ className }) => (
   <svg
-    className="attribution-bar__logo"
+    className={className}
     viewBox="0 0 24 24"
     fill="currentColor"
     xmlns="http://www.w3.org/2000/svg"
@@ -21,21 +52,110 @@ const JotformLogomark = () => (
   </svg>
 );
 
-export const AttributionBar: React.FC<AttributionBarProps> = ({
-  href = 'https://www.jotform.com/?utm_source=app-builder&utm_medium=attribution',
+interface AttributionModalProps {
+  open: boolean;
+  onClose: () => void;
+  ctaHref: string;
+  templatesHref: string;
+  anchorRef: RefObject<HTMLElement | null>;
+}
+
+const AttributionModal: FC<AttributionModalProps> = ({ open, onClose, ctaHref, templatesHref, anchorRef }) => {
+  const [target, setTarget] = useState<{ container: HTMLElement; mode: PreviewMode } | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      setTarget(null);
+      return;
+    }
+    setTarget(findPreviewContainer(anchorRef.current));
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onClose, anchorRef]);
+
+  if (!open || !target) return null;
+
+  const isSheet = target.mode === 'phone' || target.mode === 'tablet';
+  const overlayClass = `attribution-modal-overlay${isSheet ? ' attribution-modal-overlay--sheet' : ''}`;
+  const modalClass = `attribution-modal${isSheet ? ' attribution-modal--sheet' : ''}`;
+
+  return createPortal(
+    <div className={overlayClass} onClick={onClose} role="dialog" aria-modal="true">
+      <div className={modalClass} onClick={(e) => e.stopPropagation()}>
+        <button
+          type="button"
+          className="attribution-modal__close"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <Icon name="X" size={20} />
+        </button>
+        <div className="attribution-modal__brand">
+          <JotformLogomark className="attribution-modal__brand-logo" />
+          <span className="attribution-modal__brand-name">Jotform</span>
+        </div>
+        <h2 className="attribution-modal__title">
+          Build apps like this <span className="attribution-modal__title-accent">in minutes</span>.
+        </h2>
+        <p className="attribution-modal__subtitle">
+          No code, no setup. Drag, drop, and publish your own app — for your business, your team, or your community.
+        </p>
+        <div className="attribution-modal__actions">
+          <Button
+            variant="Default"
+            fullWidth
+            leftIcon="none"
+            rightIcon="none"
+            label="Try it now — It’s Free"
+            onClick={() => openExternal(ctaHref)}
+          />
+          <Button
+            variant="Outlined"
+            fullWidth
+            leftIcon="none"
+            rightIcon="none"
+            label="Browse templates"
+            onClick={() => openExternal(templatesHref)}
+          />
+        </div>
+      </div>
+    </div>,
+    target.container,
+  );
+};
+
+export const AttributionBar: FC<AttributionBarProps> = ({
+  ctaHref = 'https://www.jotform.com/products/app-builder/?utm_source=app-builder&utm_medium=attribution&utm_campaign=signup',
+  templatesHref = 'https://www.jotform.com/app-templates/?utm_source=app-builder&utm_medium=attribution&utm_campaign=templates',
   label = 'Built with Jotform',
 }) => {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
   return (
-    <div className="attribution-bar">
-      <a
-        className="attribution-bar__pill"
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <JotformLogomark />
-        <span className="attribution-bar__label">{label}</span>
-      </a>
-    </div>
+    <>
+      <div className="attribution-bar" ref={wrapperRef}>
+        <button
+          type="button"
+          className="attribution-bar__pill"
+          onClick={() => setOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+        >
+          <JotformLogomark className="attribution-bar__logo" />
+          <span className="attribution-bar__label">{label}</span>
+        </button>
+      </div>
+      <AttributionModal
+        open={open}
+        onClose={() => setOpen(false)}
+        ctaHref={ctaHref}
+        templatesHref={templatesHref}
+        anchorRef={wrapperRef}
+      />
+    </>
   );
 };

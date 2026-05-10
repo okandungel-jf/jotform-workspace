@@ -3030,11 +3030,12 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 3;
+  z-index: 101;
   display: block;
   width: 100%;
   height: auto;
   opacity: 0.3;
+  pointer-events: none;
 
   [data-theme='dark'] & {
     filter: invert(1);
