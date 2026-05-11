@@ -2199,6 +2199,11 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                   })}
                 </div>
               </div>
+              {isFirstPage && !isPreviewCartOpen && !isPreviewCheckoutOpen && (
+                <div className="themes-view__attribution-footer">
+                  <AttributionBar />
+                </div>
+              )}
               </>
             ) : null
           })()}
@@ -2211,11 +2216,6 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
             activeIndex={pages.slice(0, 5).findIndex((p) => p.id === activePageId)}
             onItemClick={(index) => setActivePageId(pages[index].id)}
           />
-        </div>
-      )}
-      {!isPreviewCartOpen && !isPreviewCheckoutOpen && (
-        <div className={`live-preview__attribution app-scope${pages.length > 1 ? ' live-preview__attribution--with-nav' : ''}`}>
-          <AttributionBar />
         </div>
       )}
       <img src={phoneHomeIndicator} alt="" className="live-preview__home-indicator" />
@@ -4297,6 +4297,11 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                                   })}
                                 </div>
                               </div>
+                              {isFirstPage && !isPreviewCartOpen && !isPreviewCheckoutOpen && (
+                                <div className="themes-view__attribution-footer">
+                                  <AttributionBar />
+                                </div>
+                              )}
                               </>
                             ) : null
                           })()}
@@ -4309,11 +4314,6 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                             activeIndex={pages.slice(0, 5).findIndex((p) => p.id === activePageId)}
                             onItemClick={(index) => setActivePageId(pages[index].id)}
                           />
-                        </div>
-                      )}
-                      {!isPreviewCartOpen && !isPreviewCheckoutOpen && (
-                        <div className={`live-preview__attribution app-scope${pages.length > 1 ? ' live-preview__attribution--with-nav' : ''}`}>
-                          <AttributionBar />
                         </div>
                       )}
                       <img src={phoneHomeIndicator} alt="" className="live-preview__home-indicator" />

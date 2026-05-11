@@ -1470,6 +1470,8 @@ body {
   overflow: hidden;
   background: var(--gray-900);
   z-index: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 // ---- Tablet Mockup (iPad mini portrait) ----
@@ -1521,6 +1523,8 @@ body {
   overflow: hidden;
   background: var(--gray-900);
   z-index: 1;
+  display: flex;
+  flex-direction: column;
 
   .live-preview__status-bar-bg,
   .live-preview__status-bar {
@@ -1540,6 +1544,7 @@ body {
   // 0.9x scale + 1/0.9 width hack used in phone for integer-pixel capture.
   .live-preview__content {
     width: 100%;
+    min-height: 100%;
     transform: none;
   }
 
@@ -2368,14 +2373,44 @@ body {
   scrollbar-width: none;
   background: var(--bg-surface);
   padding-top: 102px;
+  // Default reserves the home-indicator strip (21px) when no bottom-nav
+  // sits below the scaler. The bottom-nav variant (in flow on phone /
+  // tablet shells) takes over that clearance via its own padding-bottom.
+  // The attribution footer itself owns the 16px gap below the banner.
+  padding-bottom: 21px;
+  display: flex;
+  flex-direction: column;
 
   &::-webkit-scrollbar {
     display: none;
   }
 }
 
+// Phone + tablet: convert the scaler into a flex item so the bottom-nav
+// (also in-flow on these shells) reserves space automatically.
+.live-preview__phone-screen > .live-preview__content-scaler,
+.live-preview__tablet-screen > .live-preview__content-scaler {
+  position: static;
+  inset: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.live-preview__phone-screen:has(.live-preview__bottom-nav) > .live-preview__content-scaler,
+.live-preview__tablet-screen:has(.live-preview__bottom-nav) > .live-preview__content-scaler {
+  padding-bottom: 0;
+}
+
 .live-preview__content {
   width: calc(100% / 0.9);
+  flex: 1;
+  // Scale-compensated min-height: layout height is 1/0.9 of the scaler's
+  // content area so the 0.9x visual matches the visible area exactly.
+  // Lets the attribution footer (margin-top:auto in the canvas) land at
+  // the visible bottom edge of the scaler (i.e. 16px above the nav top).
+  min-height: calc(100% / 0.9);
+  display: flex;
+  flex-direction: column;
   transform: scale(0.9);
   transform-origin: top left;
   user-select: none;
@@ -2406,6 +2441,15 @@ body {
     gap: var(--space-4, 16px);
     flex-direction: row;
     flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+
+  // Sticky-footer slot for the attribution banner: margin-top:auto pushes
+  // it to the bottom of the canvas; padding-bottom produces the 16px gap
+  // to whatever sits below (bottom-nav or home-indicator).
+  .themes-view__attribution-footer {
+    margin-top: auto;
+    padding: 0 var(--space-4, 16px) var(--space-4, 16px);
   }
 
   .themes-view__section {
@@ -2437,6 +2481,14 @@ body {
   }
 }
 
+// Phone + tablet preview: sticky-footer for the attribution banner.
+// The footer is a sibling of the canvas inside .live-preview__content
+// (which is flex-col with min-height scale-compensated to fill the
+// scaler content-area). margin-top:auto on the footer rides it to the
+// content's bottom; its own padding-bottom (16px) produces the gap to
+// whatever sits below the scaler. Desktop overrides this in its own
+// block to render the banner inline beneath the centered canvas card.
+
 .live-preview__order-bar {
   position: absolute;
   left: 0;
@@ -2459,10 +2511,8 @@ body {
 }
 
 .live-preview__bottom-nav {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
+  flex-shrink: 0;
   z-index: 2;
   padding-bottom: 21px;
   background: var(--bg-surface);
@@ -2477,19 +2527,6 @@ body {
 
   .bottom-nav__item--active:hover {
     color: var(--fg-brand);
-  }
-}
-
-.live-preview__attribution {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 21px;
-  z-index: 2;
-  pointer-events: none;
-
-  &--with-nav {
-    bottom: 77px;
   }
 }
 
@@ -6013,11 +6050,6 @@ body.builder--phone-only {
     display: none;
   }
 
-  .live-preview__attribution,
-  .live-preview__attribution--with-nav {
-    bottom: 0;
-  }
-
   // Top-header: 64px tall, left-aligned content (compact + nav), right group
   // pinned far right via margin-left:auto.
   .live-preview__top-header {
@@ -6029,12 +6061,13 @@ body.builder--phone-only {
 
   .live-preview__content-scaler {
     padding-top: 64px;
-    padding-bottom: 40px;
+    padding-bottom: 16px;
     background: var(--bg-page, #f3f3fe);
   }
 
   .live-preview__content {
     width: 100%;
+    min-height: auto;
     transform: none;
   }
 
@@ -6137,6 +6170,17 @@ body.builder--phone-only {
   .themes-view__section--shrinked {
     flex: 1 1 calc(50% - var(--space-4) / 2);
     max-width: calc(50% - var(--space-4) / 2);
+  }
+
+  // Desktop attribution: banner sits *below* the centered canvas card
+  // (matching its width) with a 16px gap above. The scaler's 16px
+  // padding-bottom provides the gap below. Override the phone/tablet
+  // sticky-footer setup — desktop renders inline beneath the card.
+  .themes-view__attribution-footer {
+    width: 100%;
+    max-width: 644px;
+    margin: 16px auto 0 auto;
+    padding: 0;
   }
 }
 
