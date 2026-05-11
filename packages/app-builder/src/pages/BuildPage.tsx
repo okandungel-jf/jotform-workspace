@@ -2499,6 +2499,9 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                   )}
                 </div>
               ))}
+              <div className="build-page__attribution">
+                <AttributionBar />
+              </div>
             </div>
           </div>
 

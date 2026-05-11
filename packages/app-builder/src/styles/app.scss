@@ -3117,6 +3117,21 @@ body {
   }
 }
 
+// Builder canvas attribution: matches the AddPageDivider's centered
+// 644px column. 16px gap above + below. When the last AddPageDivider
+// is present, its margin-bottom collapses with this margin-top to a
+// single 16px gap — covers the empty-page case too (no divider).
+.build-page__attribution {
+  width: 100%;
+  max-width: 644px;
+  margin: var(--space-4) auto;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    padding: 0 var(--space-4);
+  }
+}
+
 .add-page-divider__line {
   flex: 1;
   height: 0;
