@@ -10,6 +10,16 @@ export interface DropdownSingleProps extends DropdownBaseProps {
   options: DropdownOption[];
   value?: string;
   onChange?: (value: string) => void;
+  /**
+   * Fires while the user hovers (or keyboard-focuses) an option in the open
+   * menu. Useful for live-previewing a value before commit.
+   */
+  onItemHover?: (value: string) => void;
+  /**
+   * Fires when the pointer leaves the menu without selecting, or the menu
+   * closes. Pair with `onItemHover` to clear preview state.
+   */
+  onItemHoverEnd?: () => void;
   showLeadingIcon?: boolean;
   menuPlacement?: 'auto' | 'top' | 'bottom';
   mobileBehavior?: 'auto' | 'inline' | 'sheet';
@@ -25,6 +35,8 @@ export const DropdownSingle = forwardRef<DropdownHandle, DropdownSingleProps>(
       options,
       value,
       onChange,
+      onItemHover,
+      onItemHoverEnd,
       size = 'md',
       status = 'default',
       disabled = false,
@@ -118,8 +130,12 @@ export const DropdownSingle = forwardRef<DropdownHandle, DropdownSingleProps>(
               title={title}
               menuRef={menuRef}
               triggerRef={triggerRef}
-              onClose={() => setOpen(false)}
+              onClose={() => {
+                setOpen(false);
+                onItemHoverEnd?.();
+              }}
               onKeyDown={handleMenuKey}
+              onMouseLeave={() => onItemHoverEnd?.()}
             >
               {options.map((opt, i) => {
                 const isSelected = opt.value === value;
@@ -139,6 +155,7 @@ export const DropdownSingle = forwardRef<DropdownHandle, DropdownSingleProps>(
                       role="option"
                       aria-selected={isSelected}
                       data-dd-index={i}
+                      onMouseEnter={() => onItemHover?.(opt.value)}
                       onMouseDown={(e) => {
                         e.preventDefault();
                         onChange?.(opt.value);

@@ -9,6 +9,71 @@
   pointer-events: none;
 }
 
+.attribution-bar__pill-wrap {
+  position: relative;
+  display: inline-flex;
+  pointer-events: auto;
+
+  // Invisible hit bridge covering the close button + the gap above the
+  // pill so wrapper:hover doesn't drop when the cursor crosses the gap.
+  &::before {
+    content: '';
+    position: absolute;
+    top: -24px;
+    right: 0;
+    width: 20px;
+    height: 24px;
+    pointer-events: auto;
+  }
+
+  &:hover .attribution-bar__remove,
+  &:focus-within .attribution-bar__remove {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+}
+
+.attribution-bar__remove {
+  position: absolute;
+  top: -24px;
+  right: 0;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: color-mix(in srgb, var(--fg-primary) 70%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid color-mix(in srgb, var(--fg-primary) 70%, transparent);
+  border-radius: 50%;
+  color: var(--fg-inverse);
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
+  transition: opacity 150ms ease, transform 150ms ease, background 150ms ease, border-color 150ms ease;
+
+  &:hover {
+    background: var(--fg-primary);
+    border-color: var(--fg-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--fg-brand);
+    outline-offset: 2px;
+  }
+
+  [data-theme='dark'] & {
+    color: var(--bg-surface);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
 .attribution-bar__pill {
   display: inline-flex;
   align-items: center;

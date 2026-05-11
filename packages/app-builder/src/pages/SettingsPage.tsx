@@ -198,6 +198,7 @@ interface AppNameIconPanelProps {
   setIconBg: (value: string) => void
   iconStyle: IconStyle
   setIconStyle: (value: IconStyle) => void
+  onIconStyleHover?: (value: IconStyle | null) => void
 }
 
 function AppNameIconPanel({
@@ -214,6 +215,7 @@ function AppNameIconPanel({
   setIconBg,
   iconStyle,
   setIconStyle,
+  onIconStyleHover,
 }: AppNameIconPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -274,6 +276,8 @@ function AppNameIconPanel({
                 options={ICON_STYLE_OPTIONS}
                 value={iconStyle}
                 onChange={(value) => setIconStyle(value as IconStyle)}
+                onItemHover={(value) => onIconStyleHover?.(value as IconStyle)}
+                onItemHoverEnd={() => onIconStyleHover?.(null)}
               />
             </FormField>
           </div>
@@ -367,6 +371,8 @@ interface SplashScreenPanelProps {
   setBgStyle: (value: SplashStyle) => void
   animation: SplashAnimation
   setAnimation: (value: SplashAnimation) => void
+  onBgStyleHover?: (value: SplashStyle | null) => void
+  onAnimationHover?: (value: SplashAnimation | null) => void
 }
 
 function SplashScreenPanel({
@@ -378,6 +384,8 @@ function SplashScreenPanel({
   setBgStyle,
   animation,
   setAnimation,
+  onBgStyleHover,
+  onAnimationHover,
 }: SplashScreenPanelProps) {
   return (
     <section className="settings-panel__card">
@@ -414,6 +422,8 @@ function SplashScreenPanel({
             options={SPLASH_STYLE_OPTIONS}
             value={bgStyle}
             onChange={(value) => setBgStyle(value as SplashStyle)}
+            onItemHover={(value) => onBgStyleHover?.(value as SplashStyle)}
+            onItemHoverEnd={() => onBgStyleHover?.(null)}
           />
         </FormField>
       </div>
@@ -429,6 +439,8 @@ function SplashScreenPanel({
             options={SPLASH_ANIMATION_OPTIONS}
             value={animation}
             onChange={(value) => setAnimation(value as SplashAnimation)}
+            onItemHover={(value) => onAnimationHover?.(value as SplashAnimation)}
+            onItemHoverEnd={() => onAnimationHover?.(null)}
           />
         </FormField>
       </div>
@@ -463,6 +475,16 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
 
   const [splashBgStyle, setSplashBgStyle] = useState<SplashStyle>('flat')
   const [splashAnimation, setSplashAnimation] = useState<SplashAnimation>('none')
+
+  // Live-preview-on-hover for the style/animation dropdowns. When a user
+  // hovers a menu option we render it in the preview without committing;
+  // moving the pointer out (or closing the menu) clears the preview.
+  const [hoveredIconStyle, setHoveredIconStyle] = useState<IconStyle | null>(null)
+  const [hoveredSplashBgStyle, setHoveredSplashBgStyle] = useState<SplashStyle | null>(null)
+  const [hoveredSplashAnimation, setHoveredSplashAnimation] = useState<SplashAnimation | null>(null)
+  const previewIconStyle = hoveredIconStyle ?? iconStyle
+  const previewSplashBgStyle = hoveredSplashBgStyle ?? splashBgStyle
+  const previewSplashAnimation = hoveredSplashAnimation ?? splashAnimation
 
   const [splashState, setSplashState] = useState<SplashState>({
     fontColor: '#FFFFFF',
@@ -510,6 +532,7 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
               setIconBg={setBrandColor}
               iconStyle={iconStyle}
               setIconStyle={setIconStyle}
+              onIconStyleHover={setHoveredIconStyle}
             />
           )}
           {activeId === 'splash-screen' && (
@@ -522,6 +545,8 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
               setBgStyle={setSplashBgStyle}
               animation={splashAnimation}
               setAnimation={setSplashAnimation}
+              onBgStyleHover={setHoveredSplashBgStyle}
+              onAnimationHover={setHoveredSplashAnimation}
             />
           )}
         </div>
@@ -536,14 +561,14 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
                     iconName={appHeaderIcon}
                     iconColor={inverseColor}
                     iconBg={brandColor}
-                    iconStyle={iconStyle}
+                    iconStyle={previewIconStyle}
                     appName={appName}
                   />
                 )}
                 {activeId === 'splash-screen' && (
                   <SplashScreenMockup
                     bgColor={headerBg}
-                    bgStyle={splashBgStyle}
+                    bgStyle={previewSplashBgStyle}
                     fontColor={splashState.fontColor}
                     variant={iconVariant}
                     imageUrl={appImage.url}
@@ -551,7 +576,7 @@ export function SettingsPage({ presetId, appTitle }: SettingsPageProps) {
                     iconColor={brandColor}
                     iconBg={inverseColor}
                     appName={appName}
-                    animation={splashAnimation}
+                    animation={previewSplashAnimation}
                   />
                 )}
               </BasicPhonePreview>

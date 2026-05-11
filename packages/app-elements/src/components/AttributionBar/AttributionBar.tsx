@@ -34,6 +34,7 @@ const findPreviewContainer = (
 export interface AttributionBarProps {
   aiHref?: string;
   templatesHref?: string;
+  upgradeHref?: string;
   label?: string;
 }
 
@@ -94,6 +95,70 @@ interface AttributionModalProps {
   templatesHref: string;
   anchorRef: RefObject<HTMLElement | null>;
 }
+
+interface RemoveBrandingModalProps {
+  open: boolean;
+  onClose: () => void;
+  upgradeHref: string;
+  anchorRef: RefObject<HTMLElement | null>;
+}
+
+const RemoveBrandingModal: FC<RemoveBrandingModalProps> = ({ open, onClose, upgradeHref, anchorRef }) => {
+  const [target, setTarget] = useState<{ container: HTMLElement; mode: PreviewMode } | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      setTarget(null);
+      return;
+    }
+    setTarget(findPreviewContainer(anchorRef.current));
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onClose, anchorRef]);
+
+  if (!open || !target) return null;
+
+  const isSheet = target.mode === 'phone' || target.mode === 'tablet';
+  const overlayClass = `attribution-modal-overlay${isSheet ? ' attribution-modal-overlay--sheet' : ''}`;
+  const modalClass = `attribution-modal${isSheet ? ' attribution-modal--sheet' : ''}`;
+
+  return createPortal(
+    <div className={overlayClass} onClick={onClose} role="dialog" aria-modal="true">
+      <div className={modalClass} onClick={(e) => e.stopPropagation()}>
+        <h2 className="attribution-modal__title">
+          Remove Jotform branding?
+        </h2>
+        <p className="attribution-modal__subtitle">
+          Upgrade your account to remove it.
+        </p>
+        <div className="attribution-modal__actions">
+          <Button
+            variant="Default"
+            size="Small"
+            fullWidth
+            leftIcon="none"
+            rightIcon="none"
+            label="Upgrade your account"
+            onClick={() => openExternal(upgradeHref)}
+          />
+          <Button
+            variant="Outlined"
+            size="Small"
+            fullWidth
+            leftIcon="none"
+            rightIcon="none"
+            label="No, thanks"
+            onClick={onClose}
+          />
+        </div>
+      </div>
+    </div>,
+    target.container,
+  );
+};
 
 const AttributionModal: FC<AttributionModalProps> = ({ open, onClose, aiHref, templatesHref, anchorRef }) => {
   const [target, setTarget] = useState<{ container: HTMLElement; mode: PreviewMode } | null>(null);
@@ -191,30 +256,51 @@ const AttributionModal: FC<AttributionModalProps> = ({ open, onClose, aiHref, te
 export const AttributionBar: FC<AttributionBarProps> = ({
   aiHref = 'https://www.jotform.com/ai/app-generator/?utm_source=app-builder&utm_medium=attribution&utm_campaign=ai-prompt',
   templatesHref = 'https://www.jotform.com/app-templates/?utm_source=app-builder&utm_medium=attribution&utm_campaign=templates',
+  upgradeHref = 'https://www.jotform.com/pricing/?utm_source=app-builder&utm_medium=attribution&utm_campaign=remove-branding',
   label = 'Built with Jotform',
 }) => {
   const [open, setOpen] = useState(false);
+  const [removeOpen, setRemoveOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
       <div className="attribution-bar" ref={wrapperRef}>
-        <button
-          type="button"
-          className="attribution-bar__pill"
-          onClick={() => setOpen(true)}
-          aria-haspopup="dialog"
-          aria-expanded={open}
-        >
-          <JotformLogomark className="attribution-bar__logo" />
-          <span className="attribution-bar__label">{label}</span>
-        </button>
+        <div className="attribution-bar__pill-wrap">
+          <button
+            type="button"
+            className="attribution-bar__pill"
+            onClick={() => setOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={open}
+          >
+            <JotformLogomark className="attribution-bar__logo" />
+            <span className="attribution-bar__label">{label}</span>
+          </button>
+          <button
+            type="button"
+            className="attribution-bar__remove"
+            onClick={(e) => {
+              e.stopPropagation();
+              setRemoveOpen(true);
+            }}
+            aria-label="Remove Jotform branding"
+          >
+            <Icon name="X" size={12} />
+          </button>
+        </div>
       </div>
       <AttributionModal
         open={open}
         onClose={() => setOpen(false)}
         aiHref={aiHref}
         templatesHref={templatesHref}
+        anchorRef={wrapperRef}
+      />
+      <RemoveBrandingModal
+        open={removeOpen}
+        onClose={() => setRemoveOpen(false)}
+        upgradeHref={upgradeHref}
         anchorRef={wrapperRef}
       />
     </>

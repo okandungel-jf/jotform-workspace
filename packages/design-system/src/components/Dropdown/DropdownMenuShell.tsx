@@ -9,6 +9,7 @@ interface DropdownMenuShellProps {
   triggerRef?: { readonly current: HTMLElement | null };
   onClose: () => void;
   onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => void;
+  onMouseLeave?: () => void;
   multiselectable?: boolean;
   className?: string;
   /** Render desktop menu in a portal anchored to the trigger. Use when the trigger lives inside an `overflow: hidden` ancestor. */
@@ -68,6 +69,7 @@ export function DropdownMenuShell({
   triggerRef,
   onClose,
   onKeyDown,
+  onMouseLeave,
   multiselectable,
   className,
   usePortal,
@@ -113,6 +115,7 @@ export function DropdownMenuShell({
       aria-multiselectable={multiselectable || undefined}
       tabIndex={-1}
       onKeyDown={onKeyDown}
+      onMouseLeave={onMouseLeave}
       style={usePortal ? portalStyle ?? { visibility: 'hidden' } : undefined}
     >
       {children}

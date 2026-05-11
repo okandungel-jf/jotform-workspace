@@ -2485,7 +2485,7 @@ body {
   left: 0;
   right: 0;
   bottom: 21px;
-  z-index: 3;
+  z-index: 2;
   pointer-events: none;
 
   &--with-nav {
@@ -4471,7 +4471,7 @@ body {
   &--linear {
     background: linear-gradient(
       180deg,
-      var(--primary-300) 0%,
+      var(--primary-400) 0%,
       var(--primary-600) 100%
     );
   }
@@ -4480,7 +4480,7 @@ body {
     background: linear-gradient(
       180deg,
       var(--primary-600) 0%,
-      var(--primary-300) 100%
+      var(--primary-400) 100%
     );
   }
 
@@ -4525,7 +4525,7 @@ body {
   &--linear {
     background: linear-gradient(
       180deg,
-      var(--primary-300) 0%,
+      var(--primary-400) 0%,
       var(--primary-600) 100%
     );
   }
@@ -4534,7 +4534,7 @@ body {
     background: linear-gradient(
       180deg,
       var(--primary-600) 0%,
-      var(--primary-300) 100%
+      var(--primary-400) 100%
     );
   }
 
