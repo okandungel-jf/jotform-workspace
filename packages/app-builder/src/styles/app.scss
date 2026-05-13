@@ -3040,6 +3040,59 @@ body {
   gap: var(--space-4);
 }
 
+// ---- More Pages full-screen view (bottom-nav overflow) ----
+.live-preview__more-pages {
+  width: 100%;
+  padding: var(--space-4) var(--space-3);
+  background: var(--bg-surface);
+
+  [data-theme='dark'] & {
+    background: var(--bg-surface-hover);
+  }
+}
+
+.live-preview__more-pages-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.live-preview__more-pages-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-md);
+  text-align: left;
+  font-family: var(--font-family);
+  font-size: var(--font-size-paragraph-md);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--fg-primary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: var(--bg-surface-hover);
+  }
+
+  &--active,
+  &--active:hover {
+    background: var(--bg-surface-brand);
+    color: var(--fg-brand);
+  }
+}
+
+.live-preview__more-pages-label {
+  flex: 1;
+  min-width: 0;
+}
+
 .live-preview__menu-item {
   display: block;
   width: 100%;
@@ -3118,9 +3171,11 @@ body {
 }
 
 // Builder canvas attribution: matches the AddPageDivider's centered
-// 644px column. 16px gap above + below. When the last AddPageDivider
-// is present, its margin-bottom collapses with this margin-top to a
-// single 16px gap — covers the empty-page case too (no divider).
+// 644px column. Default keeps a 16px gap above + below; the override
+// below drops the top margin when the preceding page-wrapper ends in
+// an AddPageDivider (which already contributes its own 16px below).
+// .themes-view__device is flex-col so margins don't collapse — handle
+// the two cases explicitly.
 .build-page__attribution {
   width: 100%;
   max-width: 644px;
@@ -3130,6 +3185,10 @@ body {
     max-width: 100%;
     padding: 0 var(--space-4);
   }
+}
+
+.themes-view__device > div:has(> .add-page-divider) + .build-page__attribution {
+  margin-top: 0;
 }
 
 .add-page-divider__line {

@@ -42,8 +42,8 @@ const NAME_MAP: Record<string, Partial<Record<IconLibrary, string>>> = {
   Send: { phosphor: 'PaperPlaneRight', tabler: 'IconSend' },
   RefreshCw: { phosphor: 'ArrowsClockwise', tabler: 'IconRefresh' },
   Filter: { phosphor: 'Funnel', tabler: 'IconFilter' },
-  MoreHorizontal: { phosphor: 'DotsThree', tabler: 'IconDots' },
-  MoreVertical: { phosphor: 'DotsThreeVertical', tabler: 'IconDotsVertical' },
+  Ellipsis: { phosphor: 'DotsThree', tabler: 'IconDots' },
+  EllipsisVertical: { phosphor: 'DotsThreeVertical', tabler: 'IconDotsVertical' },
   Save: { phosphor: 'FloppyDisk', tabler: 'IconDeviceFloppy' },
   Undo: { phosphor: 'ArrowCounterClockwise', tabler: 'IconArrowBackUp' },
 

@@ -30,6 +30,7 @@ import previewUserAvatar from '../assets/preview-user-avatar.jpg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
 import { LivePreviewMenuDrawer } from '../components/LivePreviewMenuDrawer'
+import { LivePreviewMorePagesView } from '../components/LivePreviewMorePagesView'
 import { LivePreviewCartButton } from '../components/LivePreviewCartButton'
 import { LivePreviewCartPage } from '../components/LivePreviewCartPage'
 import { LivePreviewCheckoutPage } from '../components/LivePreviewCheckoutPage'
@@ -1183,6 +1184,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
   const [appSubtitle, setAppSubtitle] = useState(initial.appSubtitle)
   const [appHeaderState, setAppHeaderState] = useState<AppHeaderState>(initial.appHeader)
   const [isPreviewMenuOpen, setIsPreviewMenuOpen] = useState(false)
+  const [isMorePageOpen, setIsMorePageOpen] = useState(false)
   const [isPreviewCartOpen, setIsPreviewCartOpen] = useState(false)
   const [isPreviewCheckoutOpen, setIsPreviewCheckoutOpen] = useState(false)
   const [isAvatarPopoverOpen, setIsAvatarPopoverOpen] = useState(false)
@@ -1259,6 +1261,33 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
     previewContentScalerEl.addEventListener('scroll', onScroll, { passive: true })
     return () => previewContentScalerEl.removeEventListener('scroll', onScroll)
   }, [previewContentScalerEl])
+
+  // Bottom-nav overflow: when 5+ pages exist, show the first 4 and replace the
+  // 5th slot with a "More" tab. Tapping More opens a full-screen list of all
+  // pages; tapping a page from that list navigates and dismisses More.
+  const hasNavOverflow = pages.length >= 5
+  const visibleNavPages = hasNavOverflow ? pages.slice(0, 4) : pages
+  const isActiveInOverflow = hasNavOverflow && pages.slice(4).some((p) => p.id === activePageId)
+  const bottomNavItems = hasNavOverflow
+    ? [...visibleNavPages.map((p, i) => ({ icon: getPageIconName(p, i), label: p.name })), { icon: 'Ellipsis', label: 'More' }]
+    : visibleNavPages.map((p, i) => ({ icon: getPageIconName(p, i), label: p.name }))
+  const bottomNavActiveIndex = (() => {
+    if (hasNavOverflow && (isMorePageOpen || isActiveInOverflow)) return visibleNavPages.length
+    const idx = visibleNavPages.findIndex((p) => p.id === activePageId)
+    return idx === -1 ? 0 : idx
+  })()
+  const handleBottomNavClick = (index: number) => {
+    if (hasNavOverflow && index === visibleNavPages.length) {
+      setIsMorePageOpen(true)
+      return
+    }
+    setIsMorePageOpen(false)
+    setActivePageId(visibleNavPages[index].id)
+  }
+  const handleMorePageSelect = (pageId: string) => {
+    setActivePageId(pageId)
+    setIsMorePageOpen(false)
+  }
 
   // Top-header compact (app icon + title) shown the moment scrolling starts.
   // On mobile/tablet it's first-page only (AppHeader lives there). Desktop
@@ -2073,7 +2102,11 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
             )
           }
           const activePage = pages.find((p) => p.id === activePageId)
-          return activePage ? (
+          return isMorePageOpen ? (
+            <div className="live-preview__top-header-page">
+              <span className="live-preview__top-header-page-name">More Pages</span>
+            </div>
+          ) : activePage ? (
             <div className="live-preview__top-header-page">
               <span className="live-preview__top-header-page-name">{activePage.name}</span>
             </div>
@@ -2145,7 +2178,13 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
       )}
       <div ref={setPreviewContentScalerEl} className="live-preview__content-scaler app-scope">
         <div className="live-preview__content app-scope">
-          {(() => {
+          {isMorePageOpen ? (
+            <LivePreviewMorePagesView
+              pages={pages}
+              activePageId={activePageId}
+              onPageSelect={handleMorePageSelect}
+            />
+          ) : (() => {
             const activePage = pages.find((p) => p.id === activePageId) || pages[0]
             const isFirstPage = activePage?.id === pages[0]?.id
             return activePage ? (
@@ -2212,9 +2251,9 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
       {pages.length > 1 && !isPreviewCartOpen && !isPreviewCheckoutOpen && (
         <div className="live-preview__bottom-nav app-scope">
           <BottomNavigation
-            items={pages.slice(0, 5).map((p, i) => ({ icon: getPageIconName(p, i), label: p.name }))}
-            activeIndex={pages.slice(0, 5).findIndex((p) => p.id === activePageId)}
-            onItemClick={(index) => setActivePageId(pages[index].id)}
+            items={bottomNavItems}
+            activeIndex={bottomNavActiveIndex}
+            onItemClick={handleBottomNavClick}
           />
         </div>
       )}
@@ -4193,7 +4232,11 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                             )
                           }
                           const activePage = pages.find((p) => p.id === activePageId)
-                          return activePage ? (
+                          return isMorePageOpen ? (
+                            <div className="live-preview__top-header-page">
+                              <span className="live-preview__top-header-page-name">More Pages</span>
+                            </div>
+                          ) : activePage ? (
                             <div className="live-preview__top-header-page">
                               <span className="live-preview__top-header-page-name">{activePage.name}</span>
                             </div>
@@ -4246,7 +4289,13 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                       )}
                       <div ref={setPreviewContentScalerEl} className="live-preview__content-scaler app-scope">
                         <div className="live-preview__content app-scope">
-                          {(() => {
+                          {isMorePageOpen ? (
+                            <LivePreviewMorePagesView
+                              pages={pages}
+                              activePageId={activePageId}
+                              onPageSelect={handleMorePageSelect}
+                            />
+                          ) : (() => {
                             const activePage = pages.find((p) => p.id === activePageId) || pages[0]
                             const isFirstPage = activePage?.id === pages[0]?.id
                             return activePage ? (
@@ -4313,9 +4362,9 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                       {pages.length > 1 && !isPreviewCartOpen && !isPreviewCheckoutOpen && (
                         <div className="live-preview__bottom-nav app-scope">
                           <BottomNavigation
-                            items={pages.slice(0, 5).map((p, i) => ({ icon: getPageIconName(p, i), label: p.name }))}
-                            activeIndex={pages.slice(0, 5).findIndex((p) => p.id === activePageId)}
-                            onItemClick={(index) => setActivePageId(pages[index].id)}
+                            items={bottomNavItems}
+                            activeIndex={bottomNavActiveIndex}
+                            onItemClick={handleBottomNavClick}
                           />
                         </div>
                       )}
