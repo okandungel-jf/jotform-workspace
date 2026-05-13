@@ -2104,7 +2104,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
           const activePage = pages.find((p) => p.id === activePageId)
           return isMorePageOpen ? (
             <div className="live-preview__top-header-page">
-              <span className="live-preview__top-header-page-name">More Pages</span>
+              <span className="live-preview__top-header-page-name">Menu</span>
             </div>
           ) : activePage ? (
             <div className="live-preview__top-header-page">
@@ -2181,8 +2181,10 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
           {isMorePageOpen ? (
             <LivePreviewMorePagesView
               pages={pages}
-              activePageId={activePageId}
               onPageSelect={handleMorePageSelect}
+              isLoggedIn={isPreviewLoggedIn}
+              onLoginClick={() => { setLoginPopoverView('login'); setIsLoginPopoverOpen(true) }}
+              onSignUpClick={() => { setLoginPopoverView('signup'); setIsLoginPopoverOpen(true) }}
             />
           ) : (() => {
             const activePage = pages.find((p) => p.id === activePageId) || pages[0]
@@ -4234,7 +4236,7 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                           const activePage = pages.find((p) => p.id === activePageId)
                           return isMorePageOpen ? (
                             <div className="live-preview__top-header-page">
-                              <span className="live-preview__top-header-page-name">More Pages</span>
+                              <span className="live-preview__top-header-page-name">Menu</span>
                             </div>
                           ) : activePage ? (
                             <div className="live-preview__top-header-page">
@@ -4292,8 +4294,10 @@ export function BuildPage({ appTitle: appTitleProp = 'App Title', onAppTitleChan
                           {isMorePageOpen ? (
                             <LivePreviewMorePagesView
                               pages={pages}
-                              activePageId={activePageId}
                               onPageSelect={handleMorePageSelect}
+                              isLoggedIn={isPreviewLoggedIn}
+                              onLoginClick={() => { setLoginPopoverView('login'); setIsLoginPopoverOpen(true) }}
+                              onSignUpClick={() => { setLoginPopoverView('signup'); setIsLoginPopoverOpen(true) }}
                             />
                           ) : (() => {
                             const activePage = pages.find((p) => p.id === activePageId) || pages[0]
