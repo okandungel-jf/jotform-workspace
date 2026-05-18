@@ -1,0 +1,7 @@
+{
+  "name": "Jotform Builder DS Transfer",
+  "id": "jotform-builder-ds-transfer",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"]
+}

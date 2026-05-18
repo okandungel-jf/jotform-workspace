@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Column Manager — Properties Panel</title>
+    <style>
+      /* ============================================
+         Font Face — Circular Std
+         (matches packages/design-system/src/styles/_primitives.scss)
+         ============================================ */
+      @font-face {
+        font-family: 'Circular';
+        src: url('../packages/design-system/src/assets/fonts/CircularStd-Light.otf')
+          format('opentype');
+        font-weight: 300;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Circular';
+        src: url('../packages/design-system/src/assets/fonts/CircularStd-Book.otf')
+          format('opentype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Circular';
+        src: url('../packages/design-system/src/assets/fonts/CircularStd-Medium.otf')
+          format('opentype');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Circular';
+        src: url('../packages/design-system/src/assets/fonts/CircularStd-Bold.otf')
+          format('opentype');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Circular';
+        src: url('../packages/design-system/src/assets/fonts/CircularStd-Black.otf')
+          format('opentype');
+        font-weight: 900;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      /* ============================================
+         DS Primitive Tokens
+         ============================================ */
+      :root {
+        /* Core */
+        --core-white: #ffffff;
+
+        /* Blue */
+        --blue-400: #0099ff;
+        --blue-500: #0075e3;
+        --blue-600: #0066c3;
+
+        /* Navy */
+        --navy-50: #e3e5f5;
+        --navy-100: #c8ceed;
+        --navy-300: #6c73a8;
+        --navy-700: #0a1551;
+
+        /* Gray */
+        --gray-25: #f1f1f4;
+        --gray-50: #e2e3e9;
+        --gray-100: #bfc3ce;
+        --gray-200: #a0a6b6;
+        --gray-300: #7f859c;
+        --gray-400: #4c536f;
+        --gray-500: #434a60;
+        --gray-600: #33384a;
+        --gray-700: #292d3c;
+        --gray-800: #131620;
+        --gray-900: #08090b;
+
+        /* Radius */
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --radius-rounded: 9999px;
+
+        /* Spacing */
+        --spacing-3xs: 2px;
+        --spacing-2xs: 4px;
+        --spacing-xs: 8px;
+        --spacing-sm: 12px;
+        --spacing-md: 16px;
+        --spacing-lg: 20px;
+        --spacing-xl: 24px;
+        --spacing-2xl: 32px;
+
+        /* Typography */
+        --font-family-circular:
+          'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        --font-weight-book: 400;
+        --font-weight-medium: 500;
+        --font-weight-bold: 700;
+        --font-size-xs: 12px;
+        --font-size-sm: 14px;
+        --font-size-md: 16px;
+        --font-size-lg: 18px;
+        --font-size-xl: 20px;
+        --font-size-2xl: 24px;
+        --line-height-xs: 16px;
+        --line-height-sm: 20px;
+        --line-height-md: 24px;
+        --line-height-lg: 28px;
+        --line-height-xl: 32px;
+
+        /* Semantic — Secondary (panel chrome) */
+        --secondary-background-medium: var(--gray-600);
+        --secondary-background-dark: var(--gray-700);
+        --secondary-text-white: var(--core-white);
+        --secondary-text-lightest: var(--gray-100);
+        --secondary-text-light: var(--gray-200);
+        --secondary-text-medium: var(--gray-400);
+
+        /* DS aliases used in app-builder */
+        --ds-bg-surface: var(--core-white);
+        --ds-bg-surface-dark: var(--secondary-background-medium);
+        --ds-text-primary: var(--secondary-text-white);
+        --ds-text-secondary: var(--secondary-text-lightest);
+        --ds-text-tertiary: var(--secondary-text-light);
+        --ds-text-medium: var(--secondary-text-medium);
+        --ds-text-dark: var(--navy-700);
+
+        /* Accent */
+        --accent-default: var(--blue-500);
+        --accent-dark: var(--blue-600);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+
+      body {
+        font-family: var(--font-family-circular);
+        background: #1c2030; /* canvas-side backdrop, sits behind builder panel */
+        display: flex;
+        justify-content: flex-end;
+        min-height: 100vh;
+      }
+
+      /* ============================================
+         Properties Panel — mirrors .build-page__right + .build-page__properties
+         ============================================ */
+      .build-page__right {
+        width: 420px;
+        flex-shrink: 0;
+        background: var(--secondary-background-medium);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+        height: 100vh;
+      }
+
+      .build-page__properties {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: var(--secondary-background-medium);
+        font-family: var(--font-family-circular);
+      }
+
+      /* ---- Header (mirrors .property-panel__header, dark) ---- */
+      .property-panel__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 56px;
+        min-height: 56px;
+        padding: 0 var(--spacing-md);
+        background: var(--secondary-background-medium);
+        border-bottom: 1px solid var(--gray-700);
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+
+      .property-panel__title {
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-medium);
+        line-height: var(--line-height-md);
+        letter-spacing: -0.176px;
+        color: var(--secondary-text-white);
+        margin: 0;
+      }
+
+      .property-panel__close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: var(--spacing-2xl);
+        height: var(--spacing-2xl);
+        background: transparent;
+        border: none;
+        border-radius: var(--radius-rounded);
+        color: var(--core-white);
+        cursor: pointer;
+        transition: background 150ms ease;
+        flex-shrink: 0;
+      }
+
+      .property-panel__close:hover {
+        background: var(--gray-700);
+      }
+
+      .property-panel__close:focus-visible {
+        outline: 2px solid var(--accent-default);
+        outline-offset: 2px;
+      }
+
+      /* ---- Body ---- */
+      .property-panel__body {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Scrollbar (dark) */
+      .property-panel__body::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .property-panel__body::-webkit-scrollbar-thumb {
+        background: var(--gray-500);
+        border-radius: var(--radius-rounded);
+      }
+
+      .property-panel__body::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      /* ============================================
+         Content
+         ============================================ */
+      .column-manager__meta {
+        margin: 0;
+        padding: var(--spacing-md) var(--spacing-md) 0;
+        font-size: var(--font-size-sm);
+        line-height: var(--line-height-sm);
+        font-weight: var(--font-weight-book);
+        letter-spacing: -0.084px;
+        color: var(--secondary-text-light);
+      }
+
+      .column-list {
+        list-style: none;
+        margin: 0;
+        padding: var(--spacing-md) var(--spacing-md) var(--spacing-md);
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+      }
+
+      /* ---- Row ---- */
+      .cm-row {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm);
+        background: var(--gray-700);
+        border: none;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.15s ease;
+      }
+
+      .cm-row:hover {
+        background: var(--gray-800);
+      }
+
+      .cm-row:focus-visible {
+        outline: 2px solid var(--accent-default);
+        outline-offset: 2px;
+      }
+
+      /* ---- Hidden native checkbox ---- */
+      .cm-row__input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+      }
+
+      /* ---- Checkbox visual (mirrors DS .jf-checkbox--md, dark) ---- */
+      .cm-row__check {
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--gray-700);
+        border: 2px solid var(--gray-400);
+        border-radius: var(--radius-sm);
+        color: var(--core-white);
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+      }
+
+      .cm-row__check svg {
+        width: 12px;
+        height: 12px;
+        display: none;
+      }
+
+      .cm-row__input:checked + .cm-row__check {
+        background: var(--accent-default);
+        border-color: var(--accent-default);
+      }
+
+      .cm-row__input:checked + .cm-row__check svg {
+        display: block;
+      }
+
+      .cm-row:hover .cm-row__check {
+        border-color: var(--accent-default);
+      }
+
+      .cm-row:hover .cm-row__input:checked + .cm-row__check {
+        background: var(--accent-dark);
+        border-color: var(--accent-dark);
+      }
+
+      /* ---- Label ---- */
+      .cm-row__label {
+        flex: 1 1 auto;
+        font-size: var(--font-size-sm);
+        line-height: var(--line-height-sm);
+        letter-spacing: -0.084px;
+        font-weight: var(--font-weight-book);
+        color: var(--secondary-text-white);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* ---- Drag handle (hover only) ---- */
+      .cm-row__handle {
+        flex-shrink: 0;
+        width: 16px;
+        height: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--secondary-text-light);
+        opacity: 0;
+        transform: translateX(-4px);
+        transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
+        cursor: grab;
+      }
+
+      .cm-row__handle:active {
+        cursor: grabbing;
+      }
+
+      .cm-row:hover .cm-row__handle {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .cm-row__handle:hover {
+        color: var(--core-white);
+      }
+
+      /* ---- Disabled state ---- */
+      .cm-row--disabled {
+        cursor: default;
+      }
+
+      .cm-row--disabled:hover {
+        background: var(--gray-700);
+      }
+
+      .cm-row--disabled .cm-row__check,
+      .cm-row--disabled .cm-row__label {
+        opacity: 0.4;
+      }
+
+      .cm-row--disabled:hover .cm-row__check {
+        border-color: var(--gray-400);
+      }
+
+      .cm-row--disabled:hover .cm-row__input:checked + .cm-row__check {
+        background: var(--accent-default);
+        border-color: var(--accent-default);
+      }
+
+      .cm-row--disabled .cm-row__handle {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="build-page__right">
+      <section
+        class="build-page__properties"
+        data-theme="dark"
+        role="dialog"
+        aria-labelledby="cm-title"
+      >
+        <header class="property-panel__header">
+          <h2 class="property-panel__title" id="cm-title">Column manager</h2>
+          <button
+            type="button"
+            class="property-panel__close"
+            aria-label="Close column manager"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M5 5L15 15M15 5L5 15"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </header>
+
+        <div class="property-panel__body">
+          <p class="column-manager__meta">
+            <span data-count>13</span> visible
+          </p>
+          <ul class="column-list" data-list></ul>
+        </div>
+      </section>
+    </aside>
+
+    <script>
+      const COLUMNS = [
+        { id: 'account', label: 'Account', checked: true, disabled: true },
+        { id: 'industry', label: 'Industry', checked: true },
+        { id: 'risk', label: 'Risk', checked: true },
+        { id: 'owner', label: 'Owner', checked: true },
+        { id: 'region', label: 'Region', checked: true },
+        { id: 'plan', label: 'Plan', checked: true },
+        { id: 'health', label: 'Health', checked: true },
+        { id: 'arr', label: 'ARR', checked: true },
+        { id: 'growth', label: 'Growth', checked: true },
+        { id: 'conversion', label: 'Conversion', checked: true },
+        { id: 'submissions', label: 'Submissions', checked: true },
+        { id: 'response', label: 'Response', checked: false },
+        { id: 'updated', label: 'Updated', checked: true },
+        { id: 'trend', label: 'Trend', checked: true },
+        { id: 'record-id', label: 'Record ID', checked: false },
+      ];
+
+      const CHECK_ICON =
+        '<svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 6.2 4.6 8.8 10 3.4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+      const HANDLE_ICON =
+        '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">' +
+        '<circle cx="6" cy="3.5" r="1.1" fill="currentColor"/>' +
+        '<circle cx="10" cy="3.5" r="1.1" fill="currentColor"/>' +
+        '<circle cx="6" cy="8" r="1.1" fill="currentColor"/>' +
+        '<circle cx="10" cy="8" r="1.1" fill="currentColor"/>' +
+        '<circle cx="6" cy="12.5" r="1.1" fill="currentColor"/>' +
+        '<circle cx="10" cy="12.5" r="1.1" fill="currentColor"/>' +
+        '</svg>';
+
+      const list = document.querySelector('[data-list]');
+      const countEl = document.querySelector('[data-count]');
+
+      function renderRows() {
+        list.innerHTML = COLUMNS.map(
+          (col) => `
+          <li>
+            <label class="cm-row ${col.disabled ? 'cm-row--disabled' : ''}">
+              <input
+                type="checkbox"
+                class="cm-row__input"
+                data-id="${col.id}"
+                ${col.checked ? 'checked' : ''}
+                ${col.disabled ? 'disabled' : ''}
+              />
+              <span class="cm-row__check" aria-hidden="true">${CHECK_ICON}</span>
+              <span class="cm-row__label">${col.label}</span>
+              <span
+                class="cm-row__handle"
+                role="button"
+                tabindex="-1"
+                aria-label="Drag to reorder ${col.label}"
+                onmousedown="event.preventDefault()"
+              >${HANDLE_ICON}</span>
+            </label>
+          </li>
+        `,
+        ).join('');
+      }
+
+      function updateCount() {
+        const visible = COLUMNS.filter((c) => c.checked).length;
+        countEl.textContent = visible;
+      }
+
+      list.addEventListener('change', (e) => {
+        const input = e.target.closest('.cm-row__input');
+        if (!input) return;
+        const col = COLUMNS.find((c) => c.id === input.dataset.id);
+        if (col) {
+          col.checked = input.checked;
+          updateCount();
+        }
+      });
+
+      renderRows();
+      updateCount();
+    </script>
+  </body>
+</html>
