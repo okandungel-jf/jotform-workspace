@@ -34,7 +34,7 @@ function useTriggerAnchor(
       const r = el.getBoundingClientRect();
       const top = placement === 'bottom' ? r.bottom + 4 : undefined;
       const bottom = placement === 'top' ? window.innerHeight - r.top + 4 : undefined;
-      const next: CSSProperties = { position: 'fixed', top, bottom };
+      const next: CSSProperties = { position: 'fixed', top, bottom, width: r.width };
       if (align === 'start') next.left = r.left;
       else if (align === 'end') next.right = window.innerWidth - r.right;
       else { next.left = r.left + r.width / 2; next.transform = 'translateX(-50%)'; }

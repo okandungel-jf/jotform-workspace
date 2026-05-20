@@ -1,0 +1,84 @@
+// ============================================
+// Table Title (Title Stack)
+// Source: Figma / table / Table Controls
+// ============================================
+
+.jf-table-title {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-family-circular);
+
+  &--sm { gap: var(--spacing-xs); }
+  &--md { gap: var(--spacing-sm); }
+}
+
+.jf-table-title__icon-block,
+.jf-table-title__leading {
+  flex-shrink: 0;
+}
+
+.jf-table-title__icon-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: var(--accent-default);
+  color: var(--core-white);
+
+  .jf-table-title--sm & { width: 32px; height: 32px; }
+  .jf-table-title--md & { width: 40px; height: 40px; }
+
+  .jf-icon > svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.jf-table-title__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+
+  .jf-table-title--md & { gap: var(--spacing-2xs); }
+}
+
+.jf-table-title__row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.jf-table-title__title {
+  color: var(--text-darkest);
+
+  .jf-table-title--sm & {
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-xs);
+    letter-spacing: var(--letter-spacing-lg);
+  }
+
+  .jf-table-title--md & {
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
+    line-height: var(--line-height-sm);
+    letter-spacing: var(--letter-spacing-sm);
+  }
+}
+
+.jf-table-title__badge { flex-shrink: 0; }
+
+.jf-table-title__subtitle {
+  margin: 0;
+  color: var(--text-medium);
+  font-weight: var(--font-weight-book);
+  line-height: var(--line-height-xs);
+
+  .jf-table-title--sm & { font-size: var(--font-size-xs); }
+  .jf-table-title--md & {
+    font-size: var(--font-size-sm);
+    letter-spacing: var(--letter-spacing-lg);
+  }
+}

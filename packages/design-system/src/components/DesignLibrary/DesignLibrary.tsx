@@ -44,6 +44,8 @@ import { DialogSection, DialogPanel, defaultDialogState } from './sections/Dialo
 import type { DialogPanelState } from './sections/DialogSection';
 import { TabsSection, TabsPanel, defaultTabsState } from './sections/TabsSection';
 import type { TabsPanelState } from './sections/TabsSection';
+import { TableSection, TablePanel, defaultTableState } from './sections/TableSection';
+import type { TablePanelState } from './sections/TableSection';
 import './DesignLibrary.scss';
 
 const FOUNDATIONS = [
@@ -75,6 +77,7 @@ const COMPONENTS = [
   { id: 'indicator', label: 'Indicator' },
   { id: 'dialog', label: 'Dialog' },
   { id: 'tabs', label: 'Tabs' },
+  { id: 'table', label: 'Table' },
 ] as const;
 
 const ALL_ITEMS = [...FOUNDATIONS, ...COMPONENTS] as const;
@@ -104,6 +107,7 @@ export function DesignLibrary() {
   const [indicatorState, setIndicatorState] = useState<IndicatorPanelState>(defaultIndicatorState);
   const [dialogState, setDialogState] = useState<DialogPanelState>(defaultDialogState);
   const [tabsState, setTabsState] = useState<TabsPanelState>(defaultTabsState);
+  const [tableState, setTableState] = useState<TablePanelState>(defaultTableState);
 
   const hasPanel = COMPONENT_IDS.has(activeSection as string);
 
@@ -159,6 +163,8 @@ export function DesignLibrary() {
         return <DialogSection state={dialogState} />;
       case 'tabs':
         return <TabsSection state={tabsState} onChange={setTabsState} />;
+      case 'table':
+        return <TableSection state={tableState} onChange={setTableState} />;
     }
   };
 
@@ -205,6 +211,8 @@ export function DesignLibrary() {
         return <DialogPanel state={dialogState} onChange={setDialogState} />;
       case 'tabs':
         return <TabsPanel state={tabsState} onChange={setTabsState} />;
+      case 'table':
+        return <TablePanel state={tableState} onChange={setTableState} />;
       default:
         return null;
     }

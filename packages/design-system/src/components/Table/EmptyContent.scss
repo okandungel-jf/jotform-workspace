@@ -1,0 +1,96 @@
+// ============================================
+// Empty Content
+// Source: Figma / table / Empty Content
+// ============================================
+
+.jf-empty-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  align-items: center;
+  justify-content: center;
+  width: 400px;
+  max-width: 100%;
+  font-family: var(--font-family-circular);
+  text-align: center;
+
+  &--loading { width: auto; }
+}
+
+// ===== Illustration =====
+.jf-empty-content__illustration {
+  position: relative;
+  width: 192px;
+  height: 144px;
+  flex-shrink: 0;
+}
+
+.jf-empty-content__pill {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 144px;
+  height: 72px;
+  border-radius: var(--radius-rounded);
+  background: var(--background-lightest);
+}
+
+.jf-empty-content__icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-light);
+
+  & > svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// ===== Text =====
+.jf-empty-content__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  align-items: center;
+}
+
+.jf-empty-content__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.jf-empty-content__title,
+.jf-empty-content__description {
+  margin: 0;
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-md);
+  letter-spacing: var(--letter-spacing-sm);
+}
+
+.jf-empty-content__title { color: var(--text-dark); }
+.jf-empty-content__description { color: var(--text-medium); }
+
+// ===== Loading spinner =====
+.jf-empty-content__spinner {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-rounded);
+  border: 4px solid var(--border-medium);
+  border-top-color: var(--accent-default);
+  animation: jf-empty-content-spin 0.8s linear infinite;
+}
+
+@keyframes jf-empty-content-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jf-empty-content__spinner { animation-duration: 2.4s; }
+}

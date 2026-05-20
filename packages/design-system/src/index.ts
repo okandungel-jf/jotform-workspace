@@ -70,6 +70,22 @@ export { RadioButton } from './components/RadioButton';
 export type { RadioButtonProps } from './components/RadioButton';
 export { Header } from './components/Header';
 export type { HeaderProps } from './components/Header';
+export { Table, TableTitle } from './components/Table';
+export type {
+  TableProps,
+  TableColumn,
+  TableSort,
+  TableSize,
+  TableAlign,
+  TableHeaderStyle,
+  TableLoadingVariant,
+  TablePagination,
+  TableFooterType,
+  TableTitleProps,
+  TableTitleSize,
+  SortDirection,
+  EmptyContentState,
+} from './components/Table';
 export { DesignLibrary } from './components/DesignLibrary';
 export type {
   DropdownSingleProps,

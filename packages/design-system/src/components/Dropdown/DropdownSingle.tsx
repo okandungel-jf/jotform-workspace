@@ -23,6 +23,9 @@ export interface DropdownSingleProps extends DropdownBaseProps {
   showLeadingIcon?: boolean;
   menuPlacement?: 'auto' | 'top' | 'bottom';
   mobileBehavior?: 'auto' | 'inline' | 'sheet';
+  /** Render the desktop menu in a portal — use when the trigger sits inside an `overflow: hidden` ancestor. */
+  usePortal?: boolean;
+  portalAlign?: 'start' | 'center' | 'end';
 }
 
 export interface DropdownHandle {
@@ -44,6 +47,8 @@ export const DropdownSingle = forwardRef<DropdownHandle, DropdownSingleProps>(
       showLeadingIcon = true,
       menuPlacement = 'auto',
       mobileBehavior = 'auto',
+      usePortal,
+      portalAlign,
       title,
       className,
       ...wrapperProps
@@ -127,6 +132,8 @@ export const DropdownSingle = forwardRef<DropdownHandle, DropdownSingleProps>(
             <DropdownMenuShell
               placement={placement}
               isSheet={isMobileSheet}
+              usePortal={usePortal}
+              portalAlign={portalAlign}
               title={title}
               menuRef={menuRef}
               triggerRef={triggerRef}

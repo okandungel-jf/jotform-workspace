@@ -736,6 +736,12 @@
     margin-bottom: var(--spacing-2xl);
   }
 
+  // Flush variant — for components that draw their own container (e.g. Table)
+  &__preview--flush {
+    border: none;
+    background: transparent;
+  }
+
   &__field {
     display: flex;
     flex-direction: column;
@@ -901,6 +907,13 @@
     background: var(--background-white);
     border: 1px solid var(--border-light);
     border-radius: var(--radius-lg);
+  }
+
+  // Flush variant — for components that draw their own container (e.g. Table)
+  &__item-preview--flush {
+    padding: 0;
+    border: none;
+    background: transparent;
   }
 }
 
