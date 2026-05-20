@@ -52,6 +52,7 @@ export interface TableProps<T> {
   totalItems?: number;
   footerType?: TableFooterType;
   toolbar?: ReactNode;
+  toolbarInCard?: boolean;
   className?: string;
 }
 
@@ -116,6 +117,7 @@ export function Table<T>({
   totalItems,
   footerType = 'simple',
   toolbar,
+  toolbarInCard = false,
   className,
 }: TableProps<T>) {
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
@@ -128,6 +130,7 @@ export function Table<T>({
     bordered && 'jf-table--bordered',
     onRowClick && 'jf-table--interactive',
     resizingKey && 'jf-table--resizing',
+    toolbarInCard && 'jf-table--toolbar-in-card',
     className,
   ]
     .filter(Boolean)
@@ -196,8 +199,11 @@ export function Table<T>({
 
   return (
     <div className={rootClass}>
-      {toolbar && <div className="jf-table__toolbar">{toolbar}</div>}
+      {toolbar && !toolbarInCard && <div className="jf-table__toolbar">{toolbar}</div>}
       <div className="jf-table__box">
+        {toolbar && toolbarInCard && (
+          <div className="jf-table__toolbar jf-table__toolbar--in-card">{toolbar}</div>
+        )}
         <table className="jf-table__table">
           {(hasWidths || resizable) && (
             <colgroup>

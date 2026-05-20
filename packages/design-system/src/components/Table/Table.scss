@@ -15,9 +15,58 @@
 
 .jf-table__toolbar {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+// Toolbar moved inside the card (Figma "Table-Card" type)
+.jf-table__toolbar--in-card {
+  margin-bottom: 0;
+  padding: var(--spacing-md);
+}
+
+// Toolbar layout helpers — a row of toolbar items; stacks on narrow widths
+.jf-table__toolbar-row {
+  display: flex;
   align-items: center;
   gap: var(--spacing-xs);
-  margin-bottom: var(--spacing-md);
+  width: 100%;
+}
+
+.jf-table__toolbar-search {
+  width: 100%;
+  max-width: 384px;
+  min-width: 0;
+}
+
+.jf-table__toolbar-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--spacing-xs);
+  margin-left: auto;
+}
+
+@container (max-width: 600px) {
+  .jf-table__toolbar-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .jf-table__toolbar-search {
+    max-width: none;
+  }
+
+  .jf-table__toolbar-actions {
+    flex-direction: column;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .jf-table__toolbar-actions .jf-btn {
+    width: 100%;
+  }
 }
 
 .jf-table__box {
@@ -256,6 +305,11 @@ button.jf-table__th-inner {
   top: var(--jf-table-row-h);
   display: flex;
   flex-direction: column;
+}
+
+// Toolbar in card: scrim covers the whole card (toolbar height is dynamic)
+.jf-table--toolbar-in-card .jf-table__scrim {
+  top: 0;
 }
 
 .jf-table__progress {

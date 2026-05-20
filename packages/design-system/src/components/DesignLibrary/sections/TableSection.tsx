@@ -1,6 +1,7 @@
 import { Table, TableTitle } from '../../Table';
 import { SearchInput } from '../../SearchInput';
 import { Button } from '../../Button/Button';
+import type { ReactNode } from 'react';
 import type {
   TableColumn,
   TableHeaderStyle,
@@ -57,7 +58,7 @@ function sortRows(rows: DemoRow[], sort: TableSort | null): DemoRow[] {
 
 type TableLoadingOption = 'off' | 'skeleton' | 'scrim' | 'spinner';
 type TableFooterOption = 'off' | 'simple' | 'advanced';
-type TableToolbarOption = 'off' | 'title' | 'search';
+type TableToolbarOption = 'off' | 'title' | 'search' | 'title-search';
 type TableToolbarSize = 'default' | 'small';
 
 export interface TablePanelState {
@@ -70,6 +71,7 @@ export interface TablePanelState {
   toolbar: TableToolbarOption;
   toolbarSize: TableToolbarSize;
   toolbarActions: boolean;
+  toolbarInCard: boolean;
   selectable: boolean;
   selectedKeys: Array<string | number>;
   resizable: boolean;
@@ -88,6 +90,7 @@ export const defaultTableState: TablePanelState = {
   toolbar: 'off',
   toolbarSize: 'default',
   toolbarActions: false,
+  toolbarInCard: false,
   selectable: false,
   selectedKeys: [],
   resizable: false,
@@ -109,16 +112,44 @@ export function TableSection({
   const columns = buildColumns(state.sortable);
   const sorted = sortRows(DEMO_ROWS, state.sortable ? state.sort : null);
   const loadingVariant = state.loading === 'off' ? undefined : state.loading;
-  const tbSize =
-    state.toolbar === 'title' && state.toolbarSize === 'small' ? 'sm' : 'md';
+  const hasTitle = state.toolbar === 'title' || state.toolbar === 'title-search';
+  const hasSearch = state.toolbar === 'search' || state.toolbar === 'title-search';
+  const tbSize = hasTitle && state.toolbarSize === 'small' ? 'sm' : 'md';
   const selectedCount = state.selectable ? state.selectedKeys.length : 0;
-  const toolbarNode =
-    selectedCount > 0 ? (
-      <>
+
+  const actionsEl = state.toolbarActions ? (
+    <div className="jf-table__toolbar-actions">
+      <Button variant="ghost" size={tbSize}>
+        Export
+      </Button>
+      <Button variant="filled" size={tbSize}>
+        Add member
+      </Button>
+    </div>
+  ) : null;
+  const titleEl = (
+    <TableTitle
+      size={tbSize}
+      title="Team members"
+      subtitle="8 people in this workspace"
+      icon="arrows-switch-horizontal"
+      iconCategory="arrows"
+    />
+  );
+  const searchEl = (
+    <div className="jf-table__toolbar-search">
+      <SearchInput size={tbSize} showFilter placeholder="Search members" />
+    </div>
+  );
+
+  let toolbarNode: ReactNode;
+  if (selectedCount > 0) {
+    toolbarNode = (
+      <div className="jf-table__toolbar-row">
         <Button variant="ghost" size="md">
           {selectedCount} selected
         </Button>
-        <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
+        <div className="jf-table__toolbar-actions">
           <Button
             variant="ghost"
             colorScheme="secondary"
@@ -131,32 +162,28 @@ export function TableSection({
             Delete
           </Button>
         </div>
-      </>
-    ) : state.toolbar === 'off' ? undefined : (
+      </div>
+    );
+  } else if (state.toolbar === 'off') {
+    toolbarNode = undefined;
+  } else if (hasTitle && hasSearch) {
+    toolbarNode = (
       <>
-        {state.toolbar === 'title' ? (
-          <TableTitle
-            size={tbSize}
-            title="Team members"
-            subtitle="8 people in this workspace"
-            icon="arrows-switch-horizontal"
-            iconCategory="arrows"
-          />
-        ) : (
-          <SearchInput size={tbSize} showFilter placeholder="Search members" />
-        )}
-        {state.toolbarActions && (
-          <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
-            <Button variant="ghost" size={tbSize}>
-              Export
-            </Button>
-            <Button variant="filled" size={tbSize}>
-              Add member
-            </Button>
-          </div>
-        )}
+        <div className="jf-table__toolbar-row">{titleEl}</div>
+        <div className="jf-table__toolbar-row">
+          {searchEl}
+          {actionsEl}
+        </div>
       </>
     );
+  } else {
+    toolbarNode = (
+      <div className="jf-table__toolbar-row">
+        {hasTitle ? titleEl : searchEl}
+        {actionsEl}
+      </div>
+    );
+  }
 
   let displayRows = sorted;
   let pagination: TablePagination | undefined;
@@ -208,6 +235,7 @@ export function TableSection({
             totalItems={totalItems}
             footerType={state.footer === 'advanced' ? 'advanced' : 'simple'}
             toolbar={toolbarNode}
+            toolbarInCard={state.toolbarInCard}
             rowKey={(row) => row.id}
           />
         </div>
@@ -331,7 +359,7 @@ export function TableSection({
                 columns={STORY_COLUMNS}
                 data={STORY_ROWS}
                 toolbar={
-                  <>
+                  <div className="jf-table__toolbar-row">
                     <TableTitle
                       size="md"
                       title="Team members"
@@ -339,11 +367,11 @@ export function TableSection({
                       icon="arrows-switch-horizontal"
                       iconCategory="arrows"
                     />
-                    <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
+                    <div className="jf-table__toolbar-actions">
                       <Button variant="ghost">Export</Button>
                       <Button variant="filled">Add member</Button>
                     </div>
-                  </>
+                  </div>
                 }
                 rowKey={(row) => row.id}
               />
@@ -357,16 +385,23 @@ export function TableSection({
                 data={STORY_ROWS}
                 toolbar={
                   <>
-                    <TableTitle
-                      size="md"
-                      title="Team members"
-                      subtitle="8 people"
-                      icon="arrows-switch-horizontal"
-                      iconCategory="arrows"
-                    />
-                    <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
-                      <Button variant="ghost">Export</Button>
-                      <Button variant="filled">Add member</Button>
+                    <div className="jf-table__toolbar-row">
+                      <TableTitle
+                        size="md"
+                        title="Team members"
+                        subtitle="8 people"
+                        icon="arrows-switch-horizontal"
+                        iconCategory="arrows"
+                      />
+                    </div>
+                    <div className="jf-table__toolbar-row">
+                      <div className="jf-table__toolbar-search">
+                        <SearchInput showFilter placeholder="Search members" />
+                      </div>
+                      <div className="jf-table__toolbar-actions">
+                        <Button variant="ghost">Export</Button>
+                        <Button variant="filled">Add member</Button>
+                      </div>
                     </div>
                   </>
                 }
@@ -559,6 +594,7 @@ export function TablePanel({
             ['off', 'Off'],
             ['title', 'Title'],
             ['search', 'Search'],
+            ['title-search', 'Both'],
           ] as const).map(([key, label]) => (
             <button
               key={key}
@@ -571,7 +607,7 @@ export function TablePanel({
         </div>
       </div>
 
-      {state.toolbar === 'title' && (
+      {(state.toolbar === 'title' || state.toolbar === 'title-search') && (
         <div className="dl-playground__field">
           <label className="dl-playground__label">Toolbar size</label>
           <div className="dl-playground__segmented">
@@ -642,6 +678,18 @@ export function TablePanel({
           <span className="dl-playground__toggle-thumb" />
         </button>
       </div>
+
+      {state.toolbar !== 'off' && (
+        <div className="dl-playground__field dl-playground__field--row">
+          <label className="dl-playground__label">Toolbar in card</label>
+          <button
+            className={`dl-playground__toggle ${state.toolbarInCard ? 'dl-playground__toggle--on' : ''}`}
+            onClick={() => update({ toolbarInCard: !state.toolbarInCard })}
+          >
+            <span className="dl-playground__toggle-thumb" />
+          </button>
+        </div>
+      )}
     </>
   );
 }
