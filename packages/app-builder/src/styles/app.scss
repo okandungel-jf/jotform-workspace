@@ -3859,28 +3859,6 @@ body {
   width: 100%;
 }
 
-.product-edit__textarea {
-  width: 100%;
-  min-height: 100px;
-  padding: var(--ds-space-md);
-  background: var(--gray-500);
-  border: 1px solid transparent;
-  border-radius: var(--ds-radius-sm);
-  color: var(--core-white);
-  font-family: var(--ds-font-family);
-  font-size: var(--ds-font-size-md);
-  resize: vertical;
-  outline: none;
-
-  &::placeholder {
-    color: var(--gray-200);
-  }
-
-  &:focus {
-    border-color: var(--accent-default);
-  }
-}
-
 .product-edit__image {
   position: relative;
   width: 100%;
