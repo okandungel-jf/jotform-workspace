@@ -3766,9 +3766,11 @@ body {
     align-items: center;
     gap: var(--ds-space-md);
     padding: var(--ds-space-sm);
-    background: var(--core-white);
+    background: var(--gray-500);
+    border: 1px solid transparent;
     border-radius: var(--ds-radius-sm);
     min-width: 0;
+    transition: border-color 150ms ease;
   }
 
   &__image {
@@ -3777,9 +3779,9 @@ body {
     justify-content: center;
     width: 56px;
     height: 56px;
-    background: var(--background-light, #F3F3FE);
+    background: var(--gray-700);
     border-radius: var(--ds-radius-sm);
-    color: var(--text-medium);
+    color: var(--gray-200);
     overflow: hidden;
 
     > img {
@@ -3792,7 +3794,7 @@ body {
   &__name {
     font-family: var(--ds-font-family);
     font-size: var(--ds-font-size-md);
-    color: var(--text-darkest);
+    color: var(--core-white);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -3802,7 +3804,7 @@ body {
     font-family: var(--ds-font-family);
     font-size: var(--ds-font-size-md);
     font-weight: var(--ds-font-weight-medium);
-    color: var(--text-darkest);
+    color: var(--core-white);
   }
 
   &__delete {
@@ -3818,6 +3820,10 @@ body {
     cursor: pointer;
     opacity: 0;
     transition: opacity 150ms ease, background 150ms ease;
+  }
+
+  &:hover &__card {
+    border-color: var(--gray-300);
   }
 
   &:hover &__delete {
