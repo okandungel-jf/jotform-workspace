@@ -3250,11 +3250,6 @@ export function BuildPage({
                                           </span>
                                         </button>
                                       ))}
-                                      {(current.variants?.length ?? 0) > 0 && (
-                                        <p className="product-options__summary">
-                                          {current.variants?.length} variants generated
-                                        </p>
-                                      )}
                                       </div>
                                       <div className="product-options__section">
                                         <div className="product-options__choice">

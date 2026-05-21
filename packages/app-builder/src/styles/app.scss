@@ -4018,7 +4018,7 @@ body {
 .product-options__section {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-sm);
+  gap: var(--ds-space-md);
   padding: var(--ds-space-md);
 
   & + & {
@@ -4125,13 +4125,6 @@ body {
   &:hover {
     background: var(--gray-400);
   }
-}
-
-.product-options__summary {
-  margin: 0;
-  font-family: var(--ds-font-family);
-  font-size: var(--ds-font-size-sm);
-  color: var(--gray-200);
 }
 
 // L2: Stock tab (placeholder until Phase 2)
