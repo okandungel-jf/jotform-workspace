@@ -2632,7 +2632,7 @@ export function BuildPage({
                         onClick={() => (editingOptionIndex !== null ? setEditingOptionIndex(null) : setEditingProductIndex(null))}
                         aria-label="Back"
                       >
-                        <Icon name="caret-left" category="arrows" size={20} />
+                        <Icon name="arrow-left" category="arrows" size={18} />
                       </button>
                       <span className="property-panel__title">
                         {editingOptionIndex !== null ? 'Product Option' : 'Product Settings'}
