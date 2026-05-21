@@ -8,6 +8,7 @@ import {
   FormField as DSFormField,
   Checkbox as DSCheckbox,
   Link as DSLink,
+  Button as DSButton,
   Icon,
 } from '@jf/design-system'
 import { HsvColorPicker } from '@jf/app-elements'
@@ -261,14 +262,18 @@ export const ProductModifierModal: FC<ProductModifierModalProps> = ({ open, modi
                     onChange={(hex) => updateChoice(choice.id, { color: hex })}
                   />
                 )}
-                <button
+                <DSButton
                   type="button"
                   className="product-modifier-modal__choice-delete"
+                  variant="ghost"
+                  colorScheme="secondary"
+                  shape="rounded"
+                  size="md"
+                  iconOnly
                   aria-label="Remove choice"
+                  leftIcon={<Icon name="trash-filled" category="general" size={16} />}
                   onClick={() => removeChoice(choice.id)}
-                >
-                  <Icon name="trash-filled" category="general" size={16} />
-                </button>
+                />
               </div>
             ))}
             <div className="product-modifier-modal__choices-add">
