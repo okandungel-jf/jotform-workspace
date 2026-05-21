@@ -22,6 +22,14 @@ export interface ProductVariant {
   optionValues: Record<string, string>;
 }
 
+/** A buyer-facing customization that doesn't affect price or inventory. */
+export interface ProductModifier {
+  id: string;
+  name: string;
+  fieldType: 'text' | 'color';
+  required: boolean;
+}
+
 export interface ProductItem {
   /** Optional — lazily assigned when the product is edited (backward compat). */
   id?: string;
@@ -34,6 +42,8 @@ export interface ProductItem {
   optionDimensions?: ProductOptionDimension[];
   /** Auto-generated cartesian product of optionDimensions. */
   variants?: ProductVariant[];
+  /** Customization options that don't affect price or inventory. */
+  modifiers?: ProductModifier[];
 }
 
 /** Max variant dimensions per product (e-commerce convention: Size/Color/Material). */

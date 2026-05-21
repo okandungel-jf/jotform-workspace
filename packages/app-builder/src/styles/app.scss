@@ -3928,6 +3928,27 @@ body {
   gap: var(--ds-space-md);
 }
 
+.product-modifier-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-md);
+}
+
+.product-modifier-modal__row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--ds-space-md);
+}
+
+.product-modifier-modal__field-type {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-modifier-modal__required {
+  padding-bottom: var(--ds-space-sm);
+}
+
 // Product edit form
 .product-edit__price {
   display: grid;

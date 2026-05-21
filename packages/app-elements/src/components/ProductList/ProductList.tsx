@@ -11,6 +11,7 @@ export type {
   ProductListLayout,
   ProductOptionDimension,
   ProductVariant,
+  ProductModifier,
 } from './types';
 
 export interface ProductListProps {

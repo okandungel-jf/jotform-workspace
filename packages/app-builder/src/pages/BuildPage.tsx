@@ -63,6 +63,7 @@ import { IconPropertyField } from '../components/IconPropertyField'
 import { ColorInputWithPicker } from '../components/ColorInputWithPicker'
 import { ProductFilterPopover } from '../components/ProductFilterPopover'
 import { ProductOptionModal } from '../components/ProductOptionModal'
+import { ProductModifierModal } from '../components/ProductModifierModal'
 import { loadSnapshot, saveSnapshot } from '../presets/storage'
 
 interface CanvasElement {
@@ -1114,10 +1115,12 @@ export function BuildPage({
   const [productSearch, setProductSearch] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
   const [optionModalOpen, setOptionModalOpen] = useState(false)
+  const [editingModifierIndex, setEditingModifierIndex] = useState<number | null>(null)
+  const [modifierModalOpen, setModifierModalOpen] = useState(false)
   const [inventoryFilter, setInventoryFilter] = useState('all')
   const [visibilityFilter, setVisibilityFilter] = useState('all')
   const productSearchFieldRef = useRef<HTMLDivElement>(null)
-  useEffect(() => { setEditingProductIndex(null); setEditingOptionIndex(null); setProductSettingsTab('basic'); setProductSearch(''); setFilterOpen(false); setOptionModalOpen(false) }, [selectedElementId, propertyTab])
+  useEffect(() => { setEditingProductIndex(null); setEditingOptionIndex(null); setProductSettingsTab('basic'); setProductSearch(''); setFilterOpen(false); setOptionModalOpen(false); setEditingModifierIndex(null); setModifierModalOpen(false) }, [selectedElementId, propertyTab])
 
   const migratedSocialFollowIds = useRef<Set<string>>(new Set())
   useEffect(() => {
@@ -2984,6 +2987,17 @@ export function BuildPage({
                       }
                     }
                     const removeOption = (i: number) => updateDimensions(dimensions.filter((_, j) => j !== i))
+                    const modifiers = current.modifiers ?? []
+                    const updateModifiers = (mods: typeof modifiers) => updateProduct({ modifiers: mods })
+                    const handleModifierSubmit = (name: string, fieldType: 'text' | 'color', required: boolean) => {
+                      if (editingModifierIndex !== null) {
+                        const existing = modifiers[editingModifierIndex]
+                        updateModifiers(modifiers.map((m, i) => (i === editingModifierIndex ? { ...existing, name, fieldType, required } : m)))
+                      } else {
+                        updateModifiers([...modifiers, { id: makeDimensionId(), name, fieldType, required }])
+                      }
+                    }
+                    const removeModifier = (i: number) => updateModifiers(modifiers.filter((_, j) => j !== i))
                     const slidePos = editing ? 1 : 0
                     const filtered = productSearch.trim().length > 0
                       ? products.map((p, i) => ({ p, i })).filter(({ p }) => p.name.toLowerCase().includes(productSearch.toLowerCase()))
@@ -3269,10 +3283,45 @@ export function BuildPage({
                                             colorScheme="primary"
                                             leftIcon={<Icon name="plus" category="general" size={20} />}
                                             className="product-options__add-btn"
+                                            onClick={() => { setEditingModifierIndex(null); setModifierModalOpen(true) }}
                                           >
                                             Add
                                           </DSButton>
                                         </div>
+                                        {modifiers.map((mod, i) => (
+                                          <button
+                                            key={mod.id}
+                                            type="button"
+                                            className="product-options__row"
+                                            onClick={() => { setEditingModifierIndex(i); setModifierModalOpen(true) }}
+                                          >
+                                            <div className="product-options__row-text">
+                                              <span className="product-options__row-label">{mod.name || 'Untitled modifier'}</span>
+                                              <span className="product-options__row-meta">
+                                                {mod.fieldType === 'color' ? 'Color swatches' : 'Text choices'}
+                                                {mod.required ? ' · Required' : ''}
+                                              </span>
+                                            </div>
+                                            <span className="product-options__row-actions">
+                                              <button
+                                                type="button"
+                                                className="product-options__row-btn"
+                                                aria-label="Remove modifier"
+                                                onClick={(e) => { e.stopPropagation(); removeModifier(i) }}
+                                              >
+                                                <Icon name="trash-filled" category="general" size={16} />
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="product-options__row-btn"
+                                                aria-label="Edit modifier"
+                                                onClick={(e) => { e.stopPropagation(); setEditingModifierIndex(i); setModifierModalOpen(true) }}
+                                              >
+                                                <Icon name="pencil-filled" category="editor" size={16} />
+                                              </button>
+                                            </span>
+                                          </button>
+                                        ))}
                                       </div>
                                     </div>
                                   )}
@@ -3292,6 +3341,12 @@ export function BuildPage({
                           option={editingOptionIndex !== null ? dimensions[editingOptionIndex] : null}
                           onClose={() => { setOptionModalOpen(false); setEditingOptionIndex(null) }}
                           onSubmit={handleOptionSubmit}
+                        />
+                        <ProductModifierModal
+                          open={modifierModalOpen}
+                          modifier={editingModifierIndex !== null ? modifiers[editingModifierIndex] : null}
+                          onClose={() => { setModifierModalOpen(false); setEditingModifierIndex(null) }}
+                          onSubmit={handleModifierSubmit}
                         />
                       </div>
                     )
