@@ -321,10 +321,13 @@
     bottom: calc(100% + 4px);
   }
 
-  // Portal mode: menu is fixed-positioned via inline style; reset stretching defaults.
+  // Portal mode: menu is fixed-positioned via inline style; reset stretching
+  // defaults and lift above modal overlays (z-index 1000) — usePortal exists
+  // precisely for triggers inside modals / overflow-hidden ancestors.
   &--portal {
     left: auto;
     right: auto;
+    z-index: 1100;
   }
 
   // ===== Mobile bottom-sheet =====
