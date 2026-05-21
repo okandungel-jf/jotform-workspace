@@ -4022,7 +4022,7 @@ body {
   padding: var(--ds-space-md);
 
   & + & {
-    border-top: 1px solid var(--gray-500);
+    border-top: 1px solid var(--gray-700);
   }
 }
 
@@ -4042,7 +4042,8 @@ body {
 
 .product-options__choice-title {
   font-family: var(--ds-font-family);
-  font-size: var(--ds-font-size-md);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
   font-weight: var(--ds-font-weight-medium);
   color: var(--core-white);
 }
