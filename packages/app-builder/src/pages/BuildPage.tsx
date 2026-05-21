@@ -20,6 +20,7 @@ import {
   compressImageFiles,
   ensureProductIds,
   generateVariants,
+  makeDimensionId,
   type ProductItem,
   type RegisteredComponent,
   type VariantValues,
@@ -60,7 +61,7 @@ import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-sc
 import type { AppPreset, PresetElement } from '../presets/appPresets'
 import { IconPropertyField } from '../components/IconPropertyField'
 import { ColorInputWithPicker } from '../components/ColorInputWithPicker'
-import { ProductVariantEditor } from '../components/ProductVariantEditor'
+import { ProductOptionEditor } from '../components/ProductOptionEditor'
 import { loadSnapshot, saveSnapshot } from '../presets/storage'
 
 interface CanvasElement {
@@ -1107,9 +1108,10 @@ export function BuildPage({
     setPropertyTab('general')
   }, [])
   const [editingProductIndex, setEditingProductIndex] = useState<number | null>(null)
-  const [editingVariants, setEditingVariants] = useState(false)
+  const [editingOptionIndex, setEditingOptionIndex] = useState<number | null>(null)
+  const [productSettingsTab, setProductSettingsTab] = useState<string>('basic')
   const [productSearch, setProductSearch] = useState('')
-  useEffect(() => { setEditingProductIndex(null); setEditingVariants(false); setProductSearch('') }, [selectedElementId, propertyTab])
+  useEffect(() => { setEditingProductIndex(null); setEditingOptionIndex(null); setProductSettingsTab('basic'); setProductSearch('') }, [selectedElementId, propertyTab])
 
   const migratedSocialFollowIds = useRef<Set<string>>(new Set())
   useEffect(() => {
@@ -2648,6 +2650,7 @@ export function BuildPage({
                   </div>
                 </div>
 
+                {!(selectedComponent.id === 'product-list' && propertyTab === 'products' && editingProductIndex !== null) && (
                 <div className="property-panel__tabs">
                   <DSTabs
                     accent="apps"
@@ -2681,7 +2684,7 @@ export function BuildPage({
                                 ]
                               : selectedComponent.id === 'product-list'
                                 ? [
-                                    { value: 'general', label: 'General' },
+                                    { value: 'general', label: 'Appearance' },
                                     { value: 'products', label: 'Products' },
                                     { value: 'condition', label: 'Condition' },
                                   ]
@@ -2698,6 +2701,7 @@ export function BuildPage({
                     }
                   />
                 </div>
+                )}
 
                 {(() => {
                   const isAppHeader = selectedComponent.id === 'app-header'
@@ -2930,207 +2934,278 @@ export function BuildPage({
                     const products = readProducts()
                     const currency = String(selectedElement.properties['Currency'] ?? '$')
 
-                    if (editingProductIndex !== null) {
-                      const idx = editingProductIndex
-                      const isNew = idx === products.length
-                      const current: Product = isNew ? { name: '', price: '0.00' } : (products[idx] ?? { name: '', price: '0.00' })
-                      const updateProduct = (updates: Partial<Product>) => {
-                        const next = [...products]
-                        if (isNew) next.push({ ...current, ...updates })
-                        else next[idx] = { ...current, ...updates }
-                        writeProducts(next)
-                      }
-                      const updateField = <K extends keyof Product>(field: K, value: Product[K]) =>
-                        updateProduct({ [field]: value } as Partial<Product>)
-                      const editInputId = `product-image-${selectedElement.id}`
-                      const variantsEnabled = selectedElement.properties['Enable Variants'] === true
-                      const dimCount = current.optionDimensions?.length ?? 0
-                      const varCount = current.variants?.length ?? 0
-                      const variantSummary = dimCount === 0
-                        ? 'Set up variants'
-                        : `${dimCount} ${dimCount === 1 ? 'dimension' : 'dimensions'} · ${varCount} ${varCount === 1 ? 'variant' : 'variants'}`
-                      return (
-                        <div className="property-panel__body product-edit-host">
-                          <div className={`product-edit-slider${editingVariants ? ' product-edit-slider--variants' : ''}`}>
-                            <div className="product-edit-slide product-edit">
-                          <div className="property-panel__field">
-                            <DSFormField title="Name" required size="md" showDescription={false} showHelpText={false}>
-                              <DSInput
-                                value={current.name}
-                                placeholder="Product Name"
-                                onChange={(e) => updateField('name', e.target.value)}
-                              />
-                            </DSFormField>
-                          </div>
-                          <div className="property-panel__field">
-                            <DSFormField title="Price" size="md" showDescription={false} showHelpText={false}>
-                              <div className="product-edit__price">
-                                <DSInput
-                                  className="product-edit__price-input"
-                                  value={current.price}
-                                  placeholder="0.00"
-                                  onChange={(e) => updateField('price', e.target.value)}
-                                />
-                                <DSDropdownSingle
-                                  className="product-edit__currency"
-                                  value={currency}
-                                  onChange={(val) => handlePropertyChange(selectedElement.id, 'Currency', val)}
-                                  options={[
-                                    { value: '$', label: 'USD' },
-                                    { value: '€', label: 'EUR' },
-                                    { value: '£', label: 'GBP' },
-                                    { value: '₺', label: 'TRY' },
-                                    { value: '¥', label: 'JPY' },
-                                  ]}
-                                />
-                              </div>
-                            </DSFormField>
-                          </div>
-                          <div className="property-panel__field">
-                            <DSFormField title="Description" size="md" showDescription={false} showHelpText={false}>
-                              <textarea
-                                className="product-edit__textarea"
-                                value={current.description ?? ''}
-                                placeholder="Please enter a short description"
-                                onChange={(e) => updateField('description', e.target.value)}
-                                rows={4}
-                              />
-                            </DSFormField>
-                          </div>
-                          <div className="property-panel__field">
-                            <DSFormField title="Image" size="md" showDescription={false} showHelpText={false}>
-                              <input
-                                id={editInputId}
-                                type="file"
-                                accept="image/*"
-                                hidden
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0]
-                                  if (!file) return
-                                  compressImageFile(file).then((url) => updateField('image', url))
-                                  e.target.value = ''
-                                }}
-                              />
-                              {current.image ? (
-                                <div className="product-edit__image">
-                                  <img src={current.image} alt="" />
-                                  <button
-                                    type="button"
-                                    className="product-edit__image-remove"
-                                    onClick={() => updateField('image', undefined)}
-                                  >
-                                    <Icon name="trash-filled" category="general" size={14} />
-                                  </button>
-                                </div>
-                              ) : (
-                                <label htmlFor={editInputId} className="gallery-images__choose">
-                                  Choose Images
-                                </label>
-                              )}
-                            </DSFormField>
-                          </div>
-                          {variantsEnabled && (
-                            <div className="property-panel__field">
-                              <DSFormField title="Variants" size="md" showDescription={false} showHelpText={false}>
-                                <button
-                                  type="button"
-                                  className="product-edit__variants-btn"
-                                  onClick={() => setEditingVariants(true)}
-                                >
-                                  <span>{variantSummary}</span>
-                                  <Icon name="caret-right" category="arrows" size={18} />
-                                </button>
-                              </DSFormField>
-                            </div>
-                          )}
-                          <div className="product-edit__footer">
-                            <DSButton
-                              variant="filled"
-                              colorScheme="secondary"
-                              size="lg"
-                              leftIcon={<Icon name="caret-left" category="arrows" size={20} />}
-                              onClick={() => { setEditingVariants(false); setEditingProductIndex(null) }}
-                              className="product-edit__back-btn"
-                            >
-                              Go Back
-                            </DSButton>
-                          </div>
-                            </div>
-                            <div className="product-edit-slide">
-                              {editingVariants && (
-                                <ProductVariantEditor
-                                  dimensions={current.optionDimensions ?? []}
-                                  onChange={(dims) => updateProduct({ optionDimensions: dims, variants: generateVariants(dims) })}
-                                  onBack={() => setEditingVariants(false)}
-                                />
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )
+                    const idx = editingProductIndex
+                    const editing = idx !== null
+                    const isNew = idx !== null && idx === products.length
+                    const current: Product =
+                      idx !== null && idx < products.length
+                        ? (products[idx] ?? { name: '', price: '0.00' })
+                        : { name: '', price: '0.00' }
+                    const updateProduct = (updates: Partial<Product>) => {
+                      if (idx === null) return
+                      const next = [...products]
+                      if (isNew) next.push({ ...current, ...updates })
+                      else next[idx] = { ...current, ...updates }
+                      writeProducts(next)
                     }
-
+                    const updateField = <K extends keyof Product>(field: K, value: Product[K]) =>
+                      updateProduct({ [field]: value } as Partial<Product>)
+                    const editInputId = `product-image-${selectedElement.id}`
+                    const dimensions = current.optionDimensions ?? []
+                    const updateDimensions = (dims: typeof dimensions) =>
+                      updateProduct({ optionDimensions: dims, variants: generateVariants(dims) })
+                    const addOption = () => {
+                      setEditingOptionIndex(dimensions.length)
+                      updateDimensions([...dimensions, { id: makeDimensionId(), label: '', values: [] }])
+                    }
+                    const removeOption = (i: number) => updateDimensions(dimensions.filter((_, j) => j !== i))
+                    const optionForEdit = editingOptionIndex !== null ? dimensions[editingOptionIndex] : undefined
+                    const slidePos = !editing ? 0 : editingOptionIndex === null ? 1 : 2
                     const filtered = productSearch.trim().length > 0
                       ? products.map((p, i) => ({ p, i })).filter(({ p }) => p.name.toLowerCase().includes(productSearch.toLowerCase()))
                       : products.map((p, i) => ({ p, i }))
 
                     return (
-                      <div className="property-panel__body product-list-panel">
-                        <div className="property-panel__field">
-                          <DSSearchInput
-                            placeholder="Search products"
-                            value={productSearch}
-                            onChange={(e) => setProductSearch(e.target.value)}
-                            onClear={() => setProductSearch('')}
-                          />
-                        </div>
-                        <div className="product-list-rows">
-                          {filtered.map(({ p, i }) => (
-                            <button
-                              key={i}
-                              type="button"
-                              className="product-list-row"
-                              onClick={() => setEditingProductIndex(i)}
-                            >
-                              <Icon name="grid-dots" category="general" size={16} className="product-list-row__handle" />
-                              <div className="product-list-row__card">
-                                <div className="product-list-row__image">
-                                  {p.image ? (
-                                    <img src={p.image} alt="" />
-                                  ) : (
-                                    <Icon name="image-filled" category="media" size={20} />
+                      <div className="property-panel__body product-panel-host">
+                        <div className="product-panel-slider" data-slide={slidePos}>
+
+                          {/* Slide 1 — Products list */}
+                          <div className="product-panel-slide product-list-panel">
+                            <div className="property-panel__field">
+                              <DSSearchInput
+                                placeholder="Search products"
+                                value={productSearch}
+                                onChange={(e) => setProductSearch(e.target.value)}
+                                onClear={() => setProductSearch('')}
+                              />
+                            </div>
+                            <div className="product-list-rows">
+                              {filtered.map(({ p, i }) => (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  className="product-list-row"
+                                  onClick={() => { setEditingOptionIndex(null); setProductSettingsTab('basic'); setEditingProductIndex(i) }}
+                                >
+                                  <Icon name="grid-dots" category="general" size={16} className="product-list-row__handle" />
+                                  <div className="product-list-row__card">
+                                    <div className="product-list-row__image">
+                                      {p.image ? (
+                                        <img src={p.image} alt="" />
+                                      ) : (
+                                        <Icon name="image-filled" category="media" size={20} />
+                                      )}
+                                    </div>
+                                    <div className="product-list-row__name">{p.name || 'Untitled'}</div>
+                                    <div className="product-list-row__price">
+                                      {p.price && Number(p.price) > 0 ? `${currency}${p.price}` : 'Free'}
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="product-list-row__delete"
+                                    aria-label="Delete product"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      writeProducts(products.filter((_, j) => j !== i))
+                                    }}
+                                  >
+                                    <Icon name="trash-filled" category="general" size={16} />
+                                  </button>
+                                </button>
+                              ))}
+                            </div>
+                            <div className="product-list-panel__footer">
+                              <DSButton
+                                variant="filled"
+                                colorScheme="primary"
+                                size="lg"
+                                leftIcon={<Icon name="plus" category="general" size={20} />}
+                                onClick={() => { setEditingOptionIndex(null); setProductSettingsTab('basic'); setEditingProductIndex(products.length) }}
+                                className="product-list-panel__add-btn"
+                              >
+                                Add Product
+                              </DSButton>
+                            </div>
+                          </div>
+
+                          {/* Slide 2 — Product Settings */}
+                          <div className="product-panel-slide">
+                            {editing && (
+                              <div className="product-settings">
+                                <div className="product-settings__header">
+                                  <button
+                                    type="button"
+                                    className="product-settings__back"
+                                    aria-label="Back"
+                                    onClick={() => setEditingProductIndex(null)}
+                                  >
+                                    <Icon name="caret-left" category="arrows" size={20} />
+                                  </button>
+                                  <span className="product-settings__title">Product Settings</span>
+                                </div>
+                                <div className="product-settings__tabs">
+                                  <DSTabs
+                                    accent="apps"
+                                    value={productSettingsTab}
+                                    onChange={setProductSettingsTab}
+                                    items={[
+                                      { value: 'basic', label: 'Basic' },
+                                      { value: 'options', label: 'Options' },
+                                      { value: 'stock', label: 'Stock' },
+                                    ]}
+                                  />
+                                </div>
+                                <div className="product-settings__body">
+                                  {productSettingsTab === 'basic' && (
+                                    <>
+                                      <div className="property-panel__field">
+                                        <DSFormField title="Name" required size="md" showDescription={false} showHelpText={false}>
+                                          <DSInput
+                                            value={current.name}
+                                            placeholder="Product Name"
+                                            onChange={(e) => updateField('name', e.target.value)}
+                                          />
+                                        </DSFormField>
+                                      </div>
+                                      <div className="property-panel__field">
+                                        <DSFormField title="Price" size="md" showDescription={false} showHelpText={false}>
+                                          <div className="product-edit__price">
+                                            <DSInput
+                                              className="product-edit__price-input"
+                                              value={current.price}
+                                              placeholder="0.00"
+                                              onChange={(e) => updateField('price', e.target.value)}
+                                            />
+                                            <DSDropdownSingle
+                                              className="product-edit__currency"
+                                              value={currency}
+                                              onChange={(val) => handlePropertyChange(selectedElement.id, 'Currency', val)}
+                                              options={[
+                                                { value: '$', label: 'USD' },
+                                                { value: '€', label: 'EUR' },
+                                                { value: '£', label: 'GBP' },
+                                                { value: '₺', label: 'TRY' },
+                                                { value: '¥', label: 'JPY' },
+                                              ]}
+                                            />
+                                          </div>
+                                        </DSFormField>
+                                      </div>
+                                      <div className="property-panel__field">
+                                        <DSFormField title="Description" size="md" showDescription={false} showHelpText={false}>
+                                          <textarea
+                                            className="product-edit__textarea"
+                                            value={current.description ?? ''}
+                                            placeholder="Please enter a short description"
+                                            onChange={(e) => updateField('description', e.target.value)}
+                                            rows={4}
+                                          />
+                                        </DSFormField>
+                                      </div>
+                                      <div className="property-panel__field">
+                                        <DSFormField title="Image" size="md" showDescription={false} showHelpText={false}>
+                                          <input
+                                            id={editInputId}
+                                            type="file"
+                                            accept="image/*"
+                                            hidden
+                                            onChange={(e) => {
+                                              const file = e.target.files?.[0]
+                                              if (!file) return
+                                              compressImageFile(file).then((url) => updateField('image', url))
+                                              e.target.value = ''
+                                            }}
+                                          />
+                                          {current.image ? (
+                                            <div className="product-edit__image">
+                                              <img src={current.image} alt="" />
+                                              <button
+                                                type="button"
+                                                className="product-edit__image-remove"
+                                                onClick={() => updateField('image', undefined)}
+                                              >
+                                                <Icon name="trash-filled" category="general" size={14} />
+                                              </button>
+                                            </div>
+                                          ) : (
+                                            <label htmlFor={editInputId} className="gallery-images__choose">
+                                              Choose Images
+                                            </label>
+                                          )}
+                                        </DSFormField>
+                                      </div>
+                                    </>
+                                  )}
+                                  {productSettingsTab === 'options' && (
+                                    <div className="product-options">
+                                      <DSButton
+                                        variant="filled"
+                                        colorScheme="primary"
+                                        size="lg"
+                                        leftIcon={<Icon name="plus" category="general" size={20} />}
+                                        onClick={addOption}
+                                        className="product-options__add"
+                                      >
+                                        Add Product Option
+                                      </DSButton>
+                                      {dimensions.length === 0 && (
+                                        <p className="product-options__empty">
+                                          No options yet. Add one like Size or Color — variants are generated automatically.
+                                        </p>
+                                      )}
+                                      {dimensions.map((dim, i) => (
+                                        <button
+                                          key={dim.id}
+                                          type="button"
+                                          className="product-options__row"
+                                          onClick={() => setEditingOptionIndex(i)}
+                                        >
+                                          <div className="product-options__row-text">
+                                            <span className="product-options__row-label">{dim.label || 'Untitled option'}</span>
+                                            <span className="product-options__row-meta">
+                                              {dim.values.length} {dim.values.length === 1 ? 'value' : 'values'}
+                                            </span>
+                                          </div>
+                                          <button
+                                            type="button"
+                                            className="product-options__row-delete"
+                                            aria-label="Remove option"
+                                            onClick={(e) => { e.stopPropagation(); removeOption(i) }}
+                                          >
+                                            <Icon name="trash-filled" category="general" size={16} />
+                                          </button>
+                                          <Icon name="caret-right" category="arrows" size={18} />
+                                        </button>
+                                      ))}
+                                      {(current.variants?.length ?? 0) > 0 && (
+                                        <p className="product-options__summary">
+                                          {current.variants?.length} variants generated
+                                        </p>
+                                      )}
+                                    </div>
+                                  )}
+                                  {productSettingsTab === 'stock' && (
+                                    <div className="product-stock-empty">
+                                      <p className="product-stock-empty__text">Stock control arrives in the next update.</p>
+                                    </div>
                                   )}
                                 </div>
-                                <div className="product-list-row__name">{p.name || 'Untitled'}</div>
-                                <div className="product-list-row__price">
-                                  {p.price && Number(p.price) > 0 ? `${currency}${p.price}` : 'Free'}
-                                </div>
                               </div>
-                              <button
-                                type="button"
-                                className="product-list-row__delete"
-                                aria-label="Delete product"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  writeProducts(products.filter((_, idx) => idx !== i))
-                                }}
-                              >
-                                <Icon name="trash-filled" category="general" size={16} />
-                              </button>
-                            </button>
-                          ))}
-                        </div>
-                        <div className="product-list-panel__footer">
-                          <DSButton
-                            variant="filled"
-                            colorScheme="primary"
-                            size="lg"
-                            leftIcon={<Icon name="plus" category="general" size={20} />}
-                            onClick={() => setEditingProductIndex(products.length)}
-                            className="product-list-panel__add-btn"
-                          >
-                            Add Product
-                          </DSButton>
+                            )}
+                          </div>
+
+                          {/* Slide 3 — Product Option */}
+                          <div className="product-panel-slide">
+                            {editing && optionForEdit && (
+                              <ProductOptionEditor
+                                option={optionForEdit}
+                                onChange={(opt) => updateDimensions(dimensions.map((d, i) => (i === editingOptionIndex ? opt : d)))}
+                                onBack={() => setEditingOptionIndex(null)}
+                              />
+                            )}
+                          </div>
+
                         </div>
                       </div>
                     )

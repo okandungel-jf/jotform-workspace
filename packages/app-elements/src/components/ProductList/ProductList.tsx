@@ -20,7 +20,6 @@ export interface ProductListProps {
   currency?: string;
   showToolbar?: boolean;
   showImages?: boolean;
-  enableVariants?: boolean;
   searchPlaceholder?: string;
   buttonLabel?: string;
   selected?: boolean;
@@ -97,8 +96,8 @@ const VariantSelectors: FC<{
 );
 
 /** Resolves the variant selection state shared by both item layouts. */
-function useVariantSelection(product: ProductItem, enableVariants: boolean) {
-  const dimensions = enableVariants ? (product.optionDimensions ?? []) : [];
+function useVariantSelection(product: ProductItem) {
+  const dimensions = product.optionDimensions ?? [];
   const hasVariants = dimensions.length > 0;
   const [selected, setSelected] = useState<Record<string, string>>({});
   const allSelected = dimensions.every((dim) => selected[dim.label]);
@@ -110,17 +109,16 @@ function useVariantSelection(product: ProductItem, enableVariants: boolean) {
 // ============================================
 // Card Item (used in 2/3 column layouts)
 // ============================================
-const ProductCardItem: FC<{ product: ProductItem; buttonLabel: string; currency: string; showImages: boolean; enableVariants: boolean; onUpdate?: (updates: Partial<ProductItem>) => void }> = ({
+const ProductCardItem: FC<{ product: ProductItem; buttonLabel: string; currency: string; showImages: boolean; onUpdate?: (updates: Partial<ProductItem>) => void }> = ({
   product,
   buttonLabel,
   currency,
   showImages,
-  enableVariants,
   onUpdate,
 }) => {
   const cart = useCart();
   const favorites = useFavorites();
-  const { dimensions, hasVariants, selected, setSelected, allSelected, variantId, variantText } = useVariantSelection(product, enableVariants);
+  const { dimensions, hasVariants, selected, setSelected, allSelected, variantId, variantText } = useVariantSelection(product);
   const inCart = hasVariants
     ? allSelected && (cart?.has(product.name, variantId) ?? false)
     : cart?.has(product.name) ?? false;
@@ -187,17 +185,16 @@ const ProductCardItem: FC<{ product: ProductItem; buttonLabel: string; currency:
 // ============================================
 // Basic Item (used in single column layout)
 // ============================================
-const ProductBasicItem: FC<{ product: ProductItem; buttonLabel: string; currency: string; showImages: boolean; enableVariants: boolean; onUpdate?: (updates: Partial<ProductItem>) => void }> = ({
+const ProductBasicItem: FC<{ product: ProductItem; buttonLabel: string; currency: string; showImages: boolean; onUpdate?: (updates: Partial<ProductItem>) => void }> = ({
   product,
   buttonLabel,
   currency,
   showImages,
-  enableVariants,
   onUpdate,
 }) => {
   const cart = useCart();
   const favorites = useFavorites();
-  const { dimensions, hasVariants, selected, setSelected, allSelected, variantId, variantText } = useVariantSelection(product, enableVariants);
+  const { dimensions, hasVariants, selected, setSelected, allSelected, variantId, variantText } = useVariantSelection(product);
   const inCart = hasVariants
     ? allSelected && (cart?.has(product.name, variantId) ?? false)
     : cart?.has(product.name) ?? false;
@@ -339,7 +336,6 @@ export const ProductList: FC<ProductListProps> = ({
   currency = '$',
   showToolbar = true,
   showImages = true,
-  enableVariants = false,
   searchPlaceholder = 'Search Products',
   buttonLabel = 'Add to Cart',
   selected = false,
@@ -461,9 +457,9 @@ export const ProductList: FC<ProductListProps> = ({
             onProductsChange?.(products.map((p, idx) => idx === i ? { ...p, ...updates } : p))
           }
           return isSingle ? (
-            <ProductBasicItem key={i} product={product} buttonLabel={buttonLabel} currency={currency} showImages={showImages} enableVariants={enableVariants} onUpdate={handleUpdate} />
+            <ProductBasicItem key={i} product={product} buttonLabel={buttonLabel} currency={currency} showImages={showImages} onUpdate={handleUpdate} />
           ) : (
-            <ProductCardItem key={i} product={product} buttonLabel={buttonLabel} currency={currency} showImages={showImages} enableVariants={enableVariants} onUpdate={handleUpdate} />
+            <ProductCardItem key={i} product={product} buttonLabel={buttonLabel} currency={currency} showImages={showImages} onUpdate={handleUpdate} />
           )
         })}
         {showAddNew && (isSingle ? <AddNewProductBasic onClick={handleAddProduct} /> : <AddNewProductCard onClick={handleAddProduct} />)}
