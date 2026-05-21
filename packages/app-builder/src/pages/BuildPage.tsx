@@ -2625,9 +2625,24 @@ export function BuildPage({
             {rightPanel === 'properties' && selectedElement && selectedComponent ? (
               <div className="build-page__properties" data-theme="dark">
                 <div className="property-panel__header">
-                  <span className="property-panel__title">{selectedComponent.name}</span>
+                  {selectedComponent.id === 'product-list' && propertyTab === 'products' && editingProductIndex !== null ? (
+                    <div className="property-panel__header-nav">
+                      <button
+                        className="property-panel__back"
+                        onClick={() => (editingOptionIndex !== null ? setEditingOptionIndex(null) : setEditingProductIndex(null))}
+                        aria-label="Back"
+                      >
+                        <Icon name="caret-left" category="arrows" size={20} />
+                      </button>
+                      <span className="property-panel__title">
+                        {editingOptionIndex !== null ? 'Product Option' : 'Product Settings'}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="property-panel__title">{selectedComponent.name}</span>
+                  )}
                   <div className="property-panel__header-actions">
-                    {selectedElement.id !== APP_HEADER_ID && (
+                    {!(selectedComponent.id === 'product-list' && propertyTab === 'products' && editingProductIndex !== null) && selectedElement.id !== APP_HEADER_ID && (
                       <button
                         className="property-panel__close"
                         onClick={() => handleRemoveElement(selectedElement.id)}
@@ -3033,17 +3048,6 @@ export function BuildPage({
                           <div className="product-panel-slide">
                             {editing && (
                               <div className="product-settings">
-                                <div className="product-settings__header">
-                                  <button
-                                    type="button"
-                                    className="product-settings__back"
-                                    aria-label="Back"
-                                    onClick={() => setEditingProductIndex(null)}
-                                  >
-                                    <Icon name="caret-left" category="arrows" size={20} />
-                                  </button>
-                                  <span className="product-settings__title">Product Settings</span>
-                                </div>
                                 <div className="product-settings__tabs">
                                   <DSTabs
                                     accent="apps"
@@ -3201,7 +3205,6 @@ export function BuildPage({
                               <ProductOptionEditor
                                 option={optionForEdit}
                                 onChange={(opt) => updateDimensions(dimensions.map((d, i) => (i === editingOptionIndex ? opt : d)))}
-                                onBack={() => setEditingOptionIndex(null)}
                               />
                             )}
                           </div>

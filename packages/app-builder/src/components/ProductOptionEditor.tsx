@@ -5,7 +5,6 @@ import { MAX_VALUES_PER_DIMENSION, type ProductOptionDimension } from '@jf/app-e
 interface ProductOptionEditorProps {
   option: ProductOptionDimension
   onChange: (option: ProductOptionDimension) => void
-  onBack: () => void
 }
 
 // ── Tag input for an option's values ──
@@ -58,16 +57,9 @@ const ValueTagInput: FC<{
 }
 
 /** L3 — edits a single product option (a variant dimension): its label and values. */
-export const ProductOptionEditor: FC<ProductOptionEditorProps> = ({ option, onChange, onBack }) => {
+export const ProductOptionEditor: FC<ProductOptionEditorProps> = ({ option, onChange }) => {
   return (
     <div className="product-option-editor">
-      <div className="product-option-editor__header">
-        <button type="button" className="product-option-editor__back" aria-label="Back" onClick={onBack}>
-          <Icon name="caret-left" category="arrows" size={20} />
-        </button>
-        <span className="product-option-editor__title">Product Option</span>
-      </div>
-
       <div className="product-option-editor__body">
         <div className="product-option-editor__field">
           <label className="product-option-editor__field-label">Label</label>
