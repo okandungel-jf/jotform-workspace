@@ -34,7 +34,7 @@ const HEX_RE = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
 let choiceIdCounter = 0
 const makeChoiceId = () => `mc_${Date.now().toString(36)}_${(choiceIdCounter++).toString(36)}`
 const emptyChoice = (): ProductModifierChoice => ({ id: makeChoiceId(), value: '' })
-const seedChoices = (): ProductModifierChoice[] => [emptyChoice(), emptyChoice(), emptyChoice()]
+const seedChoices = (): ProductModifierChoice[] => [emptyChoice()]
 
 /** Per-choice color swatch that opens an HSV picker in a portal popup. */
 const ChoiceColorSwatch: FC<{ color?: string; onChange: (hex: string) => void }> = ({ color, onChange }) => {
