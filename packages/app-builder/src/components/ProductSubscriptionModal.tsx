@@ -172,6 +172,7 @@ export const ProductSubscriptionModal: FC<ProductSubscriptionModalProps> = ({
               </div>
             </div>
           </DSFormField>
+          <div aria-hidden />
         </div>
 
         <div className="product-subscription-modal__row">
@@ -185,7 +186,7 @@ export const ProductSubscriptionModal: FC<ProductSubscriptionModalProps> = ({
               options={EXPIRES_OPTIONS}
             />
           </DSFormField>
-          {expiresChoice === 'custom' && (
+          {expiresChoice === 'custom' ? (
             <DSFormField title="Billing cycles" required size="md" showDescription={false} showHelpText={false}>
               <DSNumberInput
                 value={customCycles}
@@ -195,6 +196,8 @@ export const ProductSubscriptionModal: FC<ProductSubscriptionModalProps> = ({
                 onChange={setCustomCycles}
               />
             </DSFormField>
+          ) : (
+            <div aria-hidden />
           )}
         </div>
         {expiresChoice === 'custom' && (
@@ -214,8 +217,8 @@ export const ProductSubscriptionModal: FC<ProductSubscriptionModalProps> = ({
               <DSSegmented
                 className="product-subscription-modal__discount-type"
                 items={[
-                  { value: 'amount', label: currency },
-                  { value: 'percent', label: '%' },
+                  { value: 'amount', label: 'Amount' },
+                  { value: 'percent', label: 'Percentage' },
                 ]}
                 value={discountType}
                 onChange={setDiscountType}
@@ -225,6 +228,7 @@ export const ProductSubscriptionModal: FC<ProductSubscriptionModalProps> = ({
               />
             </div>
           </DSFormField>
+          <div aria-hidden />
         </div>
       </div>
     </DSModal>

@@ -3941,10 +3941,14 @@ body {
 }
 
 .product-subscription-modal__row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: var(--ds-space-md);
-  align-items: start;
+  align-items: flex-start;
+
+  > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 }
 
 .product-subscription-modal__divider {
