@@ -3132,9 +3132,19 @@ export function BuildPage({
                                               </button>
                                             </div>
                                           ) : (
-                                            <label htmlFor={editInputId} className="gallery-images__choose">
-                                              Choose Images
-                                            </label>
+                                            <div className="upload-area">
+                                              <DSButton
+                                                variant="filled"
+                                                colorScheme="secondary"
+                                                shape="rectangle"
+                                                size="md"
+                                                leftIcon={<Icon name="image-plus-filled" category="media" size={16} />}
+                                                onClick={() => document.getElementById(editInputId)?.click()}
+                                              >
+                                                Choose File
+                                              </DSButton>
+                                              <span className="upload-area__hint">OR DRAG AND DROP HERE</span>
+                                            </div>
                                           )}
                                         </DSFormField>
                                       </div>
