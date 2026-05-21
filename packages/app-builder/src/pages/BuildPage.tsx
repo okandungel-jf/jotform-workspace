@@ -2912,7 +2912,7 @@ export function BuildPage({
 
                   // Product List Products tab — list view + inline edit form.
                   if (isProductList && propertyTab === 'products') {
-                    type Product = { name: string; price: string; description?: string; image?: string; autoScale?: boolean }
+                    type Product = { name: string; price: string; description?: string; image?: string }
                     const readProducts = (): Product[] => {
                       try {
                         const parsed = JSON.parse(String(selectedElement.properties['Products'] ?? '[]'))
@@ -3013,19 +3013,6 @@ export function BuildPage({
                                 </label>
                               )}
                             </DSFormField>
-                          </div>
-                          <div className="property-panel__field">
-                            <div className="product-edit__inline">
-                              <div className="product-edit__inline-text">
-                                <span className="product-edit__inline-title">Auto Scale Images</span>
-                                <span className="product-edit__inline-desc">Scale image to fill available canvas.</span>
-                              </div>
-                              <DSToggle
-                                size="md"
-                                checked={current.autoScale !== false}
-                                onChange={(e) => updateField('autoScale', e.target.checked)}
-                              />
-                            </div>
                           </div>
                           <div className="product-edit__footer">
                             <DSButton

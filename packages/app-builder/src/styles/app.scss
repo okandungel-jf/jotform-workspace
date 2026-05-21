@@ -3889,34 +3889,6 @@ body {
   }
 }
 
-.product-edit__inline {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ds-space-md);
-  padding: var(--ds-space-sm) 0;
-}
-
-.product-edit__inline-text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2xs);
-  min-width: 0;
-}
-
-.product-edit__inline-title {
-  font-family: var(--ds-font-family);
-  font-size: var(--ds-font-size-md);
-  font-weight: var(--ds-font-weight-medium);
-  color: var(--core-white);
-}
-
-.product-edit__inline-desc {
-  font-family: var(--ds-font-family);
-  font-size: var(--ds-font-size-sm);
-  color: var(--gray-200);
-}
-
 .product-edit__footer {
   position: sticky;
   bottom: 0;

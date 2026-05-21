@@ -12,7 +12,6 @@ export interface ProductItem {
   price: string;
   description?: string;
   image?: string;
-  autoScale?: boolean;
 }
 
 export interface ProductListProps {
@@ -21,6 +20,7 @@ export interface ProductListProps {
   subtitle?: string;
   currency?: string;
   showToolbar?: boolean;
+  showImages?: boolean;
   searchPlaceholder?: string;
   buttonLabel?: string;
   selected?: boolean;
@@ -73,10 +73,11 @@ function handleEditBlur(e: React.FocusEvent<HTMLElement>, defaultValue: string, 
 // ============================================
 // Card Item (used in 2/3 column layouts)
 // ============================================
-const ProductCardItem: FC<{ product: ProductItem; buttonLabel: string; currency: string; onUpdate?: (updates: Partial<ProductItem>) => void }> = ({
+const ProductCardItem: FC<{ product: ProductItem; buttonLabel: string; currency: string; showImages: boolean; onUpdate?: (updates: Partial<ProductItem>) => void }> = ({
   product,
   buttonLabel,
   currency,
+  showImages,
   onUpdate,
 }) => {
   const cart = useCart();
@@ -87,12 +88,14 @@ const ProductCardItem: FC<{ product: ProductItem; buttonLabel: string; currency:
   const toggleLike = () => favorites?.toggle({ name: product.name, price: product.price, image: product.image });
   return (
   <div className="jf-product-item jf-product-item--card">
-    <div className="jf-product-item__image">
-      {product.image ? <img src={product.image} alt={product.name} className="jf-product-item__img" /> : <ImagePlaceholder />}
-      <button className={`jf-product-item__like${liked ? ' liked' : ''}`} onClick={toggleLike}>
-        <Icon name="Heart" size={18} forceStyle={liked ? 'fill' : 'outline'} />
-      </button>
-    </div>
+    {showImages && (
+      <div className="jf-product-item__image">
+        {product.image ? <img src={product.image} alt={product.name} className="jf-product-item__img" /> : <ImagePlaceholder />}
+        <button className={`jf-product-item__like${liked ? ' liked' : ''}`} onClick={toggleLike}>
+          <Icon name="Heart" size={18} forceStyle={liked ? 'fill' : 'outline'} />
+        </button>
+      </div>
+    )}
     <div className="jf-product-item__content">
       <div className="jf-product-item__info">
         <p
@@ -141,10 +144,11 @@ const ProductCardItem: FC<{ product: ProductItem; buttonLabel: string; currency:
 // ============================================
 // Basic Item (used in single column layout)
 // ============================================
-const ProductBasicItem: FC<{ product: ProductItem; buttonLabel: string; currency: string; onUpdate?: (updates: Partial<ProductItem>) => void }> = ({
+const ProductBasicItem: FC<{ product: ProductItem; buttonLabel: string; currency: string; showImages: boolean; onUpdate?: (updates: Partial<ProductItem>) => void }> = ({
   product,
   buttonLabel,
   currency,
+  showImages,
   onUpdate,
 }) => {
   const cart = useCart();
@@ -155,9 +159,11 @@ const ProductBasicItem: FC<{ product: ProductItem; buttonLabel: string; currency
   const toggleLike = () => favorites?.toggle({ name: product.name, price: product.price, image: product.image });
   return (
   <div className="jf-product-item jf-product-item--basic">
-    <div className="jf-product-item__image-basic">
-      {product.image ? <img src={product.image} alt={product.name} className="jf-product-item__img" /> : <ImagePlaceholder size={56} />}
-    </div>
+    {showImages && (
+      <div className="jf-product-item__image-basic">
+        {product.image ? <img src={product.image} alt={product.name} className="jf-product-item__img" /> : <ImagePlaceholder size={56} />}
+      </div>
+    )}
     <div className="jf-product-item__body">
       <div className="jf-product-item__info">
         <p
@@ -231,6 +237,7 @@ const AddNewProductBasic: FC<{ onClick?: () => void }> = ({ onClick }) => (
 const LAYOUT_ICONS: { layout: ProductListLayout; iconName: string }[] = [
   { layout: 'SingleColumn', iconName: 'List' },
   { layout: 'TwoColumns', iconName: 'Grid2x2' },
+  { layout: 'ThreeColumns', iconName: 'Grid3x3' },
 ];
 
 // ============================================
@@ -243,9 +250,9 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
 // ============================================
 // Skeleton Card Item
 // ============================================
-const SkeletonProductCard: FC<{ animClass: string }> = ({ animClass }) => (
+const SkeletonProductCard: FC<{ animClass: string; showImages: boolean }> = ({ animClass, showImages }) => (
   <div className={`jf-product-item jf-product-item--card ${animClass}`}>
-    <div className="jf-product-item__image jf-skeleton__bone" />
+    {showImages && <div className="jf-product-item__image jf-skeleton__bone" />}
     <div className="jf-product-item__content" style={{ background: 'var(--bg-surface)' }}>
       <div className="jf-product-item__info">
         <div className="jf-skeleton__bone jf-skeleton__line jf-skeleton__line--md" />
@@ -261,9 +268,9 @@ const SkeletonProductCard: FC<{ animClass: string }> = ({ animClass }) => (
 // ============================================
 // Skeleton Basic Item (single column)
 // ============================================
-const SkeletonProductBasic: FC<{ animClass: string }> = ({ animClass }) => (
+const SkeletonProductBasic: FC<{ animClass: string; showImages: boolean }> = ({ animClass, showImages }) => (
   <div className={`jf-product-item jf-product-item--basic ${animClass}`}>
-    <div className="jf-product-item__image-basic jf-skeleton__bone" />
+    {showImages && <div className="jf-product-item__image-basic jf-skeleton__bone" />}
     <div className="jf-product-item__body" style={{ background: 'var(--bg-surface)' }}>
       <div className="jf-product-item__info">
         <div className="jf-skeleton__bone jf-skeleton__line jf-skeleton__line--md" />
@@ -282,6 +289,7 @@ export const ProductList: FC<ProductListProps> = ({
   subtitle = '',
   currency = '$',
   showToolbar = true,
+  showImages = true,
   searchPlaceholder = 'Search Products',
   buttonLabel = 'Add to Cart',
   selected = false,
@@ -352,9 +360,9 @@ export const ProductList: FC<ProductListProps> = ({
         <div className={gridClasses}>
           {products.map((_, i) =>
             isSingle ? (
-              <SkeletonProductBasic key={i} animClass={animClass} />
+              <SkeletonProductBasic key={i} animClass={animClass} showImages={showImages} />
             ) : (
-              <SkeletonProductCard key={i} animClass={animClass} />
+              <SkeletonProductCard key={i} animClass={animClass} showImages={showImages} />
             )
           )}
         </div>
@@ -403,9 +411,9 @@ export const ProductList: FC<ProductListProps> = ({
             onProductsChange?.(products.map((p, idx) => idx === i ? { ...p, ...updates } : p))
           }
           return isSingle ? (
-            <ProductBasicItem key={i} product={product} buttonLabel={buttonLabel} currency={currency} onUpdate={handleUpdate} />
+            <ProductBasicItem key={i} product={product} buttonLabel={buttonLabel} currency={currency} showImages={showImages} onUpdate={handleUpdate} />
           ) : (
-            <ProductCardItem key={i} product={product} buttonLabel={buttonLabel} currency={currency} onUpdate={handleUpdate} />
+            <ProductCardItem key={i} product={product} buttonLabel={buttonLabel} currency={currency} showImages={showImages} onUpdate={handleUpdate} />
           )
         })}
         {showAddNew && (isSingle ? <AddNewProductBasic onClick={handleAddProduct} /> : <AddNewProductCard onClick={handleAddProduct} />)}

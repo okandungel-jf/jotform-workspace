@@ -1,7 +1,13 @@
 import { ComponentRegistry } from '../../types/registry';
-import { ProductList, type ProductItem } from './ProductList';
+import { ProductList, type ProductItem, type ProductListLayout } from './ProductList';
 import type { VariantValues, PropertyValues, StateValues } from '../../types/component';
 import productListScss from './ProductList.scss?raw';
+
+const LAYOUT_MAP: Record<string, ProductListLayout> = {
+  List: 'SingleColumn',
+  Grid: 'TwoColumns',
+  'Grid 3': 'ThreeColumns',
+};
 
 ComponentRegistry.register({
   id: 'product-list',
@@ -11,7 +17,7 @@ ComponentRegistry.register({
 
   variants: {
     Layout: {
-      options: ['List', 'Grid'],
+      options: ['List', 'Grid', 'Grid 3'],
       default: 'Grid',
     },
   },
@@ -23,7 +29,7 @@ ComponentRegistry.register({
     { name: 'Search Placeholder', type: 'text', default: 'Search Products' },
     { name: 'Button Label', type: 'text', default: 'Add to Cart' },
     { name: 'Show Toolbar', type: 'boolean', default: true },
-    { name: 'Show Images', type: 'boolean', default: false },
+    { name: 'Show Images', type: 'boolean', default: true },
     { name: 'Selected', type: 'boolean', default: false },
     { name: 'Add New Card', type: 'boolean', default: true },
     { name: 'Skeleton', type: 'boolean', default: false },
@@ -128,26 +134,20 @@ ComponentRegistry.register({
   ],
 
   render(variants: VariantValues, props: PropertyValues, _states: StateValues, onPropertyChange?: (name: string, value: string | boolean | number) => void): React.ReactNode {
-    const showImages = props['Show Images'] as boolean;
     let products: ProductItem[] | undefined;
     try {
       products = JSON.parse(props['Products'] as string);
     } catch {
       products = undefined;
     }
-    if (showImages) {
-      products = (products || []).map((p) => ({
-        ...p,
-        image: p.image || `https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop`,
-      }));
-    }
     return (
       <ProductList
-        layout={variants['Layout'] === 'List' ? 'SingleColumn' : 'TwoColumns'}
+        layout={LAYOUT_MAP[variants['Layout'] as string] ?? 'TwoColumns'}
         title={props['Title'] as string}
         subtitle={props['Subtitle'] as string}
         currency={props['Currency'] as string}
         showToolbar={props['Show Toolbar'] as boolean}
+        showImages={props['Show Images'] as boolean}
         searchPlaceholder={props['Search Placeholder'] as string}
         buttonLabel={props['Button Label'] as string}
         selected={props['Selected'] as boolean}
