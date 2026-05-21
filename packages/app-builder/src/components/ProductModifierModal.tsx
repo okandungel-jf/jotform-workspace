@@ -84,6 +84,7 @@ export const ProductModifierModal: FC<ProductModifierModalProps> = ({ open, modi
           <DSCheckbox
             className="product-modifier-modal__required"
             label="This is a required field"
+            size="sm"
             checked={required}
             onChange={(e) => setRequired(e.target.checked)}
           />
