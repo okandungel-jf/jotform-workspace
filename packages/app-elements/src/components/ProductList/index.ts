@@ -1,5 +1,5 @@
 export { ProductList } from './ProductList';
-export type { ProductListProps, ProductListLayout, ProductItem, ProductOptionDimension, ProductVariant, ProductModifier } from './ProductList';
+export type { ProductListProps, ProductListLayout, ProductItem, ProductOptionDimension, ProductVariant, ProductModifier, ProductModifierFieldType } from './ProductList';
 export {
   generateVariants,
   ensureProductIds,

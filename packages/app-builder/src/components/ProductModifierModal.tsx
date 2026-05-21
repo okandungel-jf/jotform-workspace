@@ -6,19 +6,20 @@ import {
   FormField as DSFormField,
   Checkbox as DSCheckbox,
 } from '@jf/design-system'
-import type { ProductModifier } from '@jf/app-elements'
+import type { ProductModifier, ProductModifierFieldType } from '@jf/app-elements'
 
 interface ProductModifierModalProps {
   open: boolean
   /** When set, the modal edits this modifier; otherwise it adds a new one. */
   modifier?: ProductModifier | null
   onClose: () => void
-  onSubmit: (name: string, fieldType: 'text' | 'color', required: boolean) => void
+  onSubmit: (name: string, fieldType: ProductModifierFieldType, required: boolean) => void
 }
 
 const FIELD_TYPE_OPTIONS = [
   { value: 'text', label: 'Text choices' },
   { value: 'color', label: 'Color swatches' },
+  { value: 'textbox', label: 'Text box' },
 ]
 
 /** Builder modal for adding or editing a product modifier. */
@@ -49,7 +50,7 @@ export const ProductModifierModal: FC<ProductModifierModalProps> = ({ open, modi
       confirmDisabled={!canSubmit}
       onConfirm={() => {
         if (!canSubmit) return
-        onSubmit(name.trim(), fieldType as 'text' | 'color', required)
+        onSubmit(name.trim(), fieldType as ProductModifierFieldType, required)
         onClose()
       }}
     >

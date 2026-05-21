@@ -22,11 +22,14 @@ export interface ProductVariant {
   optionValues: Record<string, string>;
 }
 
+/** Field types a buyer-facing modifier can render as. */
+export type ProductModifierFieldType = 'text' | 'color' | 'textbox';
+
 /** A buyer-facing customization that doesn't affect price or inventory. */
 export interface ProductModifier {
   id: string;
   name: string;
-  fieldType: 'text' | 'color';
+  fieldType: ProductModifierFieldType;
   required: boolean;
 }
 

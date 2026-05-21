@@ -3941,12 +3941,16 @@ body {
 }
 
 .product-modifier-modal__field-type {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
-.product-modifier-modal__required {
-  padding-bottom: var(--ds-space-sm);
+// DS Checkbox is width:100% by default — pin it to its content so it
+// doesn't crush the field-type dropdown sharing the flex row.
+.product-modifier-modal__row .product-modifier-modal__required {
+  flex: 0 0 auto;
+  width: auto;
+  padding-bottom: var(--ds-space-xs);
 }
 
 // Product edit form

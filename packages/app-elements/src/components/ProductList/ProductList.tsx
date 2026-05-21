@@ -12,6 +12,7 @@ export type {
   ProductOptionDimension,
   ProductVariant,
   ProductModifier,
+  ProductModifierFieldType,
 } from './types';
 
 export interface ProductListProps {

@@ -22,6 +22,7 @@ import {
   generateVariants,
   makeDimensionId,
   type ProductItem,
+  type ProductModifierFieldType,
   type RegisteredComponent,
   type VariantValues,
   type PropertyValues,
@@ -2989,7 +2990,7 @@ export function BuildPage({
                     const removeOption = (i: number) => updateDimensions(dimensions.filter((_, j) => j !== i))
                     const modifiers = current.modifiers ?? []
                     const updateModifiers = (mods: typeof modifiers) => updateProduct({ modifiers: mods })
-                    const handleModifierSubmit = (name: string, fieldType: 'text' | 'color', required: boolean) => {
+                    const handleModifierSubmit = (name: string, fieldType: ProductModifierFieldType, required: boolean) => {
                       if (editingModifierIndex !== null) {
                         const existing = modifiers[editingModifierIndex]
                         updateModifiers(modifiers.map((m, i) => (i === editingModifierIndex ? { ...existing, name, fieldType, required } : m)))
@@ -3298,7 +3299,11 @@ export function BuildPage({
                                             <div className="product-options__row-text">
                                               <span className="product-options__row-label">{mod.name || 'Untitled modifier'}</span>
                                               <span className="product-options__row-meta">
-                                                {mod.fieldType === 'color' ? 'Color swatches' : 'Text choices'}
+                                                {mod.fieldType === 'color'
+                                                  ? 'Color swatches'
+                                                  : mod.fieldType === 'textbox'
+                                                    ? 'Text box'
+                                                    : 'Text choices'}
                                                 {mod.required ? ' · Required' : ''}
                                               </span>
                                             </div>
