@@ -42,7 +42,8 @@ export const ProductFilterPopover: FC<ProductFilterPopoverProps> = ({
     // Anchor to the search input box, not the full-width field wrapper.
     const box = anchor.querySelector('.jf-search') ?? anchor
     const rect = box.getBoundingClientRect()
-    setPos({ top: rect.bottom + 4, left: rect.left, width: rect.width })
+    const width = rect.width / 2
+    setPos({ top: rect.bottom + 4, left: rect.right - width, width })
   }, [anchorRef])
 
   useEffect(() => {
