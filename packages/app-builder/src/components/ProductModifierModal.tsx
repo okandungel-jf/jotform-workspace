@@ -70,25 +70,22 @@ export const ProductModifierModal: FC<ProductModifierModalProps> = ({ open, modi
             onChange={(e) => setName(e.target.value)}
           />
         </DSFormField>
-        <div className="product-modifier-modal__row">
-          <div className="product-modifier-modal__field-type">
-            <DSFormField title="Field type" size="md" showDescription={false} showHelpText={false}>
-              <DSDropdownSingle
-                value={fieldType}
-                showLeadingIcon={false}
-                onChange={setFieldType}
-                options={FIELD_TYPE_OPTIONS}
-              />
-            </DSFormField>
-          </div>
-          <DSCheckbox
-            className="product-modifier-modal__required"
-            label="This is a required field"
-            size="sm"
-            checked={required}
-            onChange={(e) => setRequired(e.target.checked)}
+        <DSFormField title="Field type" size="md" showDescription={false} showHelpText={false}>
+          <DSDropdownSingle
+            value={fieldType}
+            showLeadingIcon={false}
+            onChange={setFieldType}
+            options={FIELD_TYPE_OPTIONS}
+            usePortal
           />
-        </div>
+        </DSFormField>
+        <DSCheckbox
+          className="product-modifier-modal__required"
+          label="This is a required field"
+          size="sm"
+          checked={required}
+          onChange={(e) => setRequired(e.target.checked)}
+        />
       </div>
     </DSModal>
   )
