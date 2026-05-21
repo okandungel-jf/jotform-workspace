@@ -3199,20 +3199,24 @@ export function BuildPage({
                                   )}
                                   {productSettingsTab === 'options' && (
                                     <div className="product-options">
-                                      <DSButton
-                                        variant="filled"
-                                        colorScheme="primary"
-                                        leftIcon={<Icon name="plus" category="general" size={20} />}
-                                        onClick={addOption}
-                                        className="product-options__add"
-                                      >
-                                        Add Product Option
-                                      </DSButton>
-                                      {dimensions.length === 0 && (
-                                        <p className="product-options__empty">
-                                          No options yet. Add one like Size or Color — variants are generated automatically.
-                                        </p>
-                                      )}
+                                      <div className="product-options__section">
+                                        <div className="product-options__choice">
+                                          <div className="product-options__choice-text">
+                                            <span className="product-options__choice-title">Product Options</span>
+                                            <span className="product-options__choice-desc">
+                                              To create variants of this product, first add options, like sizes and colors.
+                                            </span>
+                                          </div>
+                                          <DSButton
+                                            variant="filled"
+                                            colorScheme="secondary"
+                                            leftIcon={<Icon name="plus" category="general" size={20} />}
+                                            onClick={addOption}
+                                            className="product-options__add-btn"
+                                          >
+                                            Add
+                                          </DSButton>
+                                        </div>
                                       {dimensions.map((dim, i) => (
                                         <button
                                           key={dim.id}
@@ -3251,6 +3255,25 @@ export function BuildPage({
                                           {current.variants?.length} variants generated
                                         </p>
                                       )}
+                                      </div>
+                                      <div className="product-options__section">
+                                        <div className="product-options__choice">
+                                          <div className="product-options__choice-text">
+                                            <span className="product-options__choice-title">Modifiers</span>
+                                            <span className="product-options__choice-desc">
+                                              Offer customization options that don&apos;t require special prices or inventory, like made-to-order embroidery patterns or engraving custom text.
+                                            </span>
+                                          </div>
+                                          <DSButton
+                                            variant="filled"
+                                            colorScheme="secondary"
+                                            leftIcon={<Icon name="plus" category="general" size={20} />}
+                                            className="product-options__add-btn"
+                                          >
+                                            Add
+                                          </DSButton>
+                                        </div>
+                                      </div>
                                     </div>
                                   )}
                                   {productSettingsTab === 'stock' && (

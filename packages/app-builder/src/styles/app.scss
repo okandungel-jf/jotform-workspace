@@ -4013,19 +4013,49 @@ body {
 .product-options {
   display: flex;
   flex-direction: column;
+}
+
+.product-options__section {
+  display: flex;
+  flex-direction: column;
   gap: var(--ds-space-sm);
   padding: var(--ds-space-md);
+
+  & + & {
+    border-top: 1px solid var(--gray-500);
+  }
 }
 
-.product-options__add {
-  width: 100%;
+.product-options__choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-sm);
 }
 
-.product-options__empty {
-  margin: 0;
+.product-options__choice-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2xs);
+  flex: 1;
+  min-width: 0;
+}
+
+.product-options__choice-title {
+  font-family: var(--ds-font-family);
+  font-size: var(--ds-font-size-md);
+  font-weight: var(--ds-font-weight-medium);
+  color: var(--core-white);
+}
+
+.product-options__choice-desc {
   font-family: var(--ds-font-family);
   font-size: var(--ds-font-size-sm);
+  line-height: var(--line-height-sm);
   color: var(--gray-200);
+}
+
+.product-options__add-btn {
+  flex-shrink: 0;
 }
 
 .product-options__row {
