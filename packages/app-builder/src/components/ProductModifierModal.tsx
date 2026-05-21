@@ -296,7 +296,7 @@ export const ProductModifierModal: FC<ProductModifierModalProps> = ({ open, modi
               <DSTextArea
                 value={textBoxTitle}
                 placeholder={'e.g., "What would you like engraved on your watch?"'}
-                maxLength={100}
+                maxLength={characterLimit ?? 500}
                 size="md"
                 onChange={(e) => setTextBoxTitle(e.target.value)}
               />
