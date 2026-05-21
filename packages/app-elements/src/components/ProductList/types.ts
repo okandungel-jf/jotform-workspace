@@ -82,6 +82,8 @@ export interface ProductItem {
   modifiers?: ProductModifier[];
   /** Recurring-payment plan for this product. */
   subscription?: ProductSubscription;
+  /** Whether the product appears in the product list. Defaults to visible. */
+  visible?: boolean;
 }
 
 /** Max variant dimensions per product (e-commerce convention: Size/Color/Material). */

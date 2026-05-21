@@ -364,7 +364,7 @@ export const ProductList: FC<ProductListProps> = ({
           </div>
         </div>
         <div className={gridClasses}>
-          {products.map((_, i) =>
+          {products.filter((p) => p.visible !== false).map((_, i) =>
             isSingle ? (
               <SkeletonProductBasic key={i} animClass={animClass} showImages={showImages} />
             ) : (
@@ -413,6 +413,7 @@ export const ProductList: FC<ProductListProps> = ({
       {/* Product Grid */}
       <div className={gridClasses}>
         {products.map((product, i) => {
+          if (product.visible === false) return null
           const handleUpdate = (updates: Partial<ProductItem>) => {
             onProductsChange?.(products.map((p, idx) => idx === i ? { ...p, ...updates } : p))
           }

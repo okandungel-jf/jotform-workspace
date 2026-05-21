@@ -3221,6 +3221,21 @@ export function BuildPage({
                                           )}
                                         </DSFormField>
                                       </div>
+                                      <div className="property-panel__field property-panel__field--inline">
+                                        <DSFormField
+                                          title="Show in product list"
+                                          description="Display this product in the product list."
+                                          size="md"
+                                          showDescription
+                                          showHelpText={false}
+                                        >
+                                          <DSToggle
+                                            size="md"
+                                            checked={current.visible !== false}
+                                            onChange={(e) => updateField('visible', e.target.checked)}
+                                          />
+                                        </DSFormField>
+                                      </div>
                                     </>
                                   )}
                                   {productSettingsTab === 'options' && (
