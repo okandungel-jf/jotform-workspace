@@ -107,6 +107,7 @@ export const ProductSubscriptionModal: FC<ProductSubscriptionModalProps> = ({
       cancelLabel="Cancel"
       confirmLabel={subscription ? 'Save' : 'Add'}
       confirmDisabled={!canSubmit}
+      footerDescription={`Subscription price: ${currency}${subscriptionPrice.toFixed(2)}`}
       onConfirm={() => {
         if (!canSubmit) return
         onSubmit({
@@ -224,17 +225,6 @@ export const ProductSubscriptionModal: FC<ProductSubscriptionModalProps> = ({
               />
             </div>
           </DSFormField>
-          <div className="product-subscription-modal__price">
-            <span className="product-subscription-modal__price-label">Subscription price</span>
-            <span className="product-subscription-modal__price-value">
-              {currency}
-              {subscriptionPrice.toFixed(2)}
-            </span>
-            <span className="product-subscription-modal__price-note">
-              Price without subscription: {currency}
-              {basePrice.toFixed(2)}
-            </span>
-          </div>
         </div>
       </div>
     </DSModal>

@@ -3989,32 +3989,6 @@ body {
   flex: 0 0 auto;
 }
 
-.product-subscription-modal__price {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2xs);
-}
-
-.product-subscription-modal__price-label {
-  font-family: var(--ds-font-family);
-  font-size: var(--ds-font-size-sm);
-  font-weight: var(--ds-font-weight-medium);
-  color: var(--text-darkest);
-}
-
-.product-subscription-modal__price-value {
-  font-family: var(--ds-font-family);
-  font-size: var(--ds-font-size-md);
-  font-weight: var(--ds-font-weight-medium);
-  color: var(--text-darkest);
-}
-
-.product-subscription-modal__price-note {
-  font-family: var(--ds-font-family);
-  font-size: var(--ds-font-size-xs);
-  color: var(--text-medium);
-}
-
 // Product edit form
 .product-edit__price {
   display: grid;
