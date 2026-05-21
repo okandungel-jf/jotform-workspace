@@ -2,7 +2,7 @@
 
 > **Bu dosya nedir:** Jotform App Builder klonundaki `ProductList` element'ine variant + stock yetenekleri eklemek için yapılandırılmış spec. Müşteri talep analizinden (144 talep, 21 tema) damıtılmış ilk 3 phase'i kapsar.
 >
-> **Kapsam:** Phase 0 (cleanup) + Phase 1 (parent-variant architecture) + Phase 2 (stock control). Variant pricing, multi-variant cart, shipping/tax/coupons, email customization sonraki spec dosyalarına bırakıldı.
+> **Kapsam:** Phase 0 (cleanup) + Phase 1 (parent-variant architecture) + Phase 1.5 (panel restructure — Jotform 3-level yapısı) + Phase 2 (stock control). Variant pricing, multi-variant cart, shipping/tax/coupons, email customization sonraki spec dosyalarına bırakıldı.
 >
 > **Hedef format:** Hybrid — pragmatik PRD + kritik type definitions. Edge case'leri ve UI detaylarını Claude Code çözer; data model ve mutlak kurallar burada.
 
@@ -13,6 +13,7 @@
 > 2. `Product.price` tipi `string` (number değil) — mevcut inline-edit currency-prefix UX string-native, Phase 0-2 aritmetik gerektirmez.
 > 3. `Product.id` opsiyonel (`id?: string`) — eski JSON'larda id yok; eksikse element seçiminde lazy atanır, migration scripti yok.
 > 4. Variant editör UI = AppDesigner "Edit Theme" tarzı drill-down (slide + geri ok), expandable section/dialog değil.
+> 5. Phase 1 sonrası eklendi: **Phase 1.5** — property panel gerçek Jotform "Product List Settings" yapısına (3 seviyeli drill-down: PRODUCTS → Product Settings BASIC/OPTIONS/STOCK → Product Option) yeniden yapılandırılır. Phase 2 bu yapının STOCK tab'ını doldurur, stok ürün + variant bazlı, Jotform-faithful (Hide/preorder davranış modları yok).
 
 ---
 
@@ -27,7 +28,7 @@ sonuna kadar git, build geçince commit at.
 
 Tek phase başlat → bitir → commit → sonraki phase. **Phase'leri zincirleme tek prompt'la verme** — Claude Code bir sonraki phase'de önceki kararları unutur veya çakıştırır.
 
-Phase sırası **mutlak** — Phase 1 Phase 0'a, Phase 2 Phase 1'e bağımlıdır. Atlanamaz.
+Phase sırası **mutlak** — Phase 1 Phase 0'a, Phase 1.5 Phase 1'e, Phase 2 Phase 1.5'e bağımlıdır. Atlanamaz.
 
 ---
 
@@ -279,11 +280,98 @@ npx eslint <bu phase'de değişen dosyalar>   # değişen dosyalar temiz (repo g
 
 ---
 
+## Phase 1.5 — Panel Restructure (Jotform 3-level structure)
+
+**Amaç:** ProductList property panel'ini gerçek Jotform "Product List Settings" yapısına geçir — 3 seviyeli drill-down. Yeni ticari özellik yok; saf yeniden yapılandırma. Phase 1'in variant data model'i (`optionDimensions`/`variants`) aynen korunur, değişen yalnızca panel navigasyonu ve UI.
+
+**Bağımlılık:** Phase 1 ✅
+
+**Süre tahmini:** 3-5 saat.
+
+**Referans:** Jotform form builder Product List panel ekran görüntüleri — `~/Desktop/product-list-prop-panel-form/` (8 ekran).
+
+### Hedef yapı
+
+```
+L1  ProductList paneli       Tabs: APPEARANCE · PRODUCTS  (Condition builder konvansiyonu korunur)
+    APPEARANCE = bugünkü "General" içeriği (Title, Subtitle, Layout, Show Toolbar, Show Images...)
+    PRODUCTS   = [+ Add Product] + ürün satır listesi (drag · sıra# · thumbnail · ad · alt-bilgi)
+
+L2  Product Settings         Header: "Product Settings" + ‹ BACK · Tabs: BASIC · OPTIONS · STOCK
+    BASIC   = Name* · Price + currency · Description · Image
+    OPTIONS = [Add Product Option] + ürünün option listesi (her satır → L3'e drill)
+    STOCK   = boş kabuk (placeholder; Phase 2 doldurur)
+
+L3  Product Option           Header: "Product Option" + ‹ BACK
+    Label + değer satırları editörü (Phase 1'in tek-editörü option başına ayrı editöre bölünür)
+```
+
+### Mimari Kararlar
+
+| Karar | Değer | Gerekçe |
+|---|---|---|
+| Navigasyon | 3 seviyeli yatay slider (L1 list / L2 settings / L3 option) | Jotform pattern'i; AppDesigner slide mantığının genişlemesi |
+| `Enable Variants` property | **Kaldırılır** | Jotform'da global toggle yok; OPTIONS tab her zaman erişilebilir, canvas ürünün `optionDimensions`'ı varsa selector gösterir |
+| Variant data model | Değişmez (`optionDimensions`, `variants`) | Phase 1'de kuruldu, sağlam |
+| Kapsam dışı (yapı barındırır, doldurmaz) | Import, Quantity Selector, Create Sub Products, Special Pricing, Populate from Presets, BASIC toggle'ları | P0-2 kapsamı değil; sonraki fazlar |
+| COUPONS/SHIPPING/TAX/INVOICE tab'ları | Şimdi eklenmez | Phase 4'te gelir; boş tab kötü UX |
+
+### Görevler
+
+#### 1.5.1 — L1: ProductList paneli
+- ProductList property tab'ları: `APPEARANCE` + `PRODUCTS` (+ Condition korunur)
+- APPEARANCE = bugünkü "General" tab içeriği (registered property'ler — generic renderer)
+- PRODUCTS = mevcut ürün liste görünümü (Add Product + satırlar)
+- `Enable Variants` property'sini `register.tsx`'ten, `ProductList` component'inden ve propDocs'tan kaldır
+
+#### 1.5.2 — L2: Product Settings
+- Bir ürün satırından drill → "Product Settings" görünümü
+- Header: başlık + ‹ BACK
+- Tab sistemi: `BASIC` · `OPTIONS` · `STOCK` (design-system Tabs)
+- BASIC = mevcut ürün düzenleme formu (Name/Price/Description/Image)
+- OPTIONS = "Add Product Option" butonu + ürünün option listesi
+- STOCK = placeholder boş içerik (Phase 2 doldurur)
+
+#### 1.5.3 — L3: Product Option editörü
+- OPTIONS'tan bir option'a (veya "Add Product Option") drill
+- Header: "Product Option" + ‹ BACK
+- Label input + değer satırları (Phase 1'in `ProductVariantEditor`'ı option-başına editöre dönüştürülür)
+- Option kaydedilince ürünün `variants`'ı yeniden üretilir (`generateVariants` — tüm option'ların cartesian product'ı)
+
+#### 1.5.4 — 3-seviyeli slider navigasyonu
+- Phase 1'in 2-slide `product-edit-slider`'ı 3 panele genişletilir
+- Her seviye geçişi yatay slide + header'da ‹ BACK
+
+#### 1.5.5 — Canvas
+- `enableVariants` prop'u kaldırılır; `ProductList` variant selector'ları ürünün `optionDimensions`'ı varsa render eder
+
+#### 1.5.6 — Cleanup + build + commit
+- Kullanılmayan import/var temizliği
+
+### Acceptance
+- Panel 3 seviyeli drill-down: PRODUCTS listesi → Product Settings (BASIC/OPTIONS/STOCK) → Product Option
+- Variant'lı ürünler Phase 1 sonrasıyla **birebir aynı** davranıyor (data model değişmedi)
+- APPEARANCE tab'ında görünüm ayarları çalışıyor
+- OPTIONS tab'ında option ekle/düzenle/sil çalışıyor, variant'lar doğru üretiliyor
+- STOCK tab'ı görünür ama boş (placeholder)
+- Build + değişen dosyalar lint temiz
+
+### Phase 1.5 Done
+
+```bash
+pnpm build
+npx eslint <bu phase'de değişen dosyalar>
+```
+
+**Commit:** `refactor(product-list): restructure property panel to 3-level settings`
+
+---
+
 ## Phase 2 — Stock Control
 
-**Amaç:** Variant veya product bazlı stok takibi. Stok bittiğinde 3 davranış modu (Hide / Sold Out / Continue Selling). Cart, mevcut stok'tan fazla eklenmesine izin vermez.
+**Amaç:** L2 Product Settings'in **STOCK tab'ını** doldur. Ürün-bazlı ve variant-bazlı stok takibi. Stok bitince ürün/variant satışa kapanır (Add to Cart disabled + "Sold Out"); düşük stokta canvas'ta uyarı. Cart mevcut stoktan fazla eklemeye izin vermez.
 
-**Bağımlılık:** Phase 1 ✅ (variant ID'leri stable olmadan stok takibi anlamsız)
+**Bağımlılık:** Phase 1.5 ✅ (STOCK tab kabuğu hazır olmalı)
 
 **Süre tahmini:** 3-4 saat.
 
@@ -291,136 +379,94 @@ npx eslint <bu phase'de değişen dosyalar>   # değişen dosyalar temiz (repo g
 
 | Karar | Değer | Gerekçe |
 |---|---|---|
-| Stock seviyesi | Variant varsa variant-level, yoksa product-level | Tek source of truth |
-| Stock değeri | `number` (positive integer) veya `undefined` (unlimited) | Sade |
-| Out-of-stock tetikleyici | `(configured stock - cart quantity) ≤ 0` | Cart'taki rezervasyon dahil |
-| Display modları | Hide count / Show count / Low-stock warning (threshold) | 3 satıcı tercihi |
-| Behavior modları | Hide / Show as Sold Out / Allow (preorder) | 3 satıcı tercihi |
-| Cart enforcement | useCart `addItem`'da stock check | Tek noktadan kontrol |
-| Reset semantics | Cart clear → effective stock geri döner | Backend yok, session-local |
-| **Out of scope** | Gerçek backend persistence, multi-user concurrency | DB entegrasyonu sonraki iş |
+| Stok yeri | L2 Product Settings → STOCK tab | Jotform yapısı |
+| Stok seviyesi | Ürün-bazlı + option'ı olan üründe variant-bazlı | Kullanıcı kararı; gerçek e-ticaret |
+| Stok değeri | `number` (≥0) veya `undefined` (takip yok / sınırsız) | Sade |
+| Out-of-stock tetikleyici | `(configured stock − cart quantity) ≤ 0` | Cart rezervasyonu dahil |
+| Sold-out davranışı | Tek davranış: Add to Cart disabled + "Sold Out" | Jotform-faithful (Hide/preorder modları yok) |
+| Düşük stok | `lowStockThreshold` → canvas'ta "Only N left!" | Jotform "Low Stock Alert" e-posta; backend yok → canvas uyarısına uyarlanır |
+| Cart enforcement | ProductList kartında stok kontrolü | Cart'ın ürün kataloğu yok (bkz. Phase 1 cart kararı) |
+| Stok ↔ dimension edit | `variants` yeniden üretilirken eski stok id eşleşmesiyle taşınır | Deterministik variant id sayesinde stok kaybolmaz |
+| Reset | Cart temizlenince effective stock geri döner | Backend yok, session-local |
+| Out of scope | Backend persistence, multi-user concurrency, e-posta uyarısı | Sonraki iş |
 
-> ⚠️ Bu Phase'in **fundamental limitation'ı**: stok config-time bir değerdir, runtime'da kalıcı azalmaz. İki kullanıcı eş zamanlı son ürünü almaya çalışırsa iki sipariş de geçer. Bu **sonraki bir Phase'de backend ile çözülecek** — şimdilik kabul edilen kısıt (prototip doğası gereği).
+> ⚠️ Fundamental limitation: stok config-time bir değer, runtime'da kalıcı azalmaz. İki kullanıcı eş zamanlı son ürünü alırsa iki sipariş de geçer — kabul edilen prototip kısıtı.
 
-### Type Extensions
+### Type Extensions (types.ts)
 
 ```typescript
-// types.ts'e ekle:
-
-export type StockBehavior = 'hide' | 'soldOut' | 'allow';
-
-export type StockDisplay =
-  | { mode: 'hidden' }
-  | { mode: 'count' }
-  | { mode: 'lowStockWarning'; threshold: number };
-
-export type ProductVariant = {
+export interface ProductVariant {
   id: string;
   optionValues: Record<string, string>;
-  stock?: number;              // undefined = unlimited
-};
+  stock?: number;                  // undefined = takip yok
+}
 
-export type Product = {
-  // ... existing
-  stock?: number;              // variant'sız ürünler için
-  stockBehavior?: StockBehavior;     // default 'soldOut'
-  stockDisplay?: StockDisplay;       // default { mode: 'hidden' }
-};
+export interface ProductItem {
+  // ... mevcut
+  stockControlEnabled?: boolean;   // STOCK tab "Enable Stock Control"
+  stock?: number;                  // ürün-bazlı (option'sız ürünler)
+  lowStockThreshold?: number;      // "Only N left!" eşiği
+}
+
+// effective stock = configured − cart quantity (bu ürün/variant için)
+export function getEffectiveStock(product, variantId, cartItems): number | undefined;
+export function isOutOfStock(product, variantId, cartItems): boolean;
+// variants yeniden üretilirken girilmiş stok'u id eşleşmesiyle korur
+export function mergeVariantStock(fresh: ProductVariant[], previous: ProductVariant[]): ProductVariant[];
 ```
 
 ### Görevler
 
-#### 2.1 — Type extensions ve helper'lar
+#### 2.1 — Type extensions + helper'lar (types.ts)
+- `stock` (`ProductVariant` + `ProductItem`), `stockControlEnabled`, `lowStockThreshold`
+- Saf fonksiyonlar: `getEffectiveStock`, `isOutOfStock`, `mergeVariantStock`
+- Phase 1.5'in option editörü `generateVariants` çağırırken sonucu `mergeVariantStock` ile eski stok'tan zenginleştirir (girilmiş stok kaybolmasın)
 
-```typescript
-// Effective stock = configured - cart quantity for this product/variant
-export const getEffectiveStock = (
-  product: Product,
-  variantId: string | undefined,
-  cart: CartItem[]
-): number | undefined => {
-  // undefined = unlimited
-  // returns 0 if out of stock
-};
+#### 2.2 — STOCK tab (L2 Product Settings)
+- **Enable Stock Control** toggle (`stockControlEnabled`)
+- Toggle açıkken:
+  - Option'sız ürün → **Available Stock** number input (`product.stock`)
+  - Option'lı ürün → variant tablosu: her variant satırı + stok input (`variant.stock`)
+  - **Low Stock Value** number input (`lowStockThreshold`)
 
-export const isOutOfStock = (
-  product: Product,
-  variantId: string | undefined,
-  cart: CartItem[]
-): boolean => { /* effective stock <= 0 */ };
-```
-
-#### 2.2 — Property panel: stock fields
-
-- Variant editor tablosu (Phase 1'de oluşturuldu) artık her variant satırında **"Stock"** input gösterir
-- Variant'sız ürünlerde: per-product "Stock" input'u (Phase 1'in property bölümünde)
-- Global ProductList settings'e iki yeni dropdown:
-  - **Stock Behavior** (when out of stock): Hide / Show as Sold Out / Allow (preorder)
-  - **Stock Display**: Don't show / Show count / Show warning when low + threshold input
-
-#### 2.3 — Canvas rendering: stock-aware UI
-
-ProductList.tsx render'da:
-
-- `effectiveStock` hesaplanır
-- `stockBehavior === 'hide'` ve out of stock → product card render edilmez
-- `stockBehavior === 'soldOut'` ve out of stock → card render edilir ama Add to Cart disabled, button text "Sold Out", card grayed out (token: opacity veya `--fg-disabled`)
-- `stockBehavior === 'allow'` → normal flow (preorder semantic; UI'de "Preorder" badge önerisi)
-
-Stock display:
-- `mode: 'count'` → "12 in stock" etiketi (price'ın altına, küçük font, `--fg-secondary`)
-- `mode: 'lowStockWarning'` ve `effectiveStock <= threshold` → "Only N left!" etiketi (vurgulu, `--fg-warning`)
-- `mode: 'hidden'` → hiçbir şey gösterme
+#### 2.3 — Canvas: stok-farkında render
+- `effectiveStock` hesaplanır (`stockControlEnabled` kapalıysa kısıt yok)
+- Out of stock → Add to Cart disabled, buton "Sold Out", kart soluk (`--fg-disabled` / opacity)
+- `lowStockThreshold` tanımlı ve `effectiveStock ≤ threshold` → "Only N left!" etiketi (`--fg-warning`)
 
 #### 2.4 — Cart enforcement
+- ProductList kartı Add to Cart'tan önce `isOutOfStock` kontrol eder
+- effective stock 0 → buton zaten disabled; sepetteki adet stok'a eşitse daha fazla eklenemez
+- Cart `add`'i sade kalır (Phase 1 kararı) — stok kontrolü kartta, cart'ta değil
 
-`useCart().addItem` çağrısı:
-
-```typescript
-const addItem = (productId, variantId) => {
-  const product = findProduct(productId);
-  const effective = getEffectiveStock(product, variantId, cart);
-  if (effective !== undefined && effective <= 0) {
-    // surface error — toast, return false, throw — design system'de pattern var, kullan
-    return { ok: false, reason: 'OUT_OF_STOCK' };
-  }
-  // ... mevcut add logic
-  return { ok: true };
-};
-```
-
-Caller (ProductList card) `ok: false` durumunda kullanıcıya hata gösterir (mevcut design system toast/alert pattern'ı varsa onu kullan; yoksa basit inline mesaj).
-
-#### 2.5 — Stock = 0 edge cases
-
-- Variant tanımlı ama hiç stock girilmemiş → `undefined` (unlimited), bug değil
-- Cart'tan item silinince effective stock anında geri gelir, sold out → available transition'ı render olmalı
-- Stock = 0 başlangıçta tanımlı ürün → behavior moduna göre davran
-- Cart'ta 3 adet var, stock 5'e düşürüldü → cart aynı kalır (mevcut item'ları zorla çıkarma), ama 4. eklenemez
+#### 2.5 — Edge cases
+- `stockControlEnabled` kapalı veya `stock` undefined → hiçbir kısıt yok
+- Cart'tan item silinince effective stock anında geri gelir, "Sold Out" → available render olur
+- Cart'ta 3 var, stok 5→2 düşürülür → cart aynı kalır, 3. eklenemez
+- Option düzenlenince variant stok'u `mergeVariantStock` ile korunur
 
 #### 2.6 — propDocs
-
-`stock`, `stockBehavior`, `stockDisplay` için entry'ler.
+- `stock`, `stockControlEnabled`, `lowStockThreshold` için entry'ler
 
 ### Acceptance
 
-- Variant'sız ürün, stock = 3 → 3 kere Add to Cart geçer, 4.'de hata
-- Variant'lı ürün, Size M stock = 2, Size L stock = 5 → M ile 2, L ile 5 sepete ekleyebilirsin (variant-level enforcement)
-- `stockBehavior = 'hide'` + stock = 0 → ürün hiç görünmez
-- `stockBehavior = 'soldOut'` + stock = 0 → card görünür, Add to Cart disabled, "Sold Out" yazısı
-- `stockDisplay = 'count'` → "12 in stock" görünür
-- `stockDisplay = 'lowStockWarning'`, threshold = 5, stock = 3 → "Only 3 left!" warning rengiyle görünür
+- Option'sız ürün, stok = 3 → 3 kez Add to Cart geçer, 4.'de buton kapalı
+- Option'lı ürün, M stok = 2 / L stok = 5 → variant-bazlı enforcement çalışır
+- Stok = 0 → kart soluk, buton disabled, "Sold Out"
+- `lowStockThreshold` = 5, effective stock = 3 → "Only 3 left!" warning rengiyle
 - Cart'tan item çıkar → effective stock anında güncellenir
-- Stock undefined ürünlerde hiçbir kısıt yok (unlimited)
+- Option düzenle → girilmiş variant stok'u kaybolmaz (`mergeVariantStock`)
+- `stockControlEnabled` kapalı → hiçbir kısıt yok
+- Build + değişen dosyalar lint temiz
 
 ### Phase 2 Done
 
 ```bash
-pnpm build                                  # gerçek ship gate (tsc -b dahil)
-npx eslint <bu phase'de değişen dosyalar>   # değişen dosyalar temiz (repo geneli lint ayrı iş)
+pnpm build
+npx eslint <bu phase'de değişen dosyalar>
 ```
 
-**Commit:** `feat(product-list): variant-aware stock control with display modes`
+**Commit:** `feat(product-list): per-product and per-variant stock control`
 
 ---
 
