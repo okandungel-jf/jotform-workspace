@@ -34,16 +34,15 @@ export const ProductFilterPopover: FC<ProductFilterPopoverProps> = ({
   onClose,
 }) => {
   const popoverRef = useRef<HTMLDivElement>(null)
-  const [pos, setPos] = useState<{ top: number; left: number; width: number } | null>(null)
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null)
 
   useEffect(() => {
     const anchor = anchorRef.current
     if (!anchor) return
-    // Anchor to the search input box, not the full-width field wrapper.
+    // Anchor under the search input's right edge; CSS owns the width.
     const box = anchor.querySelector('.jf-search') ?? anchor
     const rect = box.getBoundingClientRect()
-    const width = rect.width * 0.75
-    setPos({ top: rect.bottom + 4, left: rect.right - width, width })
+    setPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
   }, [anchorRef])
 
   useEffect(() => {
@@ -71,7 +70,7 @@ export const ProductFilterPopover: FC<ProductFilterPopoverProps> = ({
       ref={popoverRef}
       className="product-filter-popover"
       data-theme="dark"
-      style={{ top: pos.top, left: pos.left, width: pos.width }}
+      style={{ top: pos.top, right: pos.right }}
     >
       <div className="product-filter-popover__section">
         <span className="product-filter-popover__title">Inventory</span>
