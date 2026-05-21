@@ -4004,7 +4004,9 @@ body {
   flex-shrink: 0;
 }
 
-// Icon buttons — circular hover, matching the right panel close button
+// Icon buttons — circular hover. The row sits on --gray-500, so the hover
+// fill needs a solid lighter step to stay visible (a translucent tint
+// like the panel close button's washes out on this surface).
 .product-options__row-btn {
   display: inline-flex;
   align-items: center;
@@ -4019,7 +4021,7 @@ body {
   transition: background 150ms ease;
 
   &:hover {
-    background: color-mix(in srgb, var(--ds-text-dark) 8%, transparent);
+    background: var(--gray-400);
   }
 }
 
