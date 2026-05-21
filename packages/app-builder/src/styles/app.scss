@@ -3915,6 +3915,19 @@ body {
   margin-bottom: var(--ds-space-2xs);
 }
 
+// Add product option modal
+.product-option-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-md);
+}
+
+.product-option-modal__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-space-md);
+}
+
 // Product edit form
 .product-edit__price {
   display: grid;

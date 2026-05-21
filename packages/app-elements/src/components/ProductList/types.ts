@@ -5,12 +5,14 @@
 export type ProductListLayout = 'ThreeColumns' | 'TwoColumns' | 'SingleColumn';
 
 export interface ProductOptionDimension {
-  /** Stable id derived from the label, e.g. dimension_size. */
+  /** Unique id — a stable React-key handle. */
   id: string;
   /** Human label shown to the buyer, e.g. "Size". */
   label: string;
   /** Possible values, e.g. ["S", "M", "L"]. */
   values: string[];
+  /** How the option renders for the buyer. */
+  type?: 'text' | 'color';
 }
 
 export interface ProductVariant {

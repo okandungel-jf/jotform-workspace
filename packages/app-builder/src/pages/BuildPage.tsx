@@ -63,6 +63,7 @@ import { IconPropertyField } from '../components/IconPropertyField'
 import { ColorInputWithPicker } from '../components/ColorInputWithPicker'
 import { ProductOptionEditor } from '../components/ProductOptionEditor'
 import { ProductFilterPopover } from '../components/ProductFilterPopover'
+import { ProductOptionModal } from '../components/ProductOptionModal'
 import { loadSnapshot, saveSnapshot } from '../presets/storage'
 
 interface CanvasElement {
@@ -1113,10 +1114,11 @@ export function BuildPage({
   const [productSettingsTab, setProductSettingsTab] = useState<string>('basic')
   const [productSearch, setProductSearch] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
+  const [optionModalOpen, setOptionModalOpen] = useState(false)
   const [inventoryFilter, setInventoryFilter] = useState('all')
   const [visibilityFilter, setVisibilityFilter] = useState('all')
   const productSearchFieldRef = useRef<HTMLDivElement>(null)
-  useEffect(() => { setEditingProductIndex(null); setEditingOptionIndex(null); setProductSettingsTab('basic'); setProductSearch(''); setFilterOpen(false) }, [selectedElementId, propertyTab])
+  useEffect(() => { setEditingProductIndex(null); setEditingOptionIndex(null); setProductSettingsTab('basic'); setProductSearch(''); setFilterOpen(false); setOptionModalOpen(false) }, [selectedElementId, propertyTab])
 
   const migratedSocialFollowIds = useRef<Set<string>>(new Set())
   useEffect(() => {
@@ -2974,9 +2976,8 @@ export function BuildPage({
                     const dimensions = current.optionDimensions ?? []
                     const updateDimensions = (dims: typeof dimensions) =>
                       updateProduct({ optionDimensions: dims, variants: generateVariants(dims) })
-                    const addOption = () => {
-                      setEditingOptionIndex(dimensions.length)
-                      updateDimensions([...dimensions, { id: makeDimensionId(), label: '', values: [] }])
+                    const handleAddOption = (name: string, fieldType: 'text' | 'color', values: string[]) => {
+                      updateDimensions([...dimensions, { id: makeDimensionId(), label: name, values, type: fieldType }])
                     }
                     const removeOption = (i: number) => updateDimensions(dimensions.filter((_, j) => j !== i))
                     const optionForEdit = editingOptionIndex !== null ? dimensions[editingOptionIndex] : undefined
@@ -3212,7 +3213,7 @@ export function BuildPage({
                                             variant="filled"
                                             colorScheme="primary"
                                             leftIcon={<Icon name="plus" category="general" size={20} />}
-                                            onClick={addOption}
+                                            onClick={() => setOptionModalOpen(true)}
                                             className="product-options__add-btn"
                                           >
                                             Add
@@ -3293,6 +3294,11 @@ export function BuildPage({
                           </div>
 
                         </div>
+                        <ProductOptionModal
+                          open={optionModalOpen}
+                          onClose={() => setOptionModalOpen(false)}
+                          onSubmit={handleAddOption}
+                        />
                       </div>
                     )
                   }
