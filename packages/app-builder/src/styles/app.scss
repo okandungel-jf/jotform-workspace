@@ -3964,7 +3964,7 @@ body {
 }
 
 // Handle sits outside the row, in the left gutter — choice inputs stay
-// flush with the section labels above.
+// flush with the section labels above. Revealed on row hover only.
 .choice-list__handle {
   position: absolute;
   left: calc(-1 * var(--spacing-xl));
@@ -3975,10 +3975,16 @@ body {
   justify-content: center;
   color: var(--text-medium);
   cursor: grab;
+  opacity: 0;
+  transition: opacity 150ms ease;
 
   &:active {
     cursor: grabbing;
   }
+}
+
+.choice-list__row:hover .choice-list__handle {
+  opacity: 1;
 }
 
 .choice-list__input {
@@ -3987,7 +3993,7 @@ body {
 }
 
 .choice-list__price {
-  flex: 0 0 96px;
+  flex: 0 0 72px;
 }
 
 .choice-list__stock {
