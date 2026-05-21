@@ -3536,16 +3536,16 @@ body {
 .property-panel__header-nav {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ds-space-xs);
 }
 
 .property-panel__back {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 40px;
+  width: var(--spacing-2xl);
+  height: var(--spacing-2xl);
+  border-radius: var(--radius-rounded);
   border: none;
   background: transparent;
   color: var(--core-white);
@@ -4124,7 +4124,7 @@ body {
   color: var(--core-white);
   cursor: pointer;
 
-  &:hover { background: rgba(255, 255, 255, 0.2); }
+  &:hover { background: color-mix(in srgb, var(--core-white) 20%, transparent); }
 }
 
 .product-option-editor__tag-input {
