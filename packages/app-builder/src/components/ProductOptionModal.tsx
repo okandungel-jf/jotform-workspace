@@ -12,6 +12,8 @@ interface ProductOptionModalProps {
   open: boolean
   /** When set, the modal edits this option; otherwise it adds a new one. */
   option?: ProductOptionDimension | null
+  /** Currency symbol shown as the choice price prefix. */
+  currency: string
   onClose: () => void
   onSubmit: (name: string, fieldType: 'text' | 'color', values: ProductOptionChoice[]) => void
 }
@@ -22,7 +24,7 @@ const FIELD_TYPE_OPTIONS = [
 ]
 
 /** Builder modal for adding a product option (variant dimension). */
-export const ProductOptionModal: FC<ProductOptionModalProps> = ({ open, option, onClose, onSubmit }) => {
+export const ProductOptionModal: FC<ProductOptionModalProps> = ({ open, option, currency, onClose, onSubmit }) => {
   const [name, setName] = useState('')
   const [fieldType, setFieldType] = useState('text')
   const [choices, setChoices] = useState<ChoiceItem[]>(() => [emptyChoice()])
@@ -89,6 +91,7 @@ export const ProductOptionModal: FC<ProductOptionModalProps> = ({ open, option, 
           onChange={setChoices}
           placeholder="e.g., Small, Medium, Large"
           showPriceStock
+          currency={currency}
         />
       </div>
     </DSModal>

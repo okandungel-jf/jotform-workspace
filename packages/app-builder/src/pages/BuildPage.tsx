@@ -3423,6 +3423,7 @@ export function BuildPage({
                         <ProductOptionModal
                           open={optionModalOpen}
                           option={editingOptionIndex !== null ? dimensions[editingOptionIndex] : null}
+                          currency={currency}
                           onClose={() => { setOptionModalOpen(false); setEditingOptionIndex(null) }}
                           onSubmit={handleOptionSubmit}
                         />

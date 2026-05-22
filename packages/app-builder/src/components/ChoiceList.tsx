@@ -106,6 +106,8 @@ interface ChoiceListProps {
   showColorSwatch?: boolean
   /** Show a per-row price input and stock-status dropdown. */
   showPriceStock?: boolean
+  /** Currency symbol shown as the price input prefix. */
+  currency?: string
 }
 
 /** Reorderable list of choice inputs with add / delete / drag-to-reorder. */
@@ -116,6 +118,7 @@ export const ChoiceList: FC<ChoiceListProps> = ({
   placeholder,
   showColorSwatch = false,
   showPriceStock = false,
+  currency,
 }) => {
   const dragIndex = useRef<number | null>(null)
 
@@ -181,6 +184,7 @@ export const ChoiceList: FC<ChoiceListProps> = ({
                 <DSInput
                   value={choice.price ?? ''}
                   placeholder="0.00"
+                  leftContent={currency}
                   onChange={(e) => updateChoice(choice.id, { price: e.target.value })}
                 />
               </div>
@@ -198,7 +202,7 @@ export const ChoiceList: FC<ChoiceListProps> = ({
           <DSButton
             type="button"
             className="choice-list__delete"
-            variant="transparent"
+            variant="ghost"
             colorScheme="secondary"
             shape="rounded"
             size="md"
