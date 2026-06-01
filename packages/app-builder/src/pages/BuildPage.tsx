@@ -37,6 +37,8 @@ import phoneHomeIndicator from '@jf/design-system/src/assets/phone-home-indicato
 import previewUserAvatar from '../assets/preview-user-avatar.jpg'
 import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
+import { CanvasPageLabel } from '../components/CanvasPageLabel'
+import { PagePropertiesPanel } from '../components/PagePropertiesPanel'
 import { LivePreviewMenuDrawer } from '../components/LivePreviewMenuDrawer'
 import { LivePreviewMorePagesView } from '../components/LivePreviewMorePagesView'
 import { LivePreviewCartButton } from '../components/LivePreviewCartButton'
@@ -84,6 +86,12 @@ interface AppPage {
   id: string
   name: string
   icon?: string
+  /** Excluded from the app's bottom navigation when true (still editable in the canvas). */
+  hidden?: boolean
+  /** Visitors must sign in to view this page. */
+  requireLogin?: boolean
+  /** Whether the page's icon is shown (in the nav / page label). Defaults to true. */
+  showIcon?: boolean
   elements: CanvasElement[]
 }
 
@@ -1082,7 +1090,7 @@ function AddPageDivider({ onClick }: { onClick: () => void }) {
   )
 }
 
-type RightPanelMode = 'preview' | 'designer' | 'properties'
+type RightPanelMode = 'preview' | 'designer' | 'properties' | 'page'
 
 interface BuildPageProps {
   appTitle?: string
@@ -1106,6 +1114,7 @@ export function BuildPage({
   onPreviewClose,
 }: BuildPageProps) {
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
+  const [pagePropertiesId, setPagePropertiesId] = useState<string | null>(null)
   const [propertyTab, setPropertyTab] = useState<string>('general')
   const appHeaderImageInputRef = useRef<HTMLInputElement>(null)
   const appHeaderBgImageInputRef = useRef<HTMLInputElement>(null)
@@ -1309,9 +1318,11 @@ export function BuildPage({
   // Bottom-nav overflow: when 5+ pages exist, show the first 4 and replace the
   // 5th slot with a "More" tab. Tapping More opens a full-screen list of all
   // pages; tapping a page from that list navigates and dismisses More.
-  const hasNavOverflow = pages.length >= 5
-  const visibleNavPages = hasNavOverflow ? pages.slice(0, 4) : pages
-  const isActiveInOverflow = hasNavOverflow && pages.slice(4).some((p) => p.id === activePageId)
+  // Hidden pages stay editable in the canvas but drop out of the app's nav.
+  const navPages = pages.filter((p) => !p.hidden)
+  const hasNavOverflow = navPages.length >= 5
+  const visibleNavPages = hasNavOverflow ? navPages.slice(0, 4) : navPages
+  const isActiveInOverflow = hasNavOverflow && navPages.slice(4).some((p) => p.id === activePageId)
   const bottomNavItems = hasNavOverflow
     ? [...visibleNavPages.map((p, i) => ({ icon: getPageIconName(p, i), label: p.name })), { icon: 'Ellipsis', label: 'More' }]
     : visibleNavPages.map((p, i) => ({ icon: getPageIconName(p, i), label: p.name }))
@@ -1678,6 +1689,17 @@ export function BuildPage({
       }, 200)
     })
   }, [isMobileView])
+
+  const updatePage = useCallback((pageId: string, patch: Partial<AppPage>) => {
+    setPages((prev) => prev.map((p) => (p.id === pageId ? { ...p, ...patch } : p)))
+  }, [])
+
+  const openPageSettings = useCallback((pageId: string) => {
+    setActivePageId(pageId)
+    setSelectedElementId(null)
+    setPagePropertiesId(pageId)
+    setRightPanel('page')
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -2526,16 +2548,22 @@ export function BuildPage({
               </div>
 
               {pages.map((page, pageIndex) => (
-                <div key={page.id}>
+                <div key={page.id} className={`build-page__page-wrapper${pageIndex === 0 ? ' build-page__page-wrapper--first' : ''}`}>
+                  <CanvasPageLabel
+                    page={page}
+                    active={activePageId === page.id}
+                    floating={pageIndex === 0 && appHeaderState.show}
+                    overlayColor={pageIndex === 0 ? appHeaderState.textColor : undefined}
+                    onRename={(name) => updatePage(page.id, { name })}
+                    onOpenSettings={() => openPageSettings(page.id)}
+                  />
                   <div
-                    className={`themes-view__canvas ${pageIndex === 0 ? 'themes-view__canvas--first' : ''}`}
+                    className={`themes-view__canvas ${pageIndex === 0 ? 'themes-view__canvas--first' : ''}${rightPanel === 'page' && pagePropertiesId === page.id ? ' themes-view__canvas--selected' : ''}`}
                     onClick={(e) => {
+                      // Elements stop propagation on click, so any click that reaches
+                      // the page background selects the page itself → page properties.
                       e.stopPropagation()
-                      setActivePageId(page.id)
-                      if (e.target === e.currentTarget) {
-                        setSelectedElementId(null)
-                        setRightPanel('preview')
-                      }
+                      openPageSettings(page.id)
                     }}
                   >
                     {(() => {
@@ -2648,7 +2676,22 @@ export function BuildPage({
           {/* Slide 1: Live Preview / Properties */}
           <div className="build-page__right-slide">
             {/* Properties Panel */}
-            {rightPanel === 'properties' && selectedElement && selectedComponent ? (
+            {rightPanel === 'page' && pages.find((p) => p.id === pagePropertiesId) ? (
+              (() => {
+                const pp = pages.find((p) => p.id === pagePropertiesId)!
+                return (
+                  <PagePropertiesPanel
+                    page={pp}
+                    onRename={(name) => updatePage(pp.id, { name })}
+                    onChangeIcon={(icon) => updatePage(pp.id, { icon })}
+                    onToggleHidden={(hidden) => updatePage(pp.id, { hidden })}
+                    onToggleRequireLogin={(requireLogin) => updatePage(pp.id, { requireLogin })}
+                    onToggleShowIcon={(showIcon) => updatePage(pp.id, { showIcon })}
+                    onClose={() => { setRightPanel('preview'); setPagePropertiesId(null) }}
+                  />
+                )
+              })()
+            ) : rightPanel === 'properties' && selectedElement && selectedComponent ? (
               <div className="build-page__properties" data-theme="dark">
                 <div className="property-panel__header">
                   {selectedComponent.id === 'product-list' && propertyTab === 'products' && editingProductIndex !== null ? (
