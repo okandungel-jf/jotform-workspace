@@ -194,6 +194,10 @@
   color: var(--fg-brand);
 }
 
+.jf-product-item__image--clickable {
+  cursor: pointer;
+}
+
 .jf-product-item__img {
   width: 100%;
   height: 100%;

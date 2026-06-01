@@ -5,6 +5,7 @@ export {
   ensureProductIds,
   makeDimensionId,
   variantLabel,
+  buildVariantId,
   MAX_DIMENSIONS,
   MAX_VALUES_PER_DIMENSION,
 } from './types';

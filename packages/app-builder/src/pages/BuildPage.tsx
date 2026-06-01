@@ -15,6 +15,7 @@ import {
   CollectionsProvider,
   CartProvider,
   FavoritesProvider,
+  ProductDetailProvider,
   FormSheet,
   compressImageFile,
   compressImageFiles,
@@ -40,6 +41,7 @@ import { LivePreviewMenuDrawer } from '../components/LivePreviewMenuDrawer'
 import { LivePreviewMorePagesView } from '../components/LivePreviewMorePagesView'
 import { LivePreviewCartButton } from '../components/LivePreviewCartButton'
 import { LivePreviewCartPage } from '../components/LivePreviewCartPage'
+import { LivePreviewProductDetailPage } from '../components/LivePreviewProductDetailPage'
 import { LivePreviewCheckoutPage } from '../components/LivePreviewCheckoutPage'
 import { LivePreviewOrderBar } from '../components/LivePreviewOrderBar'
 import { LivePreviewAvatarPopover } from '../components/LivePreviewAvatarPopover'
@@ -1227,6 +1229,7 @@ export function BuildPage({
   const [isPreviewMenuOpen, setIsPreviewMenuOpen] = useState(false)
   const [isMorePageOpen, setIsMorePageOpen] = useState(false)
   const [isPreviewCartOpen, setIsPreviewCartOpen] = useState(false)
+  const [isPreviewDetailOpen, setIsPreviewDetailOpen] = useState(false)
   const [isPreviewCheckoutOpen, setIsPreviewCheckoutOpen] = useState(false)
   const [isAvatarPopoverOpen, setIsAvatarPopoverOpen] = useState(false)
   const [isLoginPopoverOpen, setIsLoginPopoverOpen] = useState(false)
@@ -2102,6 +2105,10 @@ export function BuildPage({
   }
 
   const phoneScreenContent = (
+    <CollectionsProvider>
+    <CartProvider>
+    <FavoritesProvider>
+    <ProductDetailProvider onOpenChange={setIsPreviewDetailOpen}>
     <>
       <div className="live-preview__status-bar-bg app-scope" />
       <PhoneStatusBar className="live-preview__status-bar app-scope" style={{ color: 'var(--fg-primary, #000)' }} />
@@ -2281,7 +2288,7 @@ export function BuildPage({
                   })}
                 </div>
               </div>
-              {isFirstPage && !isPreviewCartOpen && !isPreviewCheckoutOpen && (
+              {isFirstPage && !isPreviewCartOpen && !isPreviewCheckoutOpen && !isPreviewDetailOpen && (
                 <div className="themes-view__attribution-footer">
                   <AttributionBar openAiSheetOnMount={openAttributionSheet} />
                 </div>
@@ -2291,7 +2298,7 @@ export function BuildPage({
           })()}
         </div>
       </div>
-      {pages.length > 1 && !isPreviewCartOpen && !isPreviewCheckoutOpen && (
+      {pages.length > 1 && !isPreviewCartOpen && !isPreviewCheckoutOpen && !isPreviewDetailOpen && (
         <div className="live-preview__bottom-nav app-scope">
           <BottomNavigation
             items={bottomNavItems}
@@ -2317,17 +2324,22 @@ export function BuildPage({
         onContinue={() => setIsPreviewCheckoutOpen(true)}
         avatarUrl={previewUserAvatar}
       />
+      <LivePreviewProductDetailPage />
       <LivePreviewCheckoutPage
         open={isPreviewCheckoutOpen}
         onClose={() => setIsPreviewCheckoutOpen(false)}
         avatarUrl={previewUserAvatar}
       />
       <LivePreviewOrderBar
-        hidden={isPreviewCartOpen || isPreviewCheckoutOpen}
+        hidden={isPreviewCartOpen || isPreviewCheckoutOpen || isPreviewDetailOpen}
         hasBottomNav={pages.length > 1}
         onClick={() => setIsPreviewCheckoutOpen(true)}
       />
     </>
+    </ProductDetailProvider>
+    </FavoritesProvider>
+    </CartProvider>
+    </CollectionsProvider>
   )
 
   return (
@@ -4475,6 +4487,7 @@ export function BuildPage({
               <CollectionsProvider>
               <CartProvider>
               <FavoritesProvider>
+              <ProductDetailProvider onOpenChange={setIsPreviewDetailOpen}>
               <div className="live-preview">
                 <div className="live-preview__header" data-theme="dark">
                   <span className="live-preview__title">Live Preview</span>
@@ -4709,7 +4722,7 @@ export function BuildPage({
                                   })}
                                 </div>
                               </div>
-                              {isFirstPage && !isPreviewCartOpen && !isPreviewCheckoutOpen && (
+                              {isFirstPage && !isPreviewCartOpen && !isPreviewCheckoutOpen && !isPreviewDetailOpen && (
                                 <div className="themes-view__attribution-footer">
                                   <AttributionBar openAiSheetOnMount={openAttributionSheet} />
                                 </div>
@@ -4719,7 +4732,7 @@ export function BuildPage({
                           })()}
                         </div>
                       </div>
-                      {pages.length > 1 && !isPreviewCartOpen && !isPreviewCheckoutOpen && (
+                      {pages.length > 1 && !isPreviewCartOpen && !isPreviewCheckoutOpen && !isPreviewDetailOpen && (
                         <div className="live-preview__bottom-nav app-scope">
                           <BottomNavigation
                             items={bottomNavItems}
@@ -4745,13 +4758,14 @@ export function BuildPage({
                         onContinue={() => setIsPreviewCheckoutOpen(true)}
                         avatarUrl={previewUserAvatar}
                       />
+                      <LivePreviewProductDetailPage />
                       <LivePreviewCheckoutPage
                         open={isPreviewCheckoutOpen}
                         onClose={() => setIsPreviewCheckoutOpen(false)}
                         avatarUrl={previewUserAvatar}
                       />
                       <LivePreviewOrderBar
-                        hidden={isPreviewCartOpen || isPreviewCheckoutOpen}
+                        hidden={isPreviewCartOpen || isPreviewCheckoutOpen || isPreviewDetailOpen}
                         hasBottomNav={pages.length > 1}
                         onClick={() => setIsPreviewCheckoutOpen(true)}
                       />
@@ -4761,6 +4775,7 @@ export function BuildPage({
                   </div>
                 </div>
               </div>
+              </ProductDetailProvider>
               </FavoritesProvider>
               </CartProvider>
               </CollectionsProvider>

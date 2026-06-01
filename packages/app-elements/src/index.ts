@@ -58,7 +58,7 @@ export { AppHeader } from './components/AppHeader';
 export { BottomNavigation } from './components/BottomNavigation';
 export { AttributionBar } from './components/AttributionBar';
 export { LoginSignup } from './components/LoginSignup';
-export { ProductList, generateVariants, ensureProductIds, makeDimensionId, variantLabel, MAX_DIMENSIONS, MAX_VALUES_PER_DIMENSION } from './components/ProductList';
+export { ProductList, generateVariants, ensureProductIds, makeDimensionId, variantLabel, buildVariantId, MAX_DIMENSIONS, MAX_VALUES_PER_DIMENSION } from './components/ProductList';
 export type { ProductListProps, ProductListLayout, ProductItem, ProductOptionDimension, ProductOptionChoice, ProductVariant, ProductModifier, ProductModifierFieldType, ProductModifierChoice, ProductSubscription, ProductSubscriptionRepeatUnit } from './components/ProductList';
 export { ImageGallery } from './components/ImageGallery';
 export { Document } from './components/Document';
@@ -82,6 +82,8 @@ export { CartProvider, useCart } from './runtime/CartContext';
 export type { CartItem, CartContextValue } from './runtime/CartContext';
 export { FavoritesProvider, useFavorites } from './runtime/FavoritesContext';
 export type { FavoriteItem, FavoritesContextValue } from './runtime/FavoritesContext';
+export { ProductDetailProvider, useProductDetail } from './runtime/ProductDetailContext';
+export type { ProductDetailContextValue } from './runtime/ProductDetailContext';
 export { FormSheet } from './runtime/FormSheet';
 
 // Icon

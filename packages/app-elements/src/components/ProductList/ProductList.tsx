@@ -3,6 +3,7 @@ import { Icon } from '../Icon/Icon';
 import { Button } from '../Button';
 import { useCart } from '../../runtime/CartContext';
 import { useFavorites } from '../../runtime/FavoritesContext';
+import { useProductDetail } from '../../runtime/ProductDetailContext';
 import { type ProductItem, type ProductListLayout } from './types';
 import './ProductList.scss';
 
@@ -87,15 +88,22 @@ const ProductCardItem: FC<{ product: ProductItem; buttonLabel: string; currency:
 }) => {
   const cart = useCart();
   const favorites = useFavorites();
+  const productDetail = useProductDetail();
   const inCart = cart?.has(product.name) ?? false;
   const liked = favorites?.has(product.name) ?? false;
   const addDisabled = inCart;
   const handleAdd = () => cart?.add({ name: product.name, price: product.price, image: product.image });
-  const toggleLike = () => favorites?.toggle({ name: product.name, price: product.price, image: product.image });
+  const toggleLike = (e: React.MouseEvent) => { e.stopPropagation(); favorites?.toggle({ name: product.name, price: product.price, image: product.image }); };
+  const openDetail = productDetail ? () => productDetail.open(product) : undefined;
   return (
   <div className="jf-product-item jf-product-item--card">
     {showImages && (
-      <div className="jf-product-item__image">
+      <div
+        className={`jf-product-item__image${openDetail ? ' jf-product-item__image--clickable' : ''}`}
+        onClick={openDetail}
+        role={openDetail ? 'button' : undefined}
+        tabIndex={openDetail ? 0 : undefined}
+      >
         {product.image ? <img src={product.image} alt={product.name} className="jf-product-item__img" /> : <ImagePlaceholder />}
         <button className={`jf-product-item__like${liked ? ' liked' : ''}`} onClick={toggleLike}>
           <Icon name="Heart" size={18} forceStyle={liked ? 'fill' : 'outline'} />
@@ -159,15 +167,22 @@ const ProductBasicItem: FC<{ product: ProductItem; buttonLabel: string; currency
 }) => {
   const cart = useCart();
   const favorites = useFavorites();
+  const productDetail = useProductDetail();
   const inCart = cart?.has(product.name) ?? false;
   const liked = favorites?.has(product.name) ?? false;
   const addDisabled = inCart;
   const handleAdd = () => cart?.add({ name: product.name, price: product.price, image: product.image });
-  const toggleLike = () => favorites?.toggle({ name: product.name, price: product.price, image: product.image });
+  const toggleLike = (e: React.MouseEvent) => { e.stopPropagation(); favorites?.toggle({ name: product.name, price: product.price, image: product.image }); };
+  const openDetail = productDetail ? () => productDetail.open(product) : undefined;
   return (
   <div className="jf-product-item jf-product-item--basic">
     {showImages && (
-      <div className="jf-product-item__image-basic">
+      <div
+        className={`jf-product-item__image-basic${openDetail ? ' jf-product-item__image--clickable' : ''}`}
+        onClick={openDetail}
+        role={openDetail ? 'button' : undefined}
+        tabIndex={openDetail ? 0 : undefined}
+      >
         {product.image ? <img src={product.image} alt={product.name} className="jf-product-item__img" /> : <ImagePlaceholder size={56} />}
       </div>
     )}
