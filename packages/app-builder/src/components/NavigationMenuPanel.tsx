@@ -30,6 +30,7 @@ import { PhoneStatusBar } from './PhoneStatusBar'
 export type NavDisplayStyle = 'iconText' | 'icon'
 export type DesktopDisplayStyle = 'iconText' | 'text'
 export type NavAlignment = 'left' | 'center' | 'right'
+export type DesktopNavVariant = 'top' | 'left'
 
 // A slice of the live-preview phone mockup, reused inside the (dark) panel. The
 // panel's `data-theme="dark"` would bleed chrome tokens into the app-scope, so we
@@ -76,47 +77,67 @@ function PhonePreview({ variant, children }: { variant: 'top' | 'bottom'; childr
   )
 }
 
-// Desktop top-nav mockup: a laptop window with the nav bar rendered per the
-// chosen display style + alignment, themed via the copied tokens.
+// Desktop nav mockup: a laptop window with either a top nav bar ('top') or a
+// left sidebar ('left'), themed via the copied tokens. The nav items render per
+// the chosen display style; alignment applies to the top variant only.
 function DesktopPreview({
   pages,
+  variant,
   displayStyle,
   alignment,
 }: {
   pages: NavMenuPage[]
+  variant: DesktopNavVariant
   displayStyle: DesktopDisplayStyle
   alignment: NavAlignment
 }) {
   const ref = useRef<HTMLDivElement>(null)
   useCopiedThemeTokens(ref)
   const navPages = pages.filter((p) => !p.hidden)
-  const shown = navPages.slice(0, 2)
+  const shown = navPages.slice(0, variant === 'left' ? 4 : 2)
   const hasOverflow = navPages.length > shown.length
-  return (
-    <div className="nav-menu-desktop" ref={ref}>
-      <div className="nav-menu-desktop__screen app-scope">
-        <div className={`nav-menu-desktop__nav nav-menu-desktop__nav--${alignment}`}>
-          {shown.map((p) => (
-            <span key={p.id} className="nav-menu-desktop__nav-item">
-              {displayStyle === 'iconText' && (
-                <span className="nav-menu-desktop__nav-icon">
-                  <LucideIcon name={p.icon || DEFAULT_PAGE_ICON} size={16} />
-                </span>
-              )}
-              <span className="nav-menu-desktop__nav-label">{p.name}</span>
-            </span>
-          ))}
-          {hasOverflow && (
-            <span className="nav-menu-desktop__nav-more">
-              <LucideIcon name="Ellipsis" size={16} />
+
+  const navItems = (
+    <>
+      {shown.map((p) => (
+        <span key={p.id} className="nav-menu-desktop__nav-item">
+          {displayStyle === 'iconText' && (
+            <span className="nav-menu-desktop__nav-icon">
+              <LucideIcon name={p.icon || DEFAULT_PAGE_ICON} size={16} />
             </span>
           )}
-        </div>
-        <div className="nav-menu-desktop__divider" />
-        <div className="nav-menu-desktop__content">
-          <span className="nav-menu-desktop__placeholder" />
-          <span className="nav-menu-desktop__base" />
-        </div>
+          <span className="nav-menu-desktop__nav-label">{p.name}</span>
+        </span>
+      ))}
+      {hasOverflow && (
+        <span className="nav-menu-desktop__nav-more">
+          <LucideIcon name="Ellipsis" size={16} />
+        </span>
+      )}
+    </>
+  )
+
+  return (
+    <div className={`nav-menu-desktop nav-menu-desktop--${variant}`} ref={ref}>
+      <div className="nav-menu-desktop__screen app-scope">
+        {variant === 'top' ? (
+          <>
+            <div className={`nav-menu-desktop__nav nav-menu-desktop__nav--${alignment}`}>{navItems}</div>
+            <div className="nav-menu-desktop__divider" />
+            <div className="nav-menu-desktop__content">
+              <span className="nav-menu-desktop__placeholder" />
+              <span className="nav-menu-desktop__base" />
+            </div>
+          </>
+        ) : (
+          <div className="nav-menu-desktop__body">
+            <div className="nav-menu-desktop__sidebar">{navItems}</div>
+            <div className="nav-menu-desktop__content nav-menu-desktop__content--left">
+              <span className="nav-menu-desktop__placeholder" />
+              <span className="nav-menu-desktop__base" />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -136,9 +157,11 @@ interface NavigationMenuPanelProps {
   enabled: boolean
   displayStyle: NavDisplayStyle
   topNavEnabled: boolean
+  desktopVariant: DesktopNavVariant
   desktopEnabled: boolean
   desktopDisplayStyle: DesktopDisplayStyle
   desktopAlignment: NavAlignment
+  onChangeDesktopVariant: (variant: DesktopNavVariant) => void
   onToggleEnabled: (enabled: boolean) => void
   onChangeDisplayStyle: (style: NavDisplayStyle) => void
   onToggleTopNavEnabled: (enabled: boolean) => void
@@ -236,9 +259,11 @@ export function NavigationMenuPanel({
   enabled,
   displayStyle,
   topNavEnabled,
+  desktopVariant,
   desktopEnabled,
   desktopDisplayStyle,
   desktopAlignment,
+  onChangeDesktopVariant,
   onToggleEnabled,
   onChangeDisplayStyle,
   onToggleTopNavEnabled,
@@ -446,9 +471,24 @@ export function NavigationMenuPanel({
 
       {tab === 'desktop' && (
         <div className="property-panel__body">
+          <div className="property-panel__field">
+            <DSFormField title="Layout" size="md" showDescription={false} showHelpText={false}>
+              <DSSegmented
+                accent="apps"
+                variant="text"
+                value={desktopVariant}
+                onChange={(value) => onChangeDesktopVariant(value as DesktopNavVariant)}
+                items={[
+                  { value: 'top', label: 'Top' },
+                  { value: 'left', label: 'Left' },
+                ]}
+              />
+            </DSFormField>
+          </div>
+
           <div className="property-panel__field property-panel__field--inline">
             <DSFormField
-              title="Enable Top Navigation"
+              title={desktopVariant === 'left' ? 'Enable Side Navigation' : 'Enable Top Navigation'}
               size="md"
               showDescription={false}
               showHelpText={false}
@@ -467,6 +507,7 @@ export function NavigationMenuPanel({
                 <DSFormField title="Desktop Preview" size="md" showDescription={false} showHelpText={false}>
                   <DesktopPreview
                     pages={pages}
+                    variant={desktopVariant}
                     displayStyle={desktopDisplayStyle}
                     alignment={desktopAlignment}
                   />
@@ -488,21 +529,23 @@ export function NavigationMenuPanel({
                 </DSFormField>
               </div>
 
-              <div className="property-panel__field">
-                <DSFormField title="Navigation Alignment" size="md" showDescription={false} showHelpText={false}>
-                  <DSSegmented
-                    accent="apps"
-                    variant="text"
-                    value={desktopAlignment}
-                    onChange={(value) => onChangeDesktopAlignment(value as NavAlignment)}
-                    items={[
-                      { value: 'left', label: 'Left' },
-                      { value: 'center', label: 'Center' },
-                      { value: 'right', label: 'Right' },
-                    ]}
-                  />
-                </DSFormField>
-              </div>
+              {desktopVariant === 'top' && (
+                <div className="property-panel__field">
+                  <DSFormField title="Navigation Alignment" size="md" showDescription={false} showHelpText={false}>
+                    <DSSegmented
+                      accent="apps"
+                      variant="text"
+                      value={desktopAlignment}
+                      onChange={(value) => onChangeDesktopAlignment(value as NavAlignment)}
+                      items={[
+                        { value: 'left', label: 'Left' },
+                        { value: 'center', label: 'Center' },
+                        { value: 'right', label: 'Right' },
+                      ]}
+                    />
+                  </DSFormField>
+                </div>
+              )}
             </>
           )}
         </div>

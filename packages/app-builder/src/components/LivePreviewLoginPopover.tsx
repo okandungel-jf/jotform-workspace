@@ -9,8 +9,9 @@ interface LivePreviewLoginPopoverProps {
   onClose: () => void
   onLoggedIn?: () => void
   initialView?: View
-  /** 'popover' anchors to the header login icon; 'page' fills the screen (used from the landing menu). */
-  variant?: 'popover' | 'page'
+  /** 'popover' anchors to the header login icon; 'page' fills the screen (mobile);
+   *  'modal' is a centered overlay dialog (desktop). */
+  variant?: 'popover' | 'page' | 'modal'
 }
 
 const PROVIDERS = [
@@ -56,7 +57,7 @@ export function LivePreviewLoginPopover({
   }, [open, initialView])
 
   useEffect(() => {
-    if (!open || variant === 'page') return
+    if (!open || variant !== 'popover') return
     const handleClickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         onClose()
@@ -95,7 +96,7 @@ export function LivePreviewLoginPopover({
 
   const body = (
     <div className="live-preview__login-popover-inner">
-      {variant === 'page' && (view === 'login' || view === 'signup') && (
+      {(variant === 'page' || variant === 'modal') && (view === 'login' || view === 'signup') && (
         <div className="live-preview__auth-page-heading">
           <Heading
             size="Medium"
@@ -439,6 +440,30 @@ export function LivePreviewLoginPopover({
       )}
     </div>
   )
+
+  if (variant === 'modal') {
+    return (
+      <div className="live-preview__auth-modal-overlay" onClick={onClose}>
+        <div
+          className="live-preview__auth-modal app-scope"
+          role="dialog"
+          aria-modal="true"
+          aria-label={ariaLabel}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="live-preview__auth-modal-close"
+            aria-label="Close"
+            onClick={onClose}
+          >
+            <Icon name="xmark" category="general" size={20} />
+          </button>
+          {body}
+        </div>
+      </div>
+    )
+  }
 
   if (variant === 'page') {
     return (

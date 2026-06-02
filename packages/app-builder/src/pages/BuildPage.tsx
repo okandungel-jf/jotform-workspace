@@ -1129,7 +1129,8 @@ export function BuildPage({
   const [bottomNavEnabled, setBottomNavEnabled] = useState(true)
   const [bottomNavDisplayStyle, setBottomNavDisplayStyle] = useState<'iconText' | 'icon'>('iconText')
   const [topNavEnabled, setTopNavEnabled] = useState(false)
-  // Desktop navigation (top bar) — independent from the mobile settings above.
+  // Desktop navigation — independent from the mobile settings above.
+  const [desktopNavVariant, setDesktopNavVariant] = useState<'top' | 'left'>('top')
   const [desktopNavEnabled, setDesktopNavEnabled] = useState(true)
   const [desktopNavDisplayStyle, setDesktopNavDisplayStyle] = useState<'iconText' | 'text'>('iconText')
   const [desktopNavAlignment, setDesktopNavAlignment] = useState<'left' | 'center' | 'right'>('left')
@@ -2276,7 +2277,7 @@ export function BuildPage({
             <span className="live-preview__top-header-btn" aria-hidden="true" />
           )
         })()}
-        {desktopNavEnabled && (
+        {desktopNavEnabled && desktopNavVariant === 'top' && (
           <nav className="live-preview__top-header-nav">
             {navPages.map((p) => (
               <button
@@ -2312,11 +2313,16 @@ export function BuildPage({
                   aria-hidden="true"
                 />
               </button>
-              <LivePreviewAvatarPopover
-                open={isAvatarPopoverOpen}
-                onClose={() => setIsAvatarPopoverOpen(false)}
-                onLogout={handlePreviewLogout}
-              />
+              {/* On desktop + left variant the account menu lives in the sidebar
+                  footer instead — avoid a duplicate popover (and its outside-click
+                  listener) here. */}
+              {!(previewDevice === 'desktop' && desktopNavVariant === 'left') && (
+                <LivePreviewAvatarPopover
+                  open={isAvatarPopoverOpen}
+                  onClose={() => setIsAvatarPopoverOpen(false)}
+                  onLogout={handlePreviewLogout}
+                />
+              )}
             </>
           ) : showLandingNav ? (
             previewDevice === 'desktop' ? (
@@ -2355,11 +2361,94 @@ export function BuildPage({
       </div>
       {!isPreviewLoggedIn && (
         <LivePreviewLoginPopover
+          variant={previewDevice === 'desktop' ? 'modal' : 'popover'}
           open={isLoginPopoverOpen}
           onClose={() => setIsLoginPopoverOpen(false)}
           onLoggedIn={handlePreviewLogin}
           initialView={loginPopoverView}
         />
+      )}
+      {desktopNavEnabled && desktopNavVariant === 'left' && previewDevice === 'desktop' && (
+        <aside className="live-preview__side-nav app-scope">
+          <div className="live-preview__side-nav-brand">
+            {appHeaderState.imageStyle !== 'None' && (
+              <span className={`live-preview__side-nav-logo${appHeaderState.imageStyle === 'Image' && appHeaderState.imageUrl ? ' live-preview__side-nav-logo--image' : ''}`}>
+                {appHeaderState.imageStyle === 'Image' && appHeaderState.imageUrl ? (
+                  <img src={appHeaderState.imageUrl} alt="" />
+                ) : (
+                  <AppIcon name={appHeaderState.icon} size={24} />
+                )}
+              </span>
+            )}
+            <span className="live-preview__side-nav-title">{appTitle}</span>
+          </div>
+          <nav className="live-preview__side-nav-list">
+            {navPages.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                className={`live-preview__side-nav-link${p.id === activePageId ? ' live-preview__side-nav-link--active' : ''}`}
+                onClick={() => navigateToPage(p.id)}
+              >
+                {desktopNavDisplayStyle === 'iconText' && (
+                  <AppIcon name={getPageIconName(p, 0)} size={20} />
+                )}
+                <span className="live-preview__side-nav-label">{p.name}</span>
+              </button>
+            ))}
+          </nav>
+          <div className="live-preview__side-nav-footer">
+            {isPreviewLoggedIn ? (
+              <div className="live-preview__side-nav-account">
+                <img
+                  className="live-preview__side-nav-avatar"
+                  src={previewUserAvatar}
+                  alt=""
+                  aria-hidden="true"
+                />
+                <div className="live-preview__side-nav-account-info">
+                  <span className="live-preview__side-nav-account-name">Okan Düngel</span>
+                  <span className="live-preview__side-nav-account-email">okan@jotform.com</span>
+                </div>
+                <button
+                  type="button"
+                  className="live-preview__side-nav-account-more"
+                  aria-label="Account menu"
+                  aria-expanded={isAvatarPopoverOpen}
+                  onClick={() => setIsAvatarPopoverOpen((v) => !v)}
+                >
+                  <AppIcon name="Ellipsis" size={18} />
+                </button>
+                <LivePreviewAvatarPopover
+                  open={isAvatarPopoverOpen}
+                  onClose={() => setIsAvatarPopoverOpen(false)}
+                  onLogout={handlePreviewLogout}
+                />
+              </div>
+            ) : (
+              <>
+                <AppButton
+                  variant="Outlined"
+                  size="Default"
+                  leftIcon="none"
+                  rightIcon="none"
+                  label="Login"
+                  fullWidth
+                  onClick={() => { setLoginPopoverView('login'); setIsLoginPopoverOpen(true) }}
+                />
+                <AppButton
+                  variant="Default"
+                  size="Default"
+                  leftIcon="none"
+                  rightIcon="none"
+                  label="Sign up"
+                  fullWidth
+                  onClick={() => { setLoginPopoverView('signup'); setIsLoginPopoverOpen(true) }}
+                />
+              </>
+            )}
+          </div>
+        </aside>
       )}
       <div ref={setPreviewContentScalerEl} className="live-preview__content-scaler app-scope">
         <div className="live-preview__content app-scope">
@@ -2461,7 +2550,7 @@ export function BuildPage({
         avatarUrl={previewUserAvatar}
       />
       <LivePreviewLoginPopover
-        variant="page"
+        variant={previewDevice === 'desktop' ? 'modal' : 'page'}
         open={previewAuthView !== null}
         initialView={previewAuthView ?? 'login'}
         onClose={() => { setPreviewAuthView(null); setIsMorePageOpen(false); pendingAuthRedirectRef.current = null }}
@@ -2814,9 +2903,11 @@ export function BuildPage({
                 enabled={bottomNavEnabled}
                 displayStyle={bottomNavDisplayStyle}
                 topNavEnabled={topNavEnabled}
+                desktopVariant={desktopNavVariant}
                 desktopEnabled={desktopNavEnabled}
                 desktopDisplayStyle={desktopNavDisplayStyle}
                 desktopAlignment={desktopNavAlignment}
+                onChangeDesktopVariant={setDesktopNavVariant}
                 onToggleEnabled={setBottomNavEnabled}
                 onChangeDisplayStyle={setBottomNavDisplayStyle}
                 onToggleTopNavEnabled={setTopNavEnabled}
@@ -4865,6 +4956,7 @@ export function BuildPage({
                       </div>
                       {!isPreviewLoggedIn && (
                         <LivePreviewLoginPopover
+                          variant={previewDevice === 'desktop' ? 'modal' : 'popover'}
                           open={isLoginPopoverOpen}
                           onClose={() => setIsLoginPopoverOpen(false)}
                           onLoggedIn={handlePreviewLogin}
@@ -4970,7 +5062,7 @@ export function BuildPage({
                         avatarUrl={previewUserAvatar}
                       />
                       <LivePreviewLoginPopover
-                        variant="page"
+                        variant={previewDevice === 'desktop' ? 'modal' : 'page'}
                         open={previewAuthView !== null}
                         initialView={previewAuthView ?? 'login'}
                         onClose={() => { setPreviewAuthView(null); setIsMorePageOpen(false); pendingAuthRedirectRef.current = null }}

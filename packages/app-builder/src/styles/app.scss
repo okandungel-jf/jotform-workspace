@@ -2012,6 +2012,53 @@ body {
   justify-content: center;
 }
 
+// Desktop auth modal — centered overlay dialog (replaces the popover / full page).
+.live-preview__auth-modal-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.live-preview__auth-modal {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: var(--space-8) var(--space-6) var(--space-6);
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.live-preview__auth-modal-close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg-secondary);
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+
+  &:hover {
+    background: var(--bg-surface-hover);
+    color: var(--fg-primary);
+  }
+}
+
 .live-preview__auth-page-heading {
   margin-bottom: var(--space-5);
 }
@@ -5494,6 +5541,39 @@ body {
   background: var(--border);
 }
 
+// Left (sidebar) variant: a vertical nav column beside the content.
+.nav-menu-desktop__body {
+  display: flex;
+  min-height: 132px;
+}
+
+.nav-menu-desktop__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+  flex-shrink: 0;
+  width: 116px;
+  padding: var(--spacing-sm);
+  border-right: 1px solid var(--border);
+
+  .nav-menu-desktop__nav-item {
+    width: 100%;
+    min-width: 0;
+    padding: var(--spacing-2xs) var(--spacing-xs);
+    border-radius: 6px;
+  }
+
+  .nav-menu-desktop__nav-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.nav-menu-desktop__content--left {
+  flex: 1;
+  min-width: 0;
+}
+
 // Sortable list of nav items: drag handle + icon/label card + remove button.
 .nav-menu-list {
   display: flex;
@@ -7590,6 +7670,8 @@ body.builder--phone-only {
 }
 
 .app-preview-screen__desktop {
+  // Left-sidebar (nav) width — drives the sidebar + the top-header/content shifts.
+  --side-nav-width: 260px;
   position: relative;
   flex: 1;
   align-self: stretch;
@@ -7766,6 +7848,244 @@ body.builder--phone-only {
 }
 .live-preview__top-header[data-nav-align='right'] .live-preview__top-header-nav {
   margin-left: auto;
+}
+
+// ---- Desktop left-sidebar variant ----
+// Rendered in the shared content; only shown inside the desktop frame.
+.live-preview__side-nav {
+  display: none;
+}
+
+.app-preview-screen__desktop .live-preview__side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--side-nav-width);
+  z-index: 5;
+  padding: var(--space-4);
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+
+  [data-theme='dark'] & {
+    background: var(--bg-surface-hover);
+  }
+}
+
+.live-preview__side-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 32px;
+  margin-bottom: var(--space-2);
+}
+
+// Mirror the top-header app-icon badge: brand-filled rounded square, white glyph.
+.live-preview__side-nav-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-fill-brand);
+  color: var(--fg-inverse);
+
+  &--image {
+    width: auto;
+    max-width: 120px;
+    border-radius: 0;
+    overflow: visible;
+    background: transparent;
+    color: inherit;
+  }
+
+  img {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    display: block;
+  }
+}
+
+// Match the desktop top-header app name (20px / 600 / heading font).
+.live-preview__side-nav-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-family-heading);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--fg-primary);
+}
+
+.live-preview__side-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.live-preview__side-nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--fg-secondary);
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+
+  // Exclude the active item from hover; use a surface-independent tint so it
+  // reads in both light and dark (the dark sidebar bg is itself --bg-surface-hover).
+  &:not(&--active):hover {
+    background: color-mix(in srgb, var(--fg-primary) 6%, transparent);
+    color: var(--fg-primary);
+  }
+
+  &--active {
+    background: color-mix(in srgb, var(--fg-brand) 12%, transparent);
+    color: var(--fg-brand);
+    font-weight: 600;
+  }
+}
+
+.live-preview__side-nav-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Auth / account pinned to the sidebar bottom, mirroring the hamburger menu.
+.live-preview__side-nav-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-4);
+}
+
+// Logged-in account row: avatar + name/email + a "more" menu trigger.
+.live-preview__side-nav-account {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+}
+
+.live-preview__side-nav-avatar {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--radius-rounded);
+  object-fit: cover;
+}
+
+.live-preview__side-nav-account-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.live-preview__side-nav-account-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-primary);
+}
+
+.live-preview__side-nav-account-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-family);
+  font-size: 12px;
+  color: var(--fg-tertiary);
+}
+
+.live-preview__side-nav-account-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg-tertiary);
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--fg-primary) 6%, transparent);
+    color: var(--fg-primary);
+  }
+}
+
+// The account menu opens upward from the row (no arrow, fits the sidebar width).
+.live-preview__side-nav-account .live-preview__avatar-popover {
+  top: auto;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  width: auto;
+
+  &::before {
+    display: none;
+  }
+}
+
+// Sidebar present → shift the desktop top-header + content right, and drop the
+// duplicate title from the top header (the sidebar carries the branding).
+.app-preview-screen__desktop:has(.live-preview__side-nav) .live-preview__top-header {
+  left: var(--side-nav-width);
+}
+.app-preview-screen__desktop:has(.live-preview__side-nav) .live-preview__top-header-compact {
+  display: none;
+}
+.app-preview-screen__desktop:has(.live-preview__side-nav) .live-preview__content-scaler {
+  padding-left: var(--side-nav-width);
+}
+// No top nav in the sidebar variant — keep the account group pinned far right
+// (overrides the alignment reset, which only matters for the top variant).
+.app-preview-screen__desktop:has(.live-preview__side-nav) .live-preview__top-header-right {
+  margin-left: auto;
+}
+
+// Logged out → auth lives in the sidebar footer, so drop the top header entirely
+// and reclaim its vertical space. (Logged in keeps the top header for the avatar.)
+.app-preview-screen__desktop:has(.live-preview__side-nav-footer) .live-preview__top-header {
+  display: none;
+}
+.app-preview-screen__desktop:has(.live-preview__side-nav-footer) .live-preview__content-scaler {
+  padding-top: var(--space-6);
+}
+// Anchor the login popover near the sidebar (bottom-left) instead of top-right.
+.app-preview-screen__desktop:has(.live-preview__side-nav-footer) .live-preview__login-popover {
+  top: auto;
+  bottom: var(--space-4);
+  left: calc(var(--side-nav-width) + var(--space-4));
+  right: auto;
 }
 
 .live-preview__top-header-auth {
