@@ -9,6 +9,12 @@
   [data-theme='dark'] & {
     background: var(--bg-surface-hover);
   }
+
+  // Icon-only display style: no labels, so give items a touch more vertical room
+  // to keep the icons optically centered in the bar.
+  &--icon-only .bottom-nav__item {
+    padding: var(--space-3) 0;
+  }
 }
 
 .bottom-nav__item {

@@ -1431,7 +1431,7 @@ body {
 .live-preview__phone-shell {
   position: absolute;
   inset: 0;
-  border-radius: 72px;
+  border-radius: 60px;
   background: var(--bg-fill-brand-hover);
   box-shadow:
     0px 4px 22px 0px rgba(0, 0, 0, 0.24),
@@ -1447,7 +1447,7 @@ body {
 .live-preview__phone-bezel {
   position: absolute;
   inset: 4px;
-  border-radius: 68px;
+  border-radius: 56px;
   background: var(--gray-900);
   border: 1px solid #000;
   box-shadow:
@@ -1468,7 +1468,7 @@ body {
 .live-preview__phone-screen {
   position: absolute;
   inset: 16px;
-  border-radius: 56px;
+  border-radius: 44px;
   overflow: hidden;
   background: var(--gray-900);
   z-index: 1;
@@ -5298,6 +5298,418 @@ body {
   padding: var(--ds-space-xl);
   color: var(--ds-text-medium);
   font-size: var(--ds-font-size-sm);
+}
+
+// ============================================
+// Navigation Menu panel
+// ============================================
+// Phone mockup slices (shell → bezel → screen), mirroring the live preview. The
+// app's resolved theme tokens are copied onto `.nav-menu-preview` at runtime so
+// the frame + content reflect the live accent + light/dark surfaces, not the dark
+// chrome. Radii match the live preview (shell 60 / bezel 56 / screen 44); only the
+// relevant edge is rounded — the opposite edge is flush, as if the phone continues.
+.nav-menu-preview {
+  background: var(--bg-fill-brand-hover);
+  box-shadow:
+    0px 4px 22px 0px rgba(0, 0, 0, 0.24),
+    0px 1.46px 8.03px 0px rgba(0, 0, 0, 0.17),
+    0px 0.709px 3.899px 0px rgba(0, 0, 0, 0.13),
+    0px 0.347px 1.911px 0px rgba(0, 0, 0, 0.11),
+    0px 0.137px 0.756px 0px rgba(0, 0, 0, 0.07),
+    inset 0px 0px 1px 1px rgba(0, 0, 0, 0.2),
+    inset 0px 0px 5px 1px rgba(0, 0, 0, 0.5);
+}
+
+.nav-menu-preview__bezel {
+  position: relative;
+  background: var(--gray-900);
+  border: 1px solid #000;
+  box-shadow: 0px 0px 2px 2px rgba(255, 255, 255, 0.24);
+
+  // White inner glow on the bezel rim. The screen sits above it (z-index) so the
+  // glow only shows on the visible (non-cut) edges.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow:
+      inset 0px 0px 2px 1px rgba(255, 255, 255, 0.25),
+      inset 0px 0px 6px 0px rgba(255, 255, 255, 0.5);
+  }
+}
+
+.nav-menu-preview__screen {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 96px;
+  overflow: hidden;
+  background: var(--bg-surface);
+}
+
+// Bottom slice: rounded bottom, content pinned to the bottom edge.
+.nav-menu-preview--bottom {
+  padding: 0 4px 4px;
+  border-radius: 0 0 60px 60px;
+}
+.nav-menu-preview--bottom .nav-menu-preview__bezel {
+  padding: 0 12px 12px;
+  border-radius: 0 0 56px 56px;
+}
+.nav-menu-preview--bottom .nav-menu-preview__screen {
+  justify-content: flex-end;
+  border-radius: 0 0 44px 44px;
+}
+
+// Top slice: rounded top, content pinned to the top edge.
+.nav-menu-preview--top {
+  padding: 4px 4px 0;
+  border-radius: 60px 60px 0 0;
+}
+.nav-menu-preview--top .nav-menu-preview__bezel {
+  padding: 12px 12px 0;
+  border-radius: 56px 56px 0 0;
+}
+.nav-menu-preview--top .nav-menu-preview__screen {
+  justify-content: flex-start;
+  border-radius: 44px 44px 0 0;
+}
+
+// Blend the bottom nav into the screen surface — its own border-top is the
+// separator. Specificity beats the dark-mode rule the chrome would leak in.
+.nav-menu-preview__screen.app-scope .bottom-nav {
+  background: transparent;
+}
+
+.nav-menu-preview__home-indicator {
+  width: 120px;
+  height: 4px;
+  margin: var(--spacing-xs) auto var(--spacing-sm);
+  border-radius: var(--radius-rounded);
+  background: var(--fg-primary);
+  opacity: 0.22;
+}
+
+// Top-nav slice content: status bar (scaled to width) + a hamburger app bar.
+.nav-menu-preview__status-bar {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.nav-menu-preview__top-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  color: var(--fg-primary);
+}
+
+.nav-menu-preview__top-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-heading-sm);
+  line-height: var(--line-height-heading-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--fg-primary);
+}
+
+// Desktop top-nav mockup: a laptop window with the nav bar rendered per the
+// chosen display style + alignment. Themed via the copied tokens (brand tint).
+.nav-menu-desktop {
+  padding: var(--spacing-md);
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in srgb, var(--fg-brand) 10%, var(--bg-surface));
+}
+
+.nav-menu-desktop__screen {
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-surface);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-menu-desktop__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+
+  &--left { justify-content: flex-start; }
+  &--center { justify-content: center; }
+  &--right { justify-content: flex-end; }
+}
+
+.nav-menu-desktop__nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  color: var(--fg-primary);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+.nav-menu-desktop__nav-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-menu-desktop__nav-more {
+  display: inline-flex;
+  align-items: center;
+  color: var(--fg-tertiary);
+}
+
+.nav-menu-desktop__divider {
+  height: 1px;
+  background: var(--border);
+}
+
+.nav-menu-desktop__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  min-height: 72px;
+  padding: var(--spacing-md);
+}
+
+.nav-menu-desktop__placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--fg-brand) 14%, var(--bg-surface));
+}
+
+.nav-menu-desktop__base {
+  width: 72px;
+  height: 6px;
+  border-radius: var(--radius-rounded);
+  background: var(--border);
+}
+
+// Sortable list of nav items: drag handle + icon/label card + remove button.
+.nav-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.nav-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.nav-menu-item__drag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--spacing-lg);
+  color: var(--ds-text-medium);
+  cursor: grab;
+  touch-action: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+// Card mirrors the list-properties FieldMapper: chip slot + divider + trailing
+// action, at the same scale (40px, --gray-500 fill, --gray-700 border).
+.nav-menu-item__card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  height: 40px;
+  padding-left: var(--spacing-sm);
+  padding-right: 6px;
+  background: var(--gray-500);
+  border: 1px solid var(--gray-700);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--gray-300);
+  }
+}
+
+.nav-menu-item__chip-slot {
+  display: flex;
+  flex: 1 0 0;
+  min-width: 0;
+  align-items: center;
+  gap: var(--spacing-2xs);
+}
+
+// Page icon + label shown plainly on the card (no chip pill).
+.nav-menu-item__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--core-white);
+  cursor: pointer;
+  transition: background 0.12s ease;
+
+  &:hover {
+    background: var(--gray-400);
+  }
+}
+
+.nav-menu-item__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--core-white);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-book);
+}
+
+.nav-menu-item__trailing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.nav-menu-item__divider {
+  display: inline-block;
+  width: 1px;
+  height: 23px;
+  background: var(--gray-700);
+}
+
+// Trailing remove (X) — matches the FieldMapper add button's scale/treatment.
+.nav-menu-item__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--secondary-text-light);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+
+  &:hover {
+    background: var(--gray-700);
+    color: var(--core-white);
+  }
+}
+
+// "Select Page" trigger — appears below the list when pages have been removed
+// from the nav. Full-row dashed card; opens the dropdown of removed pages.
+// Matches the page-item card scale (40px / --radius-sm / --spacing-sm padding);
+// stays dashed to read as an add slot rather than a real page row.
+.nav-menu-add {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2xs);
+  width: 100%;
+  height: 40px;
+  padding-left: var(--spacing-sm);
+  padding-right: 6px;
+  border: 1px dashed var(--gray-400);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--core-white);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-book);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: var(--gray-300);
+    background: color-mix(in srgb, var(--core-white) 6%, transparent);
+  }
+}
+
+// Bright neutral (secondary) "+", boxed to align with the page-item icons.
+.nav-menu-add__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  color: var(--core-white);
+}
+
+// Dropdown of pages not currently in the nav (rendered in a portal). Mirrors the
+// DS DropdownSingle menu in dark mode (jf-dropdown__menu / __item).
+.nav-menu-add-menu {
+  position: fixed;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  max-height: 280px;
+  padding: var(--spacing-2xs) 0;
+  overflow-y: auto;
+  background: var(--gray-500);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+}
+
+.nav-menu-add-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-height: 40px;
+  padding: 0 var(--spacing-sm);
+  border: none;
+  background: transparent;
+  color: var(--secondary-text-white);
+  font-family: var(--font-family-circular);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+  letter-spacing: -0.084px;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--gray-600);
+  }
+}
+
+.nav-menu-add-menu__leading {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: var(--secondary-text-light);
+}
+
+.nav-menu-add-menu__label {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .build-page__properties[data-theme='dark'] {

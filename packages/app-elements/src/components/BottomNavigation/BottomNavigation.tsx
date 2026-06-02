@@ -14,6 +14,8 @@ export interface BottomNavigationProps {
   items?: NavItem[];
   activeIndex?: number;
   selected?: boolean;
+  /** Render the text labels under each icon. When false, shows icons only. Defaults to true. */
+  showLabels?: boolean;
   onItemClick?: (index: number) => void;
 }
 
@@ -31,10 +33,11 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   items = DEFAULT_ITEMS,
   activeIndex = 0,
   selected,
+  showLabels = true,
   onItemClick,
 }) => {
   return (
-    <nav className={`bottom-nav${selected ? ' component-selected' : ''}`}>
+    <nav className={`bottom-nav${showLabels ? '' : ' bottom-nav--icon-only'}${selected ? ' component-selected' : ''}`}>
       {items.map((item, index) => {
         const isActive = index === activeIndex;
         return (
@@ -44,7 +47,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
             onClick={() => onItemClick?.(index)}
           >
             <Icon name={item.icon} size={20} forceStyle={isActive ? 'fill' : undefined} />
-            <span className="bottom-nav__label">{item.label}</span>
+            {showLabels && <span className="bottom-nav__label">{item.label}</span>}
             {isActive && <span className="bottom-nav__indicator" />}
           </div>
         );

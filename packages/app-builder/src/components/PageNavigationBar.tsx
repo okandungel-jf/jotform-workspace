@@ -36,6 +36,7 @@ interface PageNavigationBarProps {
   onChangeIcon: (pageId: string, icon: string) => void
   onDeletePage: (pageId: string) => void
   onAddPage: () => void
+  onOpenSettings: () => void
 }
 
 export const DEFAULT_PAGE_ICON = 'FileText'
@@ -270,6 +271,7 @@ export function PageNavigationBar({
   onChangeIcon,
   onDeletePage,
   onAddPage,
+  onOpenSettings,
 }: PageNavigationBarProps) {
   const [dragActiveId, setDragActiveId] = useState<string | null>(null)
   const [isOverflowing, setIsOverflowing] = useState(false)
@@ -382,6 +384,7 @@ export function PageNavigationBar({
           shape="rectangle"
           size="md"
           leftIcon={<Icon name="gear-filled" category="general" size={20} />}
+          onClick={onOpenSettings}
         >
           Settings
         </Button>

@@ -39,6 +39,7 @@ import { PhoneStatusBar } from '../components/PhoneStatusBar'
 import { PageNavigationBar, getPageIconName } from '../components/PageNavigationBar'
 import { CanvasPageLabel } from '../components/CanvasPageLabel'
 import { PagePropertiesPanel } from '../components/PagePropertiesPanel'
+import { NavigationMenuPanel } from '../components/NavigationMenuPanel'
 import { LivePreviewMorePagesView } from '../components/LivePreviewMorePagesView'
 import { LivePreviewCartButton } from '../components/LivePreviewCartButton'
 import { LivePreviewCartPage } from '../components/LivePreviewCartPage'
@@ -1099,7 +1100,7 @@ function AddPageDivider({
   )
 }
 
-type RightPanelMode = 'preview' | 'designer' | 'properties' | 'page'
+type RightPanelMode = 'preview' | 'designer' | 'properties' | 'page' | 'navigation'
 
 interface BuildPageProps {
   appTitle?: string
@@ -1124,6 +1125,14 @@ export function BuildPage({
 }: BuildPageProps) {
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
   const [pagePropertiesId, setPagePropertiesId] = useState<string | null>(null)
+  // Bottom-navigation menu settings (mobile), edited via the Navigation Menu panel.
+  const [bottomNavEnabled, setBottomNavEnabled] = useState(true)
+  const [bottomNavDisplayStyle, setBottomNavDisplayStyle] = useState<'iconText' | 'icon'>('iconText')
+  const [topNavEnabled, setTopNavEnabled] = useState(false)
+  // Desktop navigation (top bar) — independent from the mobile settings above.
+  const [desktopNavEnabled, setDesktopNavEnabled] = useState(true)
+  const [desktopNavDisplayStyle, setDesktopNavDisplayStyle] = useState<'iconText' | 'text'>('iconText')
+  const [desktopNavAlignment, setDesktopNavAlignment] = useState<'left' | 'center' | 'right'>('left')
   const [propertyTab, setPropertyTab] = useState<string>('general')
   const appHeaderImageInputRef = useRef<HTMLInputElement>(null)
   const appHeaderBgImageInputRef = useRef<HTMLInputElement>(null)
@@ -1735,6 +1744,13 @@ export function BuildPage({
     setSelectedElementId(null)
     setPagePropertiesId(pageId)
     setRightPanel('page')
+  }, [])
+
+  const openNavSettings = useCallback(() => {
+    setSelectedElementId(null)
+    setPagePropertiesId(null)
+    setIsLivePreviewVisible(true)
+    setRightPanel('navigation')
   }, [])
 
   // Landing-mode auth transitions: login lands on the first non-landing page
@@ -2415,11 +2431,12 @@ export function BuildPage({
           })()}
         </div>
       </div>
-      {pages.length > 1 && !isPreviewCartOpen && !isPreviewCheckoutOpen && !isPreviewDetailOpen && !showLandingNav && (
+      {pages.length > 1 && bottomNavEnabled && !isPreviewCartOpen && !isPreviewCheckoutOpen && !isPreviewDetailOpen && !showLandingNav && (
         <div className="live-preview__bottom-nav app-scope">
           <BottomNavigation
             items={bottomNavItems}
             activeIndex={bottomNavActiveIndex}
+            showLabels={bottomNavDisplayStyle !== 'icon'}
             onItemClick={handleBottomNavClick}
           />
         </div>
@@ -2771,6 +2788,7 @@ export function BuildPage({
             }
           }}
           onAddPage={() => handleAddPage(pages[pages.length - 1].id)}
+          onOpenSettings={openNavSettings}
         />
       )}
       </div>
@@ -2785,7 +2803,28 @@ export function BuildPage({
           {/* Slide 1: Live Preview / Properties */}
           <div className="build-page__right-slide">
             {/* Properties Panel */}
-            {rightPanel === 'page' && pages.find((p) => p.id === pagePropertiesId) ? (
+            {rightPanel === 'navigation' ? (
+              <NavigationMenuPanel
+                pages={pages}
+                enabled={bottomNavEnabled}
+                displayStyle={bottomNavDisplayStyle}
+                topNavEnabled={topNavEnabled}
+                desktopEnabled={desktopNavEnabled}
+                desktopDisplayStyle={desktopNavDisplayStyle}
+                desktopAlignment={desktopNavAlignment}
+                onToggleEnabled={setBottomNavEnabled}
+                onChangeDisplayStyle={setBottomNavDisplayStyle}
+                onToggleTopNavEnabled={setTopNavEnabled}
+                onToggleDesktopEnabled={setDesktopNavEnabled}
+                onChangeDesktopDisplayStyle={setDesktopNavDisplayStyle}
+                onChangeDesktopAlignment={setDesktopNavAlignment}
+                onReorder={(reordered) => setPages(reordered as AppPage[])}
+                onChangeIcon={(pageId, icon) => updatePage(pageId, { icon })}
+                onRemoveFromNav={(pageId) => updatePage(pageId, { hidden: true })}
+                onAddToNav={(pageId) => updatePage(pageId, { hidden: false })}
+                onClose={() => setRightPanel('preview')}
+              />
+            ) : rightPanel === 'page' && pages.find((p) => p.id === pagePropertiesId) ? (
               (() => {
                 const pp = pages.find((p) => p.id === pagePropertiesId)!
                 return (
@@ -4901,11 +4940,12 @@ export function BuildPage({
                           })()}
                         </div>
                       </div>
-                      {pages.length > 1 && !isPreviewCartOpen && !isPreviewCheckoutOpen && !isPreviewDetailOpen && !showLandingNav && (
+                      {pages.length > 1 && bottomNavEnabled && !isPreviewCartOpen && !isPreviewCheckoutOpen && !isPreviewDetailOpen && !showLandingNav && (
                         <div className="live-preview__bottom-nav app-scope">
                           <BottomNavigation
                             items={bottomNavItems}
                             activeIndex={bottomNavActiveIndex}
+                            showLabels={bottomNavDisplayStyle !== 'icon'}
                             onItemClick={handleBottomNavClick}
                           />
                         </div>
