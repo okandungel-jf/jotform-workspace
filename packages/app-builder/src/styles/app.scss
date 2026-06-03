@@ -7580,7 +7580,7 @@ body.builder--phone-only {
   align-items: stretch; // full-height segments so the active fill is flush top/bottom
   overflow: visible; // let the active segment's solid white outline render past the track ring
   background: color-mix(in srgb, var(--fg-inverse) 16%, transparent);
-  border-radius: 8px;
+  border-radius: 4px;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--fg-inverse) 45%, transparent);
 }
 
@@ -7602,13 +7602,13 @@ body.builder--phone-only {
 
   // round the outer ends so the active fill + its white outline match the pill corners
   &:first-child {
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
   }
 
   &:last-child {
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 8px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
   }
 
   // thin divider between adjacent segments (hidden next to the active fill)
@@ -8096,12 +8096,12 @@ body.builder--phone-only {
 }
 
 // Logged out → auth lives in the sidebar footer, so drop the top header entirely
-// and reclaim its vertical space. (Logged in keeps the top header for the avatar.)
+// and let the app header sit flush at the top (no reserved top-header space).
 .app-preview-screen__desktop:has(.live-preview__side-nav-footer) .live-preview__top-header {
   display: none;
 }
 .app-preview-screen__desktop:has(.live-preview__side-nav-footer) .live-preview__content-scaler {
-  padding-top: var(--space-6);
+  padding-top: 0;
 }
 // Anchor the login popover near the sidebar (bottom-left) instead of top-right.
 .app-preview-screen__desktop:has(.live-preview__side-nav-footer) .live-preview__login-popover {

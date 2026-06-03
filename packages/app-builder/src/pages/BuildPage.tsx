@@ -2241,7 +2241,9 @@ export function BuildPage({
           const compactPersistent = previewDevice === 'desktop' || brandingAlways
           const compactDomReady = !isMorePageOpen && (compactTitleInDom || compactPersistent)
           const compactExiting = !compactPersistent && compactTitleInDom && !showCompactTitle
-          const titleCollapsed = compactPersistent && !showCompactTitle && !brandingAlways
+          // Desktop top nav shows the full app name by default (it only ever collapsed
+          // to icon-only on desktop, so there's nothing to collapse elsewhere).
+          const titleCollapsed = false
           if (compactDomReady) {
             const compactClass = [
               'live-preview__top-header-compact',
