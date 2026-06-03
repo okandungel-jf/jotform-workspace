@@ -68,7 +68,7 @@
 
 // Label/Large/Regular — matches Heading subtitle style
 .jf-donation__description {
-  font-size: var(--font-size-label-lg);
+  font-size: var(--font-size-paragraph-md); // fluid 16→18 (content body under the title)
   font-weight: var(--font-weight-regular);
   line-height: var(--line-height-label-lg);
   color: var(--fg-secondary);
@@ -163,9 +163,9 @@
 }
 
 .jf-donation__amount-value {
-  font-size: 18px;
+  font-size: var(--font-size-paragraph-lg); // fluid 18→20 (prominent amount; was hardcoded 18px)
   font-weight: var(--font-weight-bold);
-  line-height: 28px;
+  line-height: var(--line-height-paragraph-lg); // 28px (was hardcoded)
   color: var(--fg-primary);
   text-align: center;
   white-space: nowrap;

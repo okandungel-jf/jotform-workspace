@@ -74,7 +74,7 @@
 
 // Heading/H6/Bold
 .jf-testimonial__name {
-  font-size: var(--font-size-label-lg);
+  font-size: var(--font-size-paragraph-md); // fluid 16→18 (author name = content title)
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-label-lg);
   color: var(--fg-primary);
@@ -86,7 +86,7 @@
 
 // Paragraph/XSmall/Regular
 .jf-testimonial__quote {
-  font-size: var(--font-size-paragraph-sm);
+  font-size: var(--font-size-paragraph-sm-fluid); // fluid 14→16 (multi-line quote, capped by max-height)
   font-weight: var(--font-weight-regular);
   line-height: var(--line-height-paragraph-sm);
   color: var(--fg-primary);

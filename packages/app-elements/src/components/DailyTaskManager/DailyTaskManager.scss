@@ -53,7 +53,7 @@
 }
 
 .jf-daily-tasks__title {
-  font-size: var(--font-size-label-lg);
+  font-size: var(--font-size-paragraph-md); // fluid 16→18 (content section title)
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-label-lg);
   color: var(--fg-primary);

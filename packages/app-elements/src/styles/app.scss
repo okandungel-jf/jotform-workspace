@@ -50,25 +50,28 @@
   --font-weight-bold: 600;
 
   // ---- Font Sizes ----
-  // Heading — responsive (fluid) type. Each token has a fixed-px fallback (used
-  // when container queries are unsupported) followed by a clamp() driven by `cqi`
-  // (1% of the nearest container's inline size). The container is `.themes-view__canvas`
-  // (the page card), so headings scale to the DEVICE/page width — correct in both
-  // the scaled non-iframe preview AND production — not the browser viewport.
-  // Bounds are in rem (zoom-safe, WCAG 1.4.4); max stays well under 2x min.
+  // Heading — responsive (fluid) type. Each token has a fixed-px fallback (the
+  // original design size, used when container queries are unsupported) followed
+  // by a clamp() driven by `cqi` (1% of the nearest container's inline size).
+  // The container is `.themes-view__canvas` (the page card), so headings scale to
+  // the DEVICE/page width — correct in both the scaled non-iframe preview AND
+  // production — not the browser viewport. Headings now scale BOTH ways: smaller
+  // on a ~477px phone card, larger on the 760px desktop card. Bounds are in rem
+  // (zoom-safe, WCAG 1.4.4); max stays under ~1.5x min. The cqi coefficient is in
+  // px-per-cqi (cqi resolves in px), NOT rem — a 16x scale vs the rem anchor.
   // Body/label/caption stay FIXED (legibility floor, body >= 16px).
   --font-size-heading-xxl: 40px;
-  --font-size-heading-xxl: clamp(2rem, 1rem + 3.72cqi, 2.5rem);       // 32 → 40px
+  --font-size-heading-xxl: clamp(2rem, 0.315rem + 5.654cqi, 3rem);        // 32 → 48px
   --font-size-heading-xl: 36px;
-  --font-size-heading-xl: clamp(1.875rem, 1.125rem + 2.79cqi, 2.25rem); // 30 → 36px
+  --font-size-heading-xl: clamp(1.875rem, 0.4rem + 4.947cqi, 2.75rem);    // 30 → 44px
   --font-size-heading-lg: 32px;
-  --font-size-heading-lg: clamp(1.625rem, 0.875rem + 2.79cqi, 2rem);  // 26 → 32px
+  --font-size-heading-lg: clamp(1.625rem, 0.361rem + 4.24cqi, 2.375rem);  // 26 → 38px
   --font-size-heading-md: 28px;
-  --font-size-heading-md: clamp(1.5rem, 1rem + 1.86cqi, 1.75rem);     // 24 → 28px
+  --font-size-heading-md: clamp(1.5rem, 0.657rem + 2.827cqi, 2rem);       // 24 → 32px
   --font-size-heading-sm: 24px;
-  --font-size-heading-sm: clamp(1.25rem, 0.75rem + 1.86cqi, 1.5rem);  // 20 → 24px
+  --font-size-heading-sm: clamp(1.25rem, 0.407rem + 2.827cqi, 1.75rem);   // 20 → 28px
   --font-size-heading-xs: 20px;
-  --font-size-heading-xs: clamp(1.125rem, 0.875rem + 0.93cqi, 1.25rem); // 18 → 20px
+  --font-size-heading-xs: clamp(1.125rem, 0.704rem + 1.413cqi, 1.375rem); // 18 → 22px
   // Paragraph — body text scales gently UPWARD on wider containers only (never
   // below the 16px legibility floor on small screens). Same cqi container as
   // headings. paragraph-sm / xs stay fixed (already at/below the floor).
@@ -78,6 +81,11 @@
   --font-size-paragraph-md: clamp(1rem, 0.75rem + 0.93cqi, 1.125rem);     // 16 → 18px (16px floor)
   --font-size-paragraph-sm: 14px;
   --font-size-paragraph-xs: 12px;
+  // Opt-in fluid variant of paragraph-sm (14 → 16px) for card/list item
+  // descriptions only — paragraph-sm itself stays fixed (used by ~13 compact
+  // contexts: chart labels, form hints, etc. that must not grow).
+  --font-size-paragraph-sm-fluid: 14px;
+  --font-size-paragraph-sm-fluid: clamp(0.875rem, 0.664rem + 0.707cqi, 1rem); // 14 → 16px
   // Label
   --font-size-label-lg: 16px;
   --font-size-label-md: 14px;

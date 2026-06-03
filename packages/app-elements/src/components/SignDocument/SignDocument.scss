@@ -89,13 +89,13 @@
   width: 100%;
 
   &--normal {
-    font-size: var(--font-size-label-lg);
+    font-size: var(--font-size-paragraph-md); // fluid 16→18 (content title)
     line-height: var(--line-height-label-lg);
     max-height: var(--line-height-label-lg);
   }
 
   &--large {
-    font-size: var(--font-size-label-lg);
+    font-size: var(--font-size-paragraph-md); // fluid 16→18
     line-height: var(--line-height-label-lg);
     max-height: var(--line-height-label-lg);
   }
@@ -111,7 +111,7 @@
   width: 100%;
 
   &--normal {
-    font-size: var(--font-size-paragraph-sm);
+    font-size: var(--font-size-paragraph-sm-fluid); // fluid 14→16 (content description)
     line-height: var(--line-height-paragraph-sm);
     max-height: var(--line-height-paragraph-sm);
   }

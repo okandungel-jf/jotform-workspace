@@ -298,13 +298,13 @@
 
 // Paragraph/Large/Bold (18px)
 .jf-product-item__price {
-  font-size: 18px;
+  font-size: var(--font-size-paragraph-lg); // fluid 18→20 (prominent price; was hardcoded 18px)
   font-weight: var(--font-weight-bold);
-  line-height: 28px;
+  line-height: var(--line-height-paragraph-lg); // 28px (was hardcoded)
   color: var(--fg-primary);
   overflow: hidden;
   white-space: nowrap;
-  max-height: 28px;
+  max-height: var(--line-height-paragraph-lg); // 28px (was hardcoded)
   width: 100%;
   display: flex;
   align-items: baseline;
