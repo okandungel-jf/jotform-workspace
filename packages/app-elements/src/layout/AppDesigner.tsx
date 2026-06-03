@@ -808,15 +808,15 @@ export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, 
             </div>
           </div>
         ))}
-        {Object.keys(tokenOverrides).length > 0 && (
-          <div className="edit-theme-panel__reset-wrapper">
-            <button className="edit-theme-panel__reset-btn" onClick={handleResetTokenOverrides}>
-              <Icon name="RotateCcw" size={14} />
-              <span>Reset All Overrides</span>
-            </button>
-          </div>
-        )}
       </div>
+      {Object.keys(tokenOverrides).length > 0 && (
+        <div className="edit-theme-panel__reset-wrapper">
+          <button className="edit-theme-panel__reset-btn" onClick={handleResetTokenOverrides}>
+            <Icon name="RotateCcw" size={14} />
+            <span>Reset All Overrides</span>
+          </button>
+        </div>
+      )}
       {editingToken && createPortal(
         <div className="color-theme-grid__picker-popup" ref={tokenPickerRef} data-theme="dark" style={{ top: tokenPickerPos.top, left: tokenPickerPos.left }}>
           {editingToken === '--bg-page' ? (

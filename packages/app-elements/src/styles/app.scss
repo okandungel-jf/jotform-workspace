@@ -4459,6 +4459,10 @@ body {
 .edit-theme-panel__category {
   padding: 20px;
   border-bottom: 1px solid #2A2D3B;
+
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .edit-theme-panel__category-title {
@@ -4519,7 +4523,10 @@ body {
 }
 
 .edit-theme-panel__reset-wrapper {
+  flex-shrink: 0;
   padding: 20px;
+  background: #33384a;
+  border-top: 1px solid #2A2D3B;
 }
 
 .edit-theme-panel__reset-btn {
