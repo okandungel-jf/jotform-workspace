@@ -7800,10 +7800,11 @@ body.builder--phone-only {
     font-weight: 500;
   }
 
-  // Desktop layout matches the builder canvas — max 644px page container
+  // Desktop preview uses a wider page container than the builder canvas (which
+  // stays 644px): 760px gives grid cards more room while keeping text readable.
   .themes-view__canvas {
     width: 100%;
-    max-width: 644px;
+    max-width: 760px;
     margin: 40px auto 0 auto;
     box-shadow: var(--shadow-sm);
     border-radius: var(--radius-xl);
@@ -7838,7 +7839,7 @@ body.builder--phone-only {
   // sticky-footer setup — desktop renders inline beneath the card.
   .themes-view__attribution-footer {
     width: 100%;
-    max-width: 644px;
+    max-width: 760px;
     margin: 16px auto 0 auto;
     padding: 0;
   }
