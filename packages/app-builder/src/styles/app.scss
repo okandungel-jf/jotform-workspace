@@ -7503,6 +7503,14 @@ body.builder--phone-only {
   }
 }
 
+// Paired header buttons (shrinked, two-up): a Width:Auto button fills its half
+// instead of hugging its content, matching the page rule so the pair reads as
+// two equal full-width buttons.
+.build-page__header-action--shrinked .jf-btn--width-auto,
+.live-preview__header-action--shrinked .jf-btn--width-auto {
+  align-self: stretch;
+}
+
 .build-page__header-slot-dropzone {
   display: flex;
   align-items: center;

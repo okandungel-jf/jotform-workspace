@@ -169,16 +169,16 @@
   }
 
   // =========================================
-  // Width: Auto — fit content, generous 56px side padding (no min-width).
-  // The align-* classes (below) set align-self, which overrides the parent
-  // wrapper's `align-items: stretch` (page sections / header action slots are
-  // flex-columns that otherwise stretch the button to full width — the reason
+  // Width: Auto — fit content, generous --space-8 (32px) side padding (no
+  // min-width). The align-* classes (below) set align-self, which overrides the
+  // parent wrapper's `align-items: stretch` (page sections / header action slots
+  // are flex-columns that otherwise stretch the button to full width — the reason
   // Auto looked like it did nothing without an explicit align-self).
   // =========================================
   &--width-auto {
     min-width: 0;
-    padding-left: 56px;
-    padding-right: 56px;
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
   }
 
   // Horizontal position inside the full-width slot (only paired with width-auto).

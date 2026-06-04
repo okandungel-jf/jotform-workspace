@@ -432,13 +432,26 @@ interface AppDesignerProps {
   doneButton?: React.ReactNode;
   /** Optional storage namespace for persisting theme state across sessions. */
   namespace?: string;
+  /** Fired when the brand color changes by user action (main picker or a preset),
+   *  so the host can re-sync per-element custom colors to the new global theme. */
+  onThemeColorChange?: (color: string) => void;
 }
 
-export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, renderIcon, doneButton, visible = true, namespace }: AppDesignerProps) {
+export function AppDesigner({ onClose, targetSelector = '.app-scope', isMobile, renderIcon, doneButton, visible = true, namespace, onThemeColorChange }: AppDesignerProps) {
   const storedSnapshot = namespace ? loadAppDesignerSnapshot(namespace) : null;
 
   // Theme state
   const [color, setColor] = useState(storedSnapshot?.color ?? DEFAULT_COLOR);
+
+  // Notify the host whenever the brand color changes by user action (main picker
+  // or a preset) so per-element custom colors — e.g. the app header background —
+  // can re-sync to the new global theme. Skip the initial mount value.
+  const skipFirstColorNotify = useRef(true);
+  useEffect(() => {
+    if (skipFirstColorNotify.current) { skipFirstColorNotify.current = false; return; }
+    onThemeColorChange?.(color);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [color]);
   const [tint, setTint] = useState(storedSnapshot?.tint ?? DEFAULT_TINT);
   const [font, setFont] = useState(storedSnapshot?.font ?? DEFAULT_FONT);
   const [headingFont, setHeadingFont] = useState(storedSnapshot?.headingFont ?? DEFAULT_HEADING_FONT);

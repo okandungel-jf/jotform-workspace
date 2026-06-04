@@ -26,6 +26,9 @@ export interface AppHeaderProps {
   subtitle?: string;
   textColor?: string;
   backgroundImageUrl?: string | null;
+  /** Custom background fill — a solid color or a CSS gradient string. Ignored
+   *  when a background image is set; falls back to the brand token when unset. */
+  backgroundColor?: string;
   skeleton?: boolean;
   skeletonAnimation?: 'pulse' | 'shimmer';
   actions?: React.ReactNode;
@@ -50,6 +53,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   subtitle = "Istanbul's Rare Plant Haven",
   textColor,
   backgroundImageUrl,
+  backgroundColor,
   skeleton = false,
   skeletonAnimation = 'pulse',
   actions,
@@ -77,7 +81,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   const headerStyle = {
     ...(backgroundImageUrl
       ? { background: `${bgScrim}, url(${backgroundImageUrl}) center/cover no-repeat` }
-      : {}),
+      : backgroundColor
+        ? { background: backgroundColor }
+        : {}),
     ...(minHeight != null
       ? { '--app-header-min-height': minHeight === 'auto' ? 'auto' : `${minHeight}px` }
       : {}),

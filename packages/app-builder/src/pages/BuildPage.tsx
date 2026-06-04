@@ -67,7 +67,6 @@ import { pointerOutsideOfPreview } from '@atlaskit/pragmatic-drag-and-drop/eleme
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element'
 import type { AppPreset, PresetElement } from '../presets/appPresets'
 import { IconPropertyField } from '../components/IconPropertyField'
-import { ColorInputWithPicker } from '../components/ColorInputWithPicker'
 import { ProductFilterPopover } from '../components/ProductFilterPopover'
 import { ProductOptionModal } from '../components/ProductOptionModal'
 import { ProductModifierModal } from '../components/ProductModifierModal'
@@ -217,7 +216,8 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
         layout: storedHeader.layout ?? APP_HEADER_DEFAULTS.layout,
         contentAlign: storedHeader.contentAlign ?? APP_HEADER_DEFAULTS.contentAlign,
         size: storedHeader.size ?? APP_HEADER_DEFAULTS.size,
-        minHeight: storedHeader.minHeight ?? APP_HEADER_DEFAULTS.minHeight,
+        // Normalise any legacy 'auto' (the removed Auto-height toggle) to the default.
+        minHeight: typeof storedHeader.minHeight === 'number' ? storedHeader.minHeight : APP_HEADER_DEFAULTS.minHeight,
         icon: storedHeader.icon ?? APP_HEADER_DEFAULTS.icon,
         skeleton: storedHeader.skeleton ?? APP_HEADER_DEFAULTS.skeleton,
         show: typeof storedHeader.show === 'boolean' ? storedHeader.show : APP_HEADER_DEFAULTS.show,
@@ -225,8 +225,14 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
         imageUrl: storedHeader.imageUrl ?? APP_HEADER_DEFAULTS.imageUrl,
         imageName: storedHeader.imageName ?? APP_HEADER_DEFAULTS.imageName,
         textColor: storedHeader.textColor ?? APP_HEADER_DEFAULTS.textColor,
+        textColorMode: storedHeader.textColorMode ?? APP_HEADER_DEFAULTS.textColorMode,
         backgroundImageUrl: storedHeader.backgroundImageUrl ?? APP_HEADER_DEFAULTS.backgroundImageUrl,
         backgroundImageName: storedHeader.backgroundImageName ?? APP_HEADER_DEFAULTS.backgroundImageName,
+        bgSource: storedHeader.bgSource ?? (storedHeader.backgroundImageUrl ? 'image' : 'color'),
+        backgroundMode: storedHeader.backgroundMode ?? APP_HEADER_DEFAULTS.backgroundMode,
+        backgroundColor: storedHeader.backgroundColor,
+        gradientStart: storedHeader.gradientStart,
+        gradientEnd: storedHeader.gradientEnd,
         title: storedHeader.title,
         subtitle: storedHeader.subtitle,
       },
@@ -267,11 +273,10 @@ interface AppHeaderState {
   // Title/description size (Large/Medium/Small). Optional so older snapshots
   // (without it) fall back to the component default (Large).
   size?: AppHeaderSize
-  // Banner height: a px number (drives min-height; content never clips — a tall
-  // title/description grows past it) or 'auto' to fit the header to its content.
-  // Optional so older snapshots fall back to the default (272px). Edited via the
-  // Auto-height toggle + slider in the properties panel.
-  minHeight?: number | 'auto'
+  // Banner height in px — drives min-height (content never clips; a tall
+  // title/description grows past it). Optional so older snapshots fall back to
+  // the default (272px). Edited via the Height slider in the properties panel.
+  minHeight?: number
   icon: string
   skeleton: boolean
   show: boolean
@@ -279,8 +284,22 @@ interface AppHeaderState {
   imageUrl: string | null
   imageName: string | null
   textColor: string
+  // Header text color mode. 'auto' contrasts against the (custom) background like
+  // the button auto-contrast; 'light'/'dark' force white / dark navy. Optional so
+  // older snapshots fall back to 'auto'.
+  textColorMode?: 'auto' | 'light' | 'dark'
   backgroundImageUrl: string | null
   backgroundImageName: string | null
+  // Which background fills the header — a color/gradient or an uploaded image
+  // (mutually exclusive). Optional; inferred from a stored image otherwise.
+  bgSource?: 'color' | 'image'
+  // Custom background fill. 'solid' uses backgroundColor; 'gradient' blends
+  // gradientStart → gradientEnd. All optional — unset falls back to the brand token
+  // (--bg-fill-brand). A background image, when set, still wins over both.
+  backgroundMode?: 'solid' | 'gradient'
+  backgroundColor?: string
+  gradientStart?: string
+  gradientEnd?: string
   // Optional overrides — when set (including empty string), they take precedence
   // over appTitle/appSubtitle so users can hide the header text without clearing
   // the chrome-level app name.
@@ -301,6 +320,51 @@ const APP_HEADER_DEFAULTS: AppHeaderState = {
   backgroundImageUrl: null,
   backgroundImageName: null,
   minHeight: 272,
+  backgroundMode: 'solid',
+  textColorMode: 'auto',
+  bgSource: 'color',
+}
+
+// Resolve the app header's custom background fill to a CSS value (solid color or
+// gradient), or undefined when unset so the AppHeader falls back to --bg-fill-brand.
+function resolveHeaderBackground(s: AppHeaderState): string | undefined {
+  if ((s.bgSource ?? 'color') !== 'color') return undefined
+  if (s.backgroundMode === 'gradient' && s.gradientStart && s.gradientEnd) {
+    return `linear-gradient(to bottom, ${s.gradientStart}, ${s.gradientEnd})`
+  }
+  return s.backgroundColor || undefined
+}
+
+// The header background image, but only when the Background source is set to Image
+// (color and image are mutually exclusive).
+function resolveHeaderImage(s: AppHeaderState): string | null {
+  return (s.bgSource ?? 'color') === 'image' ? s.backgroundImageUrl : null
+}
+
+// Relative luminance → readable text color (same 0.4 threshold as the button
+// auto-contrast): dark navy on light backgrounds, white on dark ones.
+function headerTextContrast(hex: string): string {
+  const clean = hex.replace('#', '')
+  if (clean.length < 6) return '#FFFFFF'
+  const r = parseInt(clean.substring(0, 2), 16) / 255
+  const g = parseInt(clean.substring(2, 4), 16) / 255
+  const b = parseInt(clean.substring(4, 6), 16) / 255
+  const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4))
+  const lum = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b)
+  return lum > 0.4 ? '#091141' : '#FFFFFF'
+}
+
+// Resolve the header text color from the chosen mode. 'auto' contrasts against the
+// custom background; with no custom background it returns undefined so the header
+// keeps --fg-inverse (already auto-contrasted to the brand by the theme).
+function resolveHeaderTextColor(s: AppHeaderState): string | undefined {
+  const mode = s.textColorMode ?? 'auto'
+  if (mode === 'light') return '#FFFFFF'
+  if (mode === 'dark') return '#091141'
+  // auto: an image background (shown under a dark scrim) reads best with white text.
+  if ((s.bgSource ?? 'color') === 'image') return s.backgroundImageUrl ? '#FFFFFF' : undefined
+  const bg = s.backgroundMode === 'gradient' ? (s.gradientStart || s.gradientEnd) : s.backgroundColor
+  return bg ? headerTextContrast(bg) : undefined
 }
 
 // Banner-height slider bounds (px). It drives min-height, so content can still
@@ -1092,6 +1156,93 @@ function SocialIconColorField({
   )
 }
 
+// App-header background fill picker: swatch trigger + Solid/Gradient popover
+// (the same HsvColorPicker the Edit Theme main color uses). Falls back to the
+// resolved brand token so the swatch/picker start from the theme color.
+function HeaderBackgroundField({
+  mode,
+  color,
+  gradientStart,
+  gradientEnd,
+  onModeChange,
+  onColorChange,
+  onGradientChange,
+}: {
+  mode: 'solid' | 'gradient'
+  color: string
+  gradientStart: string
+  gradientEnd: string
+  onModeChange: (m: 'solid' | 'gradient') => void
+  onColorChange: (c: string) => void
+  onGradientChange: (start: string, end: string) => void
+}) {
+  const fallback = useResolvedCssVar('--bg-fill-brand', SOCIAL_BG_SELECTORS, '#7D38EF')
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const popupRef = useRef<HTMLDivElement>(null)
+  const [open, setOpen] = useState(false)
+  const [pos, setPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 })
+
+  const openPicker = useCallback(() => {
+    const rect = wrapperRef.current?.getBoundingClientRect()
+    if (rect) setPos({ top: rect.bottom + 8, left: Math.max(8, rect.right - 272) })
+    setOpen(true)
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as Node
+      if (popupRef.current?.contains(t) || wrapperRef.current?.contains(t)) return
+      setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  const solid = color || fallback
+  const gStart = gradientStart || fallback
+  const gEnd = gradientEnd || '#FFFFFF'
+
+  return (
+    <div ref={wrapperRef} style={{ position: 'relative' }}>
+      <DSColorInput
+        size="md"
+        color={mode === 'gradient' ? gStart : solid}
+        onColorChange={(c) => (mode === 'gradient' ? onGradientChange(c, gEnd) : onColorChange(c))}
+        onSwatchClick={openPicker}
+      />
+      {open && createPortal(
+        <div
+          ref={popupRef}
+          className="color-theme-grid__picker-popup"
+          data-theme="dark"
+          style={{ top: pos.top, left: pos.left }}
+        >
+          <HsvColorPicker
+            color={solid}
+            onChange={onColorChange}
+            tint={0}
+            onTintChange={() => {}}
+            hideTint
+            showTabs
+            mode={mode}
+            onModeChange={onModeChange}
+            gradientStart={gStart}
+            gradientEnd={gEnd}
+            onGradientChange={onGradientChange}
+          />
+        </div>,
+        document.body,
+      )}
+    </div>
+  )
+}
+
 function AiCreateWidgetButton({ onClick }: { onClick?: () => void }) {
   return (
     <button type="button" className="ai-create-btn" onClick={onClick}>
@@ -1453,6 +1604,9 @@ export function BuildPage({
   const navPages = pages.filter((p) => {
     if (p.hidden) return false
     if (landingActive && isPreviewLoggedIn && p.id === landingPage!.id) return false
+    // Landing mode + signed out: the public landing nav only lists public pages —
+    // login-required pages stay hidden from the nav until the visitor signs in.
+    if (showLandingNav && p.requireLogin) return false
     return true
   })
   const hasNavOverflow = navPages.length >= 5
@@ -2575,12 +2729,13 @@ export function BuildPage({
                   layout={appHeaderState.layout as 'Center' | 'Left' | 'Right'}
                   contentAlign={appHeaderState.contentAlign}
                   size={appHeaderState.size}
-                  minHeight={appHeaderState.minHeight ?? APP_HEADER_HEIGHT_DEFAULT}
+                  minHeight={typeof appHeaderState.minHeight === 'number' ? appHeaderState.minHeight : APP_HEADER_HEIGHT_DEFAULT}
                   icon={appHeaderState.icon}
                   imageStyle={appHeaderState.imageStyle}
                   imageUrl={appHeaderState.imageUrl}
-                  textColor={appHeaderState.textColor}
-                  backgroundImageUrl={appHeaderState.backgroundImageUrl}
+                  textColor={resolveHeaderTextColor(appHeaderState)}
+                  backgroundImageUrl={resolveHeaderImage(appHeaderState)}
+                  backgroundColor={resolveHeaderBackground(appHeaderState)}
                   skeleton={appHeaderState.skeleton}
                   title={appHeaderState.title ?? appTitle}
                   subtitle={appHeaderState.subtitle ?? appSubtitle}
@@ -2803,12 +2958,13 @@ export function BuildPage({
                   layout={appHeaderState.layout as 'Center' | 'Left' | 'Right'}
                   contentAlign={appHeaderState.contentAlign}
                   size={appHeaderState.size}
-                  minHeight={appHeaderState.minHeight ?? APP_HEADER_HEIGHT_DEFAULT}
+                  minHeight={typeof appHeaderState.minHeight === 'number' ? appHeaderState.minHeight : APP_HEADER_HEIGHT_DEFAULT}
                   icon={appHeaderState.icon}
                   imageStyle={appHeaderState.imageStyle}
                   imageUrl={appHeaderState.imageUrl}
-                  textColor={appHeaderState.textColor}
-                  backgroundImageUrl={appHeaderState.backgroundImageUrl}
+                  textColor={resolveHeaderTextColor(appHeaderState)}
+                  backgroundImageUrl={resolveHeaderImage(appHeaderState)}
+                  backgroundColor={resolveHeaderBackground(appHeaderState)}
                   skeleton={appHeaderState.skeleton}
                   title={appHeaderState.title ?? appTitle}
                   subtitle={appHeaderState.subtitle ?? appSubtitle}
@@ -3105,6 +3261,7 @@ export function BuildPage({
                       selectedComponent.id === 'app-header'
                         ? [
                             { value: 'general', label: 'General' },
+                            { value: 'layout', label: 'Layout' },
                             { value: 'style', label: 'Style' },
                           ]
                         : selectedComponent.id === 'card'
@@ -3198,6 +3355,13 @@ export function BuildPage({
                             />
                           </DSFormField>
                         </div>
+                      </div>
+                    )
+                  }
+
+                  if (isAppHeader && propertyTab === 'layout') {
+                    return (
+                      <div className="property-panel__body">
                         <div className="property-panel__field">
                           <DSFormField title="Size" size="md" showDescription={false} showHelpText={false}>
                             <Segmented
@@ -3213,43 +3377,38 @@ export function BuildPage({
                             />
                           </DSFormField>
                         </div>
-                        <div className="property-panel__field property-panel__field--inline">
-                          <DSFormField
-                            title="Auto Height"
-                            description="Fit the header to its content."
-                            size="md"
-                            showDescription
-                            showHelpText={false}
-                          >
-                            <DSToggle
+                        <div className="property-panel__field">
+                          <DSFormField title="Height" size="md" showDescription={false} showHelpText={false}>
+                            <DSSlider
                               size="md"
-                              checked={appHeaderState.minHeight === 'auto'}
-                              onChange={(e) => setAppHeaderState((s) => ({
-                                ...s,
-                                minHeight: e.target.checked ? 'auto' : APP_HEADER_HEIGHT_DEFAULT,
-                              }))}
+                              min={APP_HEADER_HEIGHT_MIN}
+                              max={APP_HEADER_HEIGHT_MAX}
+                              step={4}
+                              value={typeof appHeaderState.minHeight === 'number' ? appHeaderState.minHeight : APP_HEADER_HEIGHT_DEFAULT}
+                              onChange={(v) => setAppHeaderState((s) => ({ ...s, minHeight: v }))}
+                              showValue
+                              formatValue={(v) => `${v}px`}
+                              aria-label="App header height"
                             />
                           </DSFormField>
                         </div>
-                        {appHeaderState.minHeight !== 'auto' && (
-                          <div className="property-panel__field">
-                            <DSFormField title="Height" size="md" showDescription={false} showHelpText={false}>
-                              <DSSlider
-                                size="md"
-                                min={APP_HEADER_HEIGHT_MIN}
-                                max={APP_HEADER_HEIGHT_MAX}
-                                step={4}
-                                value={typeof appHeaderState.minHeight === 'number' ? appHeaderState.minHeight : APP_HEADER_HEIGHT_DEFAULT}
-                                onChange={(v) => setAppHeaderState((s) => ({ ...s, minHeight: v }))}
-                                showValue
-                                formatValue={(v) => `${v}px`}
-                                aria-label="App header height"
-                              />
-                            </DSFormField>
-                          </div>
-                        )}
                         <div className="property-panel__field">
-                          <DSFormField title="Content Alignment" size="md" showDescription={false} showHelpText={false}>
+                          <DSFormField title="Horizontal Alignment" size="md" showDescription={false} showHelpText={false}>
+                            <Segmented
+                              accent="apps"
+                              variant="text"
+                              value={appHeaderState.layout ?? 'Center'}
+                              onChange={(value) => setAppHeaderState((s) => ({ ...s, layout: value }))}
+                              items={[
+                                { value: 'Left', label: 'Left' },
+                                { value: 'Center', label: 'Center' },
+                                { value: 'Right', label: 'Right' },
+                              ]}
+                            />
+                          </DSFormField>
+                        </div>
+                        <div className="property-panel__field">
+                          <DSFormField title="Vertical Alignment" size="md" showDescription={false} showHelpText={false}>
                             <Segmented
                               accent="apps"
                               variant="text"
@@ -4648,7 +4807,7 @@ export function BuildPage({
 
                   const showVariants =
                     isAppHeader
-                      ? propertyTab === 'style'
+                      ? false // Layout (the only variant) is a custom control in the Layout tab now
                       : isCard
                         ? (propertyTab === 'layout' || propertyTab === 'action')
                         : isList
@@ -4739,7 +4898,10 @@ export function BuildPage({
                       )
                     })
 
-                  if (visibleVariants.length === 0 && visibleProps.length === 0) {
+                  // App header keeps a bespoke Style body (Show Background / Background
+                  // Image / Text Color) even with no generic variants/props, so don't
+                  // fall through to the empty state for it.
+                  if (visibleVariants.length === 0 && visibleProps.length === 0 && !isAppHeader) {
                     return (
                       <div className="property-panel__empty">
                         <Icon name="info-circle" category="general" size={20} />
@@ -4769,17 +4931,36 @@ export function BuildPage({
                       )}
                       {isAppHeader && propertyTab === 'style' && (
                         <>
-                          <div className="property-panel__field property-panel__field--inline">
-                            <DSFormField
-                              title="Show Background"
-                              description="Show a colored background behind the header."
-                              size="md"
-                              showDescription
-                              showHelpText={false}
-                            >
-                              <DSToggle size="md" defaultChecked />
+                          <div className="property-panel__field">
+                            <DSFormField title="Background" size="md" showDescription={false} showHelpText={false}>
+                              <Segmented
+                                accent="apps"
+                                variant="text"
+                                value={appHeaderState.bgSource ?? 'color'}
+                                onChange={(val) => setAppHeaderState((s) => ({ ...s, bgSource: val as 'color' | 'image' }))}
+                                items={[
+                                  { value: 'color', label: 'Color' },
+                                  { value: 'image', label: 'Image' },
+                                ]}
+                              />
                             </DSFormField>
                           </div>
+                          {(appHeaderState.bgSource ?? 'color') === 'color' && (
+                          <div className="property-panel__field">
+                            <DSFormField title="Background Color" size="md" showDescription={false} showHelpText={false}>
+                              <HeaderBackgroundField
+                                mode={appHeaderState.backgroundMode ?? 'solid'}
+                                color={appHeaderState.backgroundColor ?? ''}
+                                gradientStart={appHeaderState.gradientStart ?? ''}
+                                gradientEnd={appHeaderState.gradientEnd ?? ''}
+                                onModeChange={(m) => setAppHeaderState((s) => ({ ...s, backgroundMode: m }))}
+                                onColorChange={(c) => setAppHeaderState((s) => ({ ...s, backgroundColor: c }))}
+                                onGradientChange={(start, end) => setAppHeaderState((s) => ({ ...s, gradientStart: start, gradientEnd: end }))}
+                              />
+                            </DSFormField>
+                          </div>
+                          )}
+                          {(appHeaderState.bgSource ?? 'color') === 'image' && (
                           <div className="property-panel__field">
                             <DSFormField title="Background Image" size="md" showDescription={false} showHelpText={false}>
                               <input
@@ -4835,12 +5016,19 @@ export function BuildPage({
                               )}
                             </DSFormField>
                           </div>
+                          )}
                           <div className="property-panel__field">
                             <DSFormField title="Text Color" size="md" showDescription={false} showHelpText={false}>
-                              <ColorInputWithPicker
-                                size="md"
-                                color={appHeaderState.textColor}
-                                onColorChange={(val) => setAppHeaderState((s) => ({ ...s, textColor: val }))}
+                              <Segmented
+                                accent="apps"
+                                variant="text"
+                                value={appHeaderState.textColorMode ?? 'auto'}
+                                onChange={(val) => setAppHeaderState((s) => ({ ...s, textColorMode: val as 'auto' | 'light' | 'dark' }))}
+                                items={[
+                                  { value: 'auto', label: 'Auto' },
+                                  { value: 'light', label: 'Light' },
+                                  { value: 'dark', label: 'Dark' },
+                                ]}
                               />
                             </DSFormField>
                           </div>
@@ -5203,12 +5391,13 @@ export function BuildPage({
                                   layout={appHeaderState.layout as 'Center' | 'Left' | 'Right'}
                                   contentAlign={appHeaderState.contentAlign}
                                   size={appHeaderState.size}
-                                  minHeight={appHeaderState.minHeight ?? APP_HEADER_HEIGHT_DEFAULT}
+                                  minHeight={typeof appHeaderState.minHeight === 'number' ? appHeaderState.minHeight : APP_HEADER_HEIGHT_DEFAULT}
                                   icon={appHeaderState.icon}
                                   imageStyle={appHeaderState.imageStyle}
                                   imageUrl={appHeaderState.imageUrl}
-                                  textColor={appHeaderState.textColor}
-                                  backgroundImageUrl={appHeaderState.backgroundImageUrl}
+                                  textColor={resolveHeaderTextColor(appHeaderState)}
+                                  backgroundImageUrl={resolveHeaderImage(appHeaderState)}
+                                  backgroundColor={resolveHeaderBackground(appHeaderState)}
                                   skeleton={appHeaderState.skeleton}
                                   title={appHeaderState.title ?? appTitle}
                                   subtitle={appHeaderState.subtitle ?? appSubtitle}
@@ -5318,6 +5507,14 @@ export function BuildPage({
               isMobile={isMobileView}
               visible={rightPanel === 'designer'}
               namespace={preset?.id === 'empty' ? undefined : preset?.id}
+              onThemeColorChange={() =>
+                setAppHeaderState((s) => {
+                  // Theme color is global; drop the header's custom (fixed-hex) fill so
+                  // it re-syncs to the new brand. No-op when nothing custom is set.
+                  if (!s.backgroundColor && !s.gradientStart && !s.gradientEnd) return s
+                  return { ...s, backgroundMode: 'solid', backgroundColor: undefined, gradientStart: undefined, gradientEnd: undefined }
+                })
+              }
               renderIcon={(name, size) => <Icon name={name} category="editor" size={size} />}
               doneButton={<DSButton variant="filled" colorScheme="primary" shape="rectangle" size="md" onClick={handleCloseDesigner}>Done</DSButton>}
             />

@@ -2985,6 +2985,14 @@ body {
     flex: 1 1 var(--card-min);
     max-width: 100%;
   }
+
+  // When two buttons are paired side-by-side (shrinked, two-up), a Width:Auto
+  // button fills its half-column instead of hugging its content — so the pair
+  // reads as two equal full-width buttons. Stacked (single column, < 560px) it
+  // keeps the normal content-width Auto behaviour.
+  .themes-view__section--shrinked .jf-btn--width-auto {
+    align-self: stretch;
+  }
 }
 
 // --flow: AUTO vertical-card grid (no flag). Gated higher — only above 720px

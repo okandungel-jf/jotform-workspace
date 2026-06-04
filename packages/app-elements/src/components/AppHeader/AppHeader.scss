@@ -54,24 +54,16 @@
 
 // Vertical content alignment. The default centers the content (justify-content on
 // the root). Bottom pins it to the bottom edge — e.g. so a background image shows
-// above it — and the bottom gap then matches the horizontal content inset
-// (--app-header-inset, the left/right padding) instead of the larger centered
-// --space-12.
+// above it.
 .jf-app-header--valign-bottom {
   justify-content: flex-end;
-  padding-bottom: var(--app-header-inset, var(--space-8));
-
-  // The bottom gap is normally carried by the actions slot's populated
-  // min-height + margin-top (see .jf-app-header__actions :not(:empty) below) —
-  // ~72px sitting under the text that holds it up. When the actions slot is
-  // EMPTY (e.g. the only button was deleted) that reserve vanishes and the
-  // title/description drop flush against the inset, reading as "stuck to the
-  // bottom". When there is nothing in the actions slot, restore a comfortable
-  // bottom gap so the layout stays stable with or without a button. (A button —
-  // or social/image/spacer — keeps the snug inset gap it had before.)
-  &:has(.jf-app-header__actions:empty) {
-    padding-bottom: var(--space-12);
-  }
+  // A comfortable bottom gap — the SAME --space-12 the centered layout uses, NOT
+  // the tight left/right inset. The bottom-most element (text or a button) sits
+  // right above the first page, which tucks up -16px under the header (live
+  // preview AND builder canvas). The inset alone (~16px) gets fully swallowed by
+  // that tuck and the content reads as glued to the page; --space-12 leaves a
+  // ~32px gap after the tuck, consistently with or without a button.
+  padding-bottom: var(--space-12);
 }
 
 .jf-app-header__inner {
@@ -286,10 +278,12 @@
 
 // ============================================
 // Actions slot (children below description)
-// Swaps --bg-fill-brand ↔ --fg-inverse so Button / SocialFollow
-// stay visible against the header's brand background.
+// Brand → inverse swap so Button / SocialFollow stay visible against a brand-COLOR
+// header background. Scoped to :not(--has-bg): when a background IMAGE is set, the
+// dark scrim already separates the button, so it keeps its DEFAULT brand colors
+// (a brand-filled button reads better on a photo than the inverse white one).
 // ============================================
-.jf-app-header__actions {
+.jf-app-header:not(.jf-app-header--has-bg) .jf-app-header__actions {
   // Swap: brand ↔ inverse (captures are defined on the parent .jf-app-header)
   --bg-fill-brand: var(--_jf-ahdr-inverse);
   --fg-inverse: var(--_jf-ahdr-brand);
@@ -316,7 +310,9 @@
   --border: color-mix(in srgb, var(--_jf-ahdr-inverse) 30%, transparent);
   --border-hover: color-mix(in srgb, var(--_jf-ahdr-inverse) 55%, transparent);
   --fg-disabled: color-mix(in srgb, var(--_jf-ahdr-inverse) 45%, transparent);
+}
 
+.jf-app-header__actions {
   // Mirror the page card's content box exactly — same --app-header-max and
   // --app-header-inset as __inner — so the buttons line up with the title /
   // description and the page elements below, in every shell. (Published per
