@@ -6,8 +6,11 @@ export type AppHeaderLayout = 'Left' | 'Center' | 'Right';
 
 export type AppHeaderImageStyle = 'Image' | 'Icon' | 'None';
 
+export type AppHeaderSize = 'Large' | 'Medium' | 'Small';
+
 export interface AppHeaderProps {
   layout?: AppHeaderLayout;
+  size?: AppHeaderSize;
   icon?: string;
   imageStyle?: AppHeaderImageStyle;
   imageUrl?: string | null;
@@ -21,10 +24,15 @@ export interface AppHeaderProps {
   actionsSlotRef?: React.RefObject<HTMLDivElement | null>;
   onIconClick?: (e: React.MouseEvent) => void;
   iconSelected?: boolean;
+  /** Whole-header click (builder): selects the app header from anywhere on it. */
+  onClick?: (e: React.MouseEvent) => void;
+  /** Whole-header selected state (builder). */
+  selected?: boolean;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
   layout = 'Center',
+  size = 'Large',
   icon = 'Leaf',
   imageStyle = 'Icon',
   imageUrl,
@@ -38,6 +46,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   actionsSlotRef,
   onIconClick,
   iconSelected,
+  onClick,
+  selected,
 }) => {
   const animClass = skeletonAnimation === 'shimmer' ? 'animate-shimmer' : 'animate-pulse';
 
@@ -66,8 +76,23 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
     ? { background: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${backgroundImageUrl}) center/cover no-repeat` }
     : undefined;
 
+  const rootClass = [
+    'jf-app-header',
+    `jf-app-header--${layout.toLowerCase()}`,
+    `jf-app-header--size-${size.toLowerCase()}`,
+    onClick && 'jf-app-header--interactive',
+    selected && 'jf-app-header--selected',
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={`jf-app-header jf-app-header--${layout.toLowerCase()}`} style={rootStyle}>
+    <div
+      className={rootClass}
+      style={rootStyle}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(e as unknown as React.MouseEvent); } } : undefined}
+    >
       <div className="jf-app-header__inner">
         {imageStyle !== 'None' && (
           <div

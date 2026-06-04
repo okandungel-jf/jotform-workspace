@@ -12,11 +12,27 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  // Title/subtitle use responsive clamp(...cqi) tokens; establish the query
+  // container here so they scale with the header's OWN width (like the Heading
+  // element / page card) rather than the browser viewport.
+  container-type: inline-size;
   // icon(80) + gap(16) + title(~36) + gap(4) + subtitle(~24) + padding(48+64)
   min-height: 272px;
   padding: var(--space-12) var(--space-4);
   background: var(--bg-fill-brand);
   font-family: var(--font-family);
+
+  // Whole-header interaction (builder): the entire header is clickable to select
+  // it, so properties open from anywhere on it — not just the icon.
+  &--interactive {
+    cursor: pointer;
+  }
+
+  &--selected {
+    // Inset so the selection ring sits inside the full-bleed header bounds.
+    outline: 2px solid var(--fg-inverse);
+    outline-offset: -2px;
+  }
 
   @media (max-width: 768px) {
     &:has(.jf-app-header__actions .jf-btn) {
@@ -30,8 +46,11 @@
   flex-direction: column;
   gap: var(--space-4);
   width: 100%;
-  max-width: 680px;
-  padding: 0 var(--space-8);
+  // Match the page content area: same max-width as the page card (760px) and the
+  // same horizontal inset as .themes-view__app (--space-6), so the title/desc
+  // wrap at the same measure as the page elements below — never the full bleed.
+  max-width: 760px;
+  padding: 0 var(--space-6);
 
   .jf-app-header--center & {
     align-items: center;
@@ -122,7 +141,10 @@
   flex-direction: column;
   gap: var(--space-1);
   color: var(--fg-inverse);
-  white-space: nowrap;
+  // Wrap within the inner's max-width (page content measure) instead of running
+  // off the edges on a long title/description.
+  overflow-wrap: break-word;
+  min-width: 0;
 
   .jf-app-header--center & {
     align-items: center;
@@ -152,9 +174,11 @@
 
 .jf-app-header__subtitle {
   font-family: var(--font-family);
-  font-size: var(--font-size-label-lg);
+  // Default = Large. Responsive paragraph token (was the fixed label-lg) so the
+  // description scales with the header width like the title.
+  font-size: var(--font-size-paragraph-lg);
   font-weight: var(--font-weight-regular);
-  line-height: var(--line-height-label-lg);
+  line-height: var(--line-height-paragraph-lg);
   color: inherit;
   opacity: 0.5;
   margin: 0;
@@ -164,6 +188,36 @@
     overflow: hidden;
     margin: 0;
     opacity: 0;
+  }
+}
+
+// ============================================
+// Size — title scales the heading token, description the paragraph token. All
+// tokens are responsive (clamp + cqi) and measured against the header's own
+// width (container-type on .jf-app-header), so the text is responsive like the
+// Heading element. Default (Large) is the base title/subtitle above.
+// ============================================
+.jf-app-header--size-medium {
+  .jf-app-header__title {
+    font-size: var(--font-size-heading-sm);
+    line-height: var(--line-height-heading-sm);
+  }
+
+  .jf-app-header__subtitle {
+    font-size: var(--font-size-paragraph-md);
+    line-height: var(--line-height-paragraph-md);
+  }
+}
+
+.jf-app-header--size-small {
+  .jf-app-header__title {
+    font-size: var(--font-size-heading-xs);
+    line-height: var(--line-height-heading-xs);
+  }
+
+  .jf-app-header__subtitle {
+    font-size: var(--font-size-paragraph-sm-fluid);
+    line-height: var(--line-height-paragraph-sm);
   }
 }
 
@@ -229,29 +283,19 @@
   }
 }
 
-// Children (Button / SocialFollow) align their inner content to match header layout
+// Layout alignment positions the action ELEMENTS (button / social) as blocks in
+// the row — it must NOT change their internal content. The button keeps its own
+// centered label; only the block's position within the header follows the layout.
 .jf-app-header--center .jf-app-header__actions {
-  .jf-btn,
-  .jf-social--horizontal,
-  .jf-social--wrap {
-    justify-content: center;
-  }
+  justify-content: center;
 }
 
 .jf-app-header--left .jf-app-header__actions {
-  .jf-btn,
-  .jf-social--horizontal,
-  .jf-social--wrap {
-    justify-content: flex-start;
-  }
+  justify-content: flex-start;
 }
 
 .jf-app-header--right .jf-app-header__actions {
-  .jf-btn,
-  .jf-social--horizontal,
-  .jf-social--wrap {
-    justify-content: flex-end;
-  }
+  justify-content: flex-end;
 }
 
 .jf-app-header__actions-row {
