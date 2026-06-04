@@ -1145,11 +1145,13 @@ export function BuildPage({
   const [bottomNavDisplayStyle, setBottomNavDisplayStyle] = useState<'iconText' | 'icon'>('iconText')
   const [topNavEnabled, setTopNavEnabled] = useState(false)
   // Desktop navigation — independent from the mobile settings above.
-  const [desktopNavVariant, setDesktopNavVariant] = useState<'top' | 'compact' | 'left'>('top')
+  const [desktopNavVariant, setDesktopNavVariant] = useState<'top' | 'contained' | 'compact' | 'left'>('top')
   const [desktopNavEnabled, setDesktopNavEnabled] = useState(true)
   const [desktopNavDisplayStyle, setDesktopNavDisplayStyle] = useState<'iconText' | 'text'>('text')
   const [desktopNavAlignment, setDesktopNavAlignment] = useState<'left' | 'center' | 'right'>('right')
-  const [desktopNavSticky, setDesktopNavSticky] = useState(true)
+  // Sticky defaults OFF for every desktop nav variant that exposes the toggle
+  // (top / contained / compact); users opt in.
+  const [desktopNavSticky, setDesktopNavSticky] = useState(false)
   const [propertyTab, setPropertyTab] = useState<string>('general')
   const appHeaderImageInputRef = useRef<HTMLInputElement>(null)
   const appHeaderBgImageInputRef = useRef<HTMLInputElement>(null)
@@ -1351,7 +1353,7 @@ export function BuildPage({
     }
     const autoHide =
       previewDevice === 'desktop' &&
-      (desktopNavVariant === 'top' || desktopNavVariant === 'compact') &&
+      desktopNavVariant !== 'left' &&
       !desktopNavSticky
     // Clear any leftover transform when auto-hide isn't active (e.g. sticky on).
     const resetHeader = previewTopHeaderRef.current
@@ -1359,7 +1361,10 @@ export function BuildPage({
       resetHeader.style.transition = ''
       resetHeader.style.transform = ''
     }
-    const HEADER_H = 64
+    // Distance to fully scroll the bar off the top. The compact bar floats 16px
+    // (--space-4) below the top, so it needs that extra travel (16 + 64) to clear
+    // — otherwise its bottom edge stays pinned at the float offset.
+    const HEADER_H = desktopNavVariant === 'compact' ? 80 : 64
     let lastScrollTop = previewContentScalerEl.scrollTop
     let offset = 0
     const onScroll = () => {
@@ -2295,7 +2300,7 @@ export function BuildPage({
           }}
         />
       )}
-      <div ref={previewTopHeaderRef} className={`live-preview__top-header app-scope${isPreviewContentScrolled ? ' live-preview__top-header--scrolled' : ''}${desktopNavVariant === 'compact' ? ' live-preview__top-header--compact' : ''}`} data-nav-align={desktopNavVariant === 'compact' ? 'center' : desktopNavAlignment}>
+      <div ref={previewTopHeaderRef} className={`live-preview__top-header app-scope${isPreviewContentScrolled ? ' live-preview__top-header--scrolled' : ''}${desktopNavVariant === 'compact' ? ' live-preview__top-header--compact' : ''}${desktopNavVariant === 'contained' ? ' live-preview__top-header--contained' : ''}`} data-nav-align={desktopNavAlignment}>
         {(() => {
           const isFirstPage = activePageId === pages[0]?.id
           // Always brand the top header on the landing, and on the first page when
@@ -2342,7 +2347,7 @@ export function BuildPage({
             <span className="live-preview__top-header-btn" aria-hidden="true" />
           )
         })()}
-        {desktopNavEnabled && (desktopNavVariant === 'top' || desktopNavVariant === 'compact') && (
+        {desktopNavEnabled && desktopNavVariant !== 'left' && (
           <nav className="live-preview__top-header-nav">
             {navPages.map((p) => (
               <button

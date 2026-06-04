@@ -31,7 +31,10 @@ export type DesktopDisplayStyle = 'iconText' | 'text'
 export type NavAlignment = 'left' | 'center' | 'right'
 // 'top' = full-browser-width bar; 'compact' = app-page-width (760px) floating
 // bar with centre-aligned menu; 'left' = sidebar.
-export type DesktopNavVariant = 'top' | 'compact' | 'left'
+// 'top' = full-bleed bar, full-width content; 'contained' = full-bleed bar but
+// content capped to the page width (760px); 'compact' = app-page-width floating
+// bar with a centred menu; 'left' = sidebar.
+export type DesktopNavVariant = 'top' | 'contained' | 'compact' | 'left'
 
 // A slice of the live-preview phone mockup, reused inside the (dark) panel. The
 // panel's `data-theme="dark"` would bleed chrome tokens into the app-scope, so we
@@ -140,7 +143,7 @@ function DesktopPreview({
       <div className="nav-menu-desktop__screen app-scope">
         {variant !== 'left' ? (
           <>
-            <div className={`nav-menu-desktop__nav nav-menu-desktop__nav--${variant === 'compact' ? 'center' : alignment}`}>{navItems}</div>
+            <div className={`nav-menu-desktop__nav nav-menu-desktop__nav--${alignment}`}>{navItems}</div>
             <div className="nav-menu-desktop__divider" />
             <div className="nav-menu-desktop__content">
               <span className="nav-menu-desktop__placeholder" />
@@ -557,6 +560,7 @@ export function NavigationMenuPanel({
                     onChange={(value) => onChangeDesktopVariant(value as DesktopNavVariant)}
                     items={[
                       { value: 'top', label: 'Fullwidth' },
+                      { value: 'contained', label: 'Contained' },
                       { value: 'compact', label: 'Compact' },
                       { value: 'left', label: 'Left' },
                     ]}
@@ -579,7 +583,7 @@ export function NavigationMenuPanel({
                 </DSFormField>
               </div>
 
-              {desktopVariant === 'top' && (
+              {desktopVariant !== 'left' && (
                 <div className="property-panel__field">
                   <DSFormField title="Alignment" size="md" showDescription={false} showHelpText={false}>
                     <DSSegmented

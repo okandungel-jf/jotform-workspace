@@ -5390,6 +5390,13 @@ body {
   display: none;
 }
 
+// Contained variant preview: the bar (and its divider) stay full-bleed, but the
+// content is inset to hint at the page-width cap.
+.nav-menu-desktop--contained .nav-menu-desktop__nav {
+  padding-left: var(--spacing-xl);
+  padding-right: var(--spacing-xl);
+}
+
 .nav-menu-desktop__nav-item {
   display: inline-flex;
   align-items: center;
@@ -7727,6 +7734,15 @@ body.builder--phone-only {
     // Reveal-on-scroll-up animates; scroll-down hiding is driven imperatively
     // (transform tied to scroll, inline transition cleared) so it tracks content.
     transition: transform 0.25s ease, border-bottom-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  // Contained variant: full-bleed bar (bg + bottom border span the page) but the
+  // content (logo · links · actions) is capped to the page width (760px) and
+  // centred, so it lines up with the page card below. Built on the full-bleed top
+  // bar — only the horizontal padding changes (min --space-4 on narrow widths).
+  .live-preview__top-header--contained {
+    padding-left: max(var(--space-4), calc((100% - 760px) / 2));
+    padding-right: max(var(--space-4), calc((100% - 760px) / 2));
   }
 
   // Compact variant: a floating, app-page-width (760px) bar that lines up with
