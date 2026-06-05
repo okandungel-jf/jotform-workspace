@@ -1,0 +1,225 @@
+// ============================================
+// JotForm Apps - FAQ Component
+// ============================================
+
+.jf-faq {
+  width: 100%;
+  max-width: 100%;
+  font-family: var(--font-family);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  border-radius: var(--radius-lg);
+
+  &--selected {
+    outline: 2px solid var(--border-info);
+    outline-offset: 4px;
+  }
+
+  &--shrinked {
+    width: 408px;
+  }
+}
+
+// =========================================
+// Accordion list
+// =========================================
+.jf-faq__list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  .jf-faq--card & {
+    gap: var(--space-3);
+  }
+}
+
+// =========================================
+// Accordion item
+// =========================================
+.jf-faq__item {
+  // Divider treatment — a hairline under every row.
+  .jf-faq--divider & {
+    border-bottom: 1px solid var(--border);
+  }
+
+  // Card treatment — each row is a self-contained surface.
+  .jf-faq--card & {
+    background: var(--bg-fill);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+}
+
+// =========================================
+// Header (clickable toggle row)
+// =========================================
+.jf-faq__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  cursor: pointer;
+  background: none;
+  border: none;
+  text-align: left;
+  -webkit-user-select: none;
+  user-select: none;
+
+  .jf-faq--divider & {
+    padding: var(--space-4) 0;
+  }
+
+  .jf-faq--card & {
+    padding: var(--space-4);
+  }
+}
+
+// Icon position — icon is first in the DOM (left by default); push it to the
+// trailing edge for the right-aligned variant.
+.jf-faq--icon-right .jf-faq__icon {
+  order: 1;
+}
+
+.jf-faq__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-secondary);
+  // Nudge the indicator to optically center on the first line of the question.
+  height: var(--line-height-paragraph-md);
+
+  .jf-faq--pm & {
+    color: var(--fg-brand);
+  }
+}
+
+.jf-faq__icon-glyph {
+  transition: transform 0.3s ease;
+}
+
+// Only the chevron rotates; plus/minus swaps its glyph instead.
+.jf-faq:not(.jf-faq--pm) .jf-faq__item--open .jf-faq__icon-glyph {
+  transform: rotate(180deg);
+}
+
+// =========================================
+// Question
+// =========================================
+.jf-faq__question {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--font-size-paragraph-md);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-paragraph-md);
+  color: var(--fg-primary);
+  outline: none;
+  user-select: text;
+  overflow-wrap: anywhere;
+
+  &[contenteditable='true'] {
+    cursor: text;
+  }
+}
+
+.jf-faq__placeholder::before {
+  content: attr(data-placeholder);
+  color: var(--fg-disabled);
+  pointer-events: none;
+}
+
+// =========================================
+// Answer (grid-rows expand/collapse)
+// =========================================
+.jf-faq__answer-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+
+  .jf-faq__item--open & {
+    grid-template-rows: 1fr;
+  }
+}
+
+.jf-faq__answer {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.jf-faq__answer-text {
+  margin: 0;
+  font-size: var(--font-size-paragraph-md);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-paragraph-md);
+  color: var(--fg-secondary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  outline: none;
+
+  // Inline-editable answer (builder canvas only).
+  &[contenteditable='true'] {
+    cursor: text;
+  }
+
+  &[contenteditable='true']:empty::before {
+    content: attr(data-placeholder);
+    color: var(--fg-disabled);
+    pointer-events: none;
+  }
+
+  .jf-faq--divider & {
+    padding-bottom: var(--space-4);
+  }
+
+  .jf-faq--card & {
+    padding: 0 var(--space-4) var(--space-4);
+  }
+}
+
+// Respect reduced-motion preferences.
+@media (prefers-reduced-motion: reduce) {
+  .jf-faq__answer-wrap,
+  .jf-faq__icon-glyph {
+    transition: none;
+  }
+}
+
+// =========================================
+// Add Question (builder canvas only)
+// =========================================
+.jf-faq__add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-size-paragraph-md);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-paragraph-md);
+  color: var(--fg-brand);
+  background: none;
+  transition: background 200ms ease, border-color 200ms ease;
+
+  .jf-faq--divider & {
+    border: none;
+    padding: var(--space-4) 0;
+  }
+
+  .jf-faq--card & {
+    --_add-fg: color-mix(in oklch, var(--fg-brand), var(--fg-primary) 30%);
+    border: 1.5px dashed var(--_add-fg);
+    border-radius: var(--radius-lg);
+    color: var(--_add-fg);
+    background: var(--bg-surface-brand);
+    padding: var(--space-4);
+
+    &:hover {
+      background: var(--bg-surface-brand-hover);
+    }
+  }
+}

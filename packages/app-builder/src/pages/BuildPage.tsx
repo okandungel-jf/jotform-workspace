@@ -20,9 +20,11 @@ import {
   compressImageFile,
   compressImageFiles,
   ensureProductIds,
+  ensureFaqIds,
   generateVariants,
   makeDimensionId,
   type ProductItem,
+  type FaqItem,
   type ProductModifier,
   type ProductOptionChoice,
   type ProductSubscription,
@@ -119,6 +121,7 @@ const ELEMENT_ICON_MAP: Record<string, { icon: string; iconCategory: string }> =
   'social-follow': { icon: 'share-nodes-filled', iconCategory: 'general' },
   'product-list': { icon: 'cart-shopping-filled', iconCategory: 'finance' },
   'donation-box': { icon: 'heart-filled', iconCategory: 'general' },
+  'faq': { icon: 'question-circle-filled', iconCategory: 'general' },
   'image': { icon: 'image-line-filled', iconCategory: 'general' },
   'image-gallery': { icon: 'images-filled', iconCategory: 'media' },
   'table': { icon: 'table', iconCategory: 'general' },
@@ -138,7 +141,7 @@ interface PanelGroup {
 const BASIC_GROUPS: PanelGroup[] = [
   { elementIds: ['form', 'heading', 'list', 'paragraph', 'card', 'sign-document', 'document', 'image', 'image-gallery', 'button', 'spacer'] },
   { label: 'PAYMENT ELEMENTS', elementIds: ['product-list', 'donation-box'] },
-  { label: 'FEATURED WIDGETS', elementIds: ['social-follow', 'testimonial'] },
+  { label: 'FEATURED WIDGETS', elementIds: ['social-follow', 'testimonial', 'faq'] },
   { label: 'DATA ELEMENTS', elementIds: ['table'] },
 ]
 
@@ -1357,7 +1360,8 @@ export function BuildPage({
   const [inventoryFilter, setInventoryFilter] = useState('all')
   const [visibilityFilter, setVisibilityFilter] = useState('all')
   const productSearchFieldRef = useRef<HTMLDivElement>(null)
-  useEffect(() => { setEditingProductIndex(null); setEditingOptionIndex(null); setProductSettingsTab('basic'); setProductSearch(''); setFilterOpen(false); setOptionModalOpen(false); setEditingModifierIndex(null); setModifierModalOpen(false); setSubscriptionModalOpen(false) }, [selectedElementId, propertyTab])
+  const [editingFaqIndex, setEditingFaqIndex] = useState<number | null>(null)
+  useEffect(() => { setEditingProductIndex(null); setEditingOptionIndex(null); setProductSettingsTab('basic'); setProductSearch(''); setFilterOpen(false); setOptionModalOpen(false); setEditingModifierIndex(null); setModifierModalOpen(false); setSubscriptionModalOpen(false); setEditingFaqIndex(null) }, [selectedElementId, propertyTab])
 
   const migratedSocialFollowIds = useRef<Set<string>>(new Set())
   useEffect(() => {
@@ -3225,11 +3229,22 @@ export function BuildPage({
                         {editingOptionIndex !== null ? 'Product Option' : 'Product Settings'}
                       </span>
                     </div>
+                  ) : selectedComponent.id === 'faq' && propertyTab === 'general' && editingFaqIndex !== null ? (
+                    <div className="property-panel__header-nav">
+                      <button
+                        className="property-panel__back"
+                        onClick={() => setEditingFaqIndex(null)}
+                        aria-label="Back"
+                      >
+                        <AppIcon name="ArrowLeft" size={18} />
+                      </button>
+                      <span className="property-panel__title">FAQ Item</span>
+                    </div>
                   ) : (
                     <span className="property-panel__title">{selectedComponent.name}</span>
                   )}
                   <div className="property-panel__header-actions">
-                    {!(selectedComponent.id === 'product-list' && propertyTab === 'products' && editingProductIndex !== null) && selectedElement.id !== APP_HEADER_ID && (
+                    {!(selectedComponent.id === 'product-list' && propertyTab === 'products' && editingProductIndex !== null) && !(selectedComponent.id === 'faq' && propertyTab === 'general' && editingFaqIndex !== null) && selectedElement.id !== APP_HEADER_ID && (
                       <button
                         className="property-panel__close"
                         onClick={() => handleRemoveElement(selectedElement.id)}
@@ -3252,7 +3267,7 @@ export function BuildPage({
                   </div>
                 </div>
 
-                {!(selectedComponent.id === 'product-list' && propertyTab === 'products' && editingProductIndex !== null) && (
+                {!(selectedComponent.id === 'product-list' && propertyTab === 'products' && editingProductIndex !== null) && !(selectedComponent.id === 'faq' && propertyTab === 'general' && editingFaqIndex !== null) && (
                 <div className="property-panel__tabs">
                   <DSTabs
                     accent="apps"
@@ -3296,6 +3311,12 @@ export function BuildPage({
                                 ? [
                                     { value: 'general', label: 'Appearance' },
                                     { value: 'products', label: 'Products' },
+                                    { value: 'condition', label: 'Condition' },
+                                  ]
+                                : selectedComponent.id === 'faq'
+                                ? [
+                                    { value: 'general', label: 'General' },
+                                    { value: 'style', label: 'Style' },
                                     { value: 'condition', label: 'Condition' },
                                   ]
                                 : selectedComponent.id === 'social-follow'
@@ -3436,6 +3457,7 @@ export function BuildPage({
                   const isList = selectedComponent.id === 'list'
                   const isImageGallery = selectedComponent.id === 'image-gallery'
                   const isProductList = selectedComponent.id === 'product-list'
+                  const isFaq = selectedComponent.id === 'faq'
                   const isSocialFollow = selectedComponent.id === 'social-follow'
                   const socialPlatforms = [
                     { key: 'Facebook', icon: <Icon name="facebook-square-filled" category="brands" size={20} />, placeholder: 'Enter your Facebook username' },
@@ -3591,6 +3613,149 @@ export function BuildPage({
                             </div>
                           )
                         })()}
+                      </div>
+                    )
+                  }
+
+                  // FAQ items tab — list view + drill-down edit form (Q & A).
+                  if (isFaq && propertyTab === 'general') {
+                    const readFaqs = (): FaqItem[] => {
+                      try {
+                        const parsed = JSON.parse(String(selectedElement.properties['Items'] ?? '[]'))
+                        return Array.isArray(parsed) ? parsed : []
+                      } catch {
+                        return []
+                      }
+                    }
+                    const writeFaqs = (next: FaqItem[]) => handlePropertyChange(selectedElement.id, 'Items', JSON.stringify(ensureFaqIds(next)))
+                    const faqs = readFaqs()
+
+                    const idx = editingFaqIndex
+                    const editing = idx !== null
+                    const isNew = idx !== null && idx === faqs.length
+                    const current: FaqItem =
+                      idx !== null && idx < faqs.length
+                        ? (faqs[idx] ?? { question: '', answer: '' })
+                        : { question: '', answer: '' }
+                    const updateFaq = (updates: Partial<FaqItem>) => {
+                      if (idx === null) return
+                      const next = [...faqs]
+                      if (isNew) next.push({ ...current, ...updates })
+                      else next[idx] = { ...current, ...updates }
+                      writeFaqs(next)
+                    }
+                    const updateField = <K extends keyof FaqItem>(field: K, value: FaqItem[K]) =>
+                      updateFaq({ [field]: value } as Partial<FaqItem>)
+                    const slidePos = editing ? 1 : 0
+
+                    return (
+                      <div className="property-panel__body product-panel-host">
+                        <div className="product-panel-slider" data-slide={slidePos}>
+
+                          {/* Slide 1 — FAQ list */}
+                          <div className="product-panel-slide product-list-panel">
+                            <div className="product-list-rows faq-rows">
+                              {faqs.map((f, i) => (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  className="faq-row"
+                                  onClick={() => setEditingFaqIndex(i)}
+                                >
+                                  <span className="faq-row__handle">
+                                    <Icon name="grid-dots-vertical" category="general" size={16} />
+                                  </span>
+                                  <div className="faq-row__card">
+                                    <div className="faq-row__info">
+                                      <div className="faq-row__name">{f.question || 'Untitled question'}</div>
+                                      <div className="faq-row__subtitle">{f.answer ? f.answer : 'No answer yet'}</div>
+                                    </div>
+                                    <span className="faq-row__actions">
+                                      <button
+                                        type="button"
+                                        className="faq-row__btn"
+                                        aria-label="Delete question"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          writeFaqs(faqs.filter((_, j) => j !== i))
+                                        }}
+                                      >
+                                        <Icon name="trash-filled" category="general" size={16} />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="faq-row__btn"
+                                        aria-label="Edit question"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          setEditingFaqIndex(i)
+                                        }}
+                                      >
+                                        <Icon name="pencil-filled" category="editor" size={16} />
+                                      </button>
+                                    </span>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                            <div className="product-list-panel__footer">
+                              <DSButton
+                                variant="filled"
+                                colorScheme="primary"
+                                leftIcon={<Icon name="plus" category="general" size={20} />}
+                                onClick={() => setEditingFaqIndex(faqs.length)}
+                                className="product-list-panel__add-btn"
+                              >
+                                Add Question
+                              </DSButton>
+                            </div>
+                          </div>
+
+                          {/* Slide 2 — FAQ item settings */}
+                          <div className="product-panel-slide">
+                            {editing && (
+                              <div className="product-settings">
+                                <div className="product-settings__body">
+                                  <div className="property-panel__field">
+                                    <DSFormField title="Question" required size="md" showDescription={false} showHelpText={false}>
+                                      <DSInput
+                                        value={current.question}
+                                        placeholder="Your question goes here?"
+                                        onChange={(e) => updateField('question', e.target.value)}
+                                      />
+                                    </DSFormField>
+                                  </div>
+                                  <div className="property-panel__field">
+                                    <DSFormField title="Answer" size="md" showDescription={false} showHelpText={false}>
+                                      <DSTextArea
+                                        size="md"
+                                        rows={6}
+                                        placeholder="Write the answer to this question"
+                                        value={current.answer ?? ''}
+                                        onChange={(e) => updateField('answer', e.target.value)}
+                                      />
+                                    </DSFormField>
+                                  </div>
+                                  <div className="property-panel__field property-panel__field--inline">
+                                    <DSFormField
+                                      title="Show in list"
+                                      description="Display this question in the FAQ list."
+                                      size="md"
+                                      showDescription
+                                      showHelpText={false}
+                                    >
+                                      <DSToggle
+                                        size="md"
+                                        checked={current.visible !== false}
+                                        onChange={(e) => updateField('visible', e.target.checked)}
+                                      />
+                                    </DSFormField>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     )
                   }
@@ -4817,7 +4982,9 @@ export function BuildPage({
                             ? (propertyTab === 'general' || propertyTab === 'style')
                             : isSocialFollow
                               ? false
-                              : propertyTab === 'general'
+                              : isFaq
+                                ? propertyTab === 'style'
+                                : propertyTab === 'general'
 
                   const cardTabVariants = propertyTab === 'layout' ? CARD_LAYOUT_VARIANTS : []
                   const cardTabProps = propertyTab === 'layout' ? CARD_LAYOUT_PROPS : []
@@ -4880,6 +5047,11 @@ export function BuildPage({
                       if (isProductList) {
                         // Products & Currency live in the Products tab; default render shows the rest on General.
                         if (propertyTab === 'general') return prop.name !== 'Products' && prop.name !== 'Currency'
+                        return false
+                      }
+                      if (isFaq) {
+                        // The General tab is a bespoke list panel (returns early); the Style
+                        // tab shows variants. No generic property fields for FAQ.
                         return false
                       }
                       if (isButton) {
