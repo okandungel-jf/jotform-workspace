@@ -1,4 +1,4 @@
-import type { VariantValues, PropertyValues } from '@jf/app-elements'
+import type { VariantValues, PropertyValues, AppDesignerSnapshot } from '@jf/app-elements'
 
 export interface PresetElement {
   componentId: string
@@ -49,6 +49,8 @@ export interface AppPreset {
   pages: PresetPage[]
   headerActions: PresetElement[]
   appHeader?: AppHeaderPresetConfig
+  /** Default AppDesigner theme applied when no stored (builder-edited) theme exists. */
+  theme?: AppDesignerSnapshot
 }
 
 export const EMPTY_PRESET_ID = 'empty'
@@ -7514,6 +7516,767 @@ export const APP_PRESETS: AppPreset[] = [
       title: 'Stop guessing your pipeline.',
       subtitle: 'Cadence turns your CRM into forecasts you can trust — and shows reps exactly which deals to work today.',
       show: true
+    }
+  },
+  {
+    id: 'landing-club',
+    name: 'Landing — Club',
+    appTitle: 'Rally',
+    appSubtitle: 'Club & studio management, handled',
+    pages: [
+      {
+        id: 'page-1',
+        name: 'Landing — Club',
+        icon: 'Trophy',
+        landing: true,
+        elements: [
+          {
+            componentId: 'button',
+            variants: {
+              Type: 'Standard',
+              Variant: 'Default',
+              Corner: 'Rounded'
+            },
+            properties: {
+              Label: 'Try it free',
+              'Left Icon': 'none',
+              'Right Icon': 'ArrowRight',
+              'Full Width': true
+            }
+          },
+          {
+            componentId: 'spacer',
+            properties: {
+              Height: 32
+            }
+          },
+          {
+            componentId: 'heading',
+            variants: {
+              Size: 'Small',
+              Alignment: 'Center'
+            },
+            properties: {
+              Heading: 'Powering 2,000+ clubs and studios',
+              Subheading: ''
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: '2,000+ clubs',
+              Description: 'and studios run on Rally',
+              Icon: 'Trophy',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: '10 min',
+              Description: 'to set up your first season',
+              Icon: 'Zap',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: '+38% members',
+              Description: 'average growth in year one',
+              Icon: 'TrendingUp',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: '4.9 stars',
+              Description: 'from 1,800+ coaches',
+              Icon: 'Star',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'spacer',
+            properties: {
+              Height: 24
+            }
+          },
+          {
+            componentId: 'image',
+            variants: {
+              'Has Image': 'Yes',
+              Alignment: 'Center',
+              Size: 'Large'
+            },
+            properties: {
+              'Image URL': 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=900&h=500&fit=crop',
+              'Alt Text': 'Coaches and members training together at a Rally club'
+            }
+          },
+          {
+            componentId: 'spacer',
+            properties: {
+              Height: 32
+            }
+          },
+          {
+            componentId: 'heading',
+            variants: {
+              Size: 'Large',
+              Alignment: 'Center'
+            },
+            properties: {
+              Heading: 'Everything you need to run the club',
+              Subheading: 'From the first sign-up to the season finale.',
+              'Add Emphasis': true,
+              'Emphasis Text': 'FEATURES',
+              'Emphasis Style': 'Badge'
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Horizontal',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: 'Online booking',
+              Description: 'Let members register and book online in a few taps.',
+              Icon: 'CalendarCheck'
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Horizontal',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: 'Payments on autopilot',
+              Description: 'Collect payments and chase dues automatically.',
+              Icon: 'CreditCard'
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Horizontal',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: 'Built-in messaging',
+              Description: 'Keep parents and members in the loop with built-in messaging.',
+              Icon: 'MessageCircle'
+            }
+          },
+          {
+            componentId: 'spacer',
+            properties: {
+              Height: 32
+            }
+          },
+          {
+            componentId: 'heading',
+            variants: {
+              Size: 'Large',
+              Alignment: 'Center'
+            },
+            properties: {
+              Heading: 'And a lot less busywork.',
+              Subheading: 'The little things that used to eat your evenings.',
+              'Add Emphasis': true,
+              'Emphasis Text': 'ALSO INCLUDED',
+              'Emphasis Style': 'Badge'
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: 'Smart scheduling',
+              Description: 'Practices, classes, and games in one calendar.',
+              Icon: 'Calendar',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: 'Attendance & check-in',
+              Description: 'Tap to check members in; spot no-shows fast.',
+              Icon: 'QrCode',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: 'Roster & roles',
+              Description: 'Coaches, parents, and admins each see their own view.',
+              Icon: 'Users',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: 'Reports that matter',
+              Description: 'Revenue, attendance, and growth at a glance.',
+              Icon: 'BarChart3',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'spacer',
+            properties: {
+              Height: 32
+            }
+          },
+          {
+            componentId: 'heading',
+            variants: {
+              Size: 'Large',
+              Alignment: 'Center'
+            },
+            properties: {
+              Heading: 'Soccer, studios, dojos, and more.',
+              Subheading: 'If you run a roster, Rally fits.',
+              'Add Emphasis': true,
+              'Emphasis Text': 'EVERY KIND OF CLUB',
+              'Emphasis Style': 'Badge'
+            }
+          },
+          {
+            componentId: 'image-gallery',
+            variants: {
+              Layout: '4'
+            },
+            properties: {
+              Images: JSON.stringify([
+                'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=400&fit=crop',
+                'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=400&fit=crop',
+                'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop',
+                'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=400&fit=crop'
+              ])
+            }
+          },
+          {
+            componentId: 'spacer',
+            properties: {
+              Height: 32
+            }
+          },
+          {
+            componentId: 'heading',
+            variants: {
+              Size: 'Large',
+              Alignment: 'Center'
+            },
+            properties: {
+              Heading: 'Up and running in an afternoon.',
+              Subheading: 'No spreadsheets, no clipboard, no IT.',
+              'Add Emphasis': true,
+              'Emphasis Text': 'HOW IT WORKS',
+              'Emphasis Style': 'Badge'
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: '1 · Import your roster',
+              Description: 'Bring members in from a spreadsheet or an invite link.',
+              Icon: 'Upload',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: '2 · Set your schedule',
+              Description: 'Add classes, practices, and prices in minutes.',
+              Icon: 'Calendar',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: '3 · Open registration',
+              Description: 'Share one link; members sign up and pay.',
+              Icon: 'Link2',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: '4 · Coach, not chase',
+              Description: 'Rally handles dues, reminders, and updates.',
+              Icon: 'Trophy',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'spacer',
+            properties: {
+              Height: 32
+            }
+          },
+          {
+            componentId: 'heading',
+            variants: {
+              Size: 'Large',
+              Alignment: 'Center'
+            },
+            properties: {
+              Heading: 'Loved by coaches and members.',
+              Subheading: 'Clubs that switched to Rally grew faster with less admin.',
+              'Add Emphasis': true,
+              'Emphasis Text': 'MEMBER STORIES',
+              'Emphasis Style': 'Badge'
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Square',
+              Layout: 'Vertical',
+              Action: 'None'
+            },
+            properties: {
+              Title: 'Riverside Athletic · +52% members',
+              Description: 'Riverside ditched three apps and a clipboard. One season on Rally, registrations doubled and dues chased themselves.',
+              'Image URL': 'https://images.unsplash.com/photo-1594381898411-846e7d193883?w=700&h=380&fit=crop'
+            }
+          },
+          {
+            componentId: 'testimonial',
+            properties: {
+              'Show Avatars': true
+            }
+          },
+          {
+            componentId: 'spacer',
+            properties: {
+              Height: 32
+            }
+          },
+          {
+            componentId: 'heading',
+            variants: {
+              Size: 'Large',
+              Alignment: 'Center'
+            },
+            properties: {
+              Heading: 'Get your evenings back.',
+              Subheading: 'Start free today — no card, no setup fees, cancel anytime.'
+            }
+          },
+          {
+            componentId: 'button',
+            variants: {
+              Type: 'Standard',
+              Variant: 'Default',
+              Corner: 'Rounded'
+            },
+            properties: {
+              Label: 'Try it free',
+              'Left Icon': 'none',
+              'Right Icon': 'ArrowRight',
+              'Full Width': true
+            }
+          },
+          {
+            componentId: 'button',
+            variants: {
+              Type: 'Standard',
+              Variant: 'Outlined',
+              Corner: 'Rounded'
+            },
+            properties: {
+              Label: 'See a 2-min tour',
+              'Left Icon': 'none',
+              'Right Icon': 'none',
+              'Full Width': true
+            }
+          },
+          {
+            componentId: 'spacer',
+            properties: {
+              Height: 32
+            }
+          },
+          {
+            componentId: 'heading',
+            variants: {
+              Size: 'Small',
+              Alignment: 'Center'
+            },
+            properties: {
+              Heading: 'Rally',
+              Subheading: ''
+            }
+          },
+          {
+            componentId: 'paragraph',
+            variants: {
+              Size: 'Small',
+              Alignment: 'Center'
+            },
+            properties: {
+              Text: 'Features · Pricing · Security · Help Center · Privacy · Terms'
+            }
+          },
+          {
+            componentId: 'paragraph',
+            variants: {
+              Size: 'Small',
+              Alignment: 'Center'
+            },
+            properties: {
+              Text: '© 2026 Rally, Inc. · Made for coaches.'
+            }
+          },
+          {
+            componentId: 'social-follow',
+            variants: {
+              Layout: 'Wrap',
+              Variant: 'Secondary',
+              Filled: 'No'
+            }
+          }
+        ]
+      },
+      {
+        id: 'page-2',
+        name: 'Dashboard',
+        icon: 'LayoutDashboard',
+        requireLogin: true,
+        elements: [
+          {
+            componentId: 'heading',
+            variants: {
+              Size: 'Medium',
+              Alignment: 'Left'
+            },
+            properties: {
+              Heading: 'This week',
+              Subheading: 'Two practices, one game, and 6 new sign-ups.'
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: '184 members',
+              Description: '+12 this month',
+              Icon: 'Users',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: '$4,260',
+              Description: 'collected this week',
+              Icon: 'CreditCard',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: '92%',
+              Description: 'attendance rate',
+              Icon: 'QrCode',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: '3 dues',
+              Description: 'still outstanding',
+              Icon: 'Bell',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'spacer',
+            properties: {
+              Height: 16
+            }
+          },
+          {
+            componentId: 'heading',
+            variants: {
+              Size: 'Medium',
+              Alignment: 'Left'
+            },
+            properties: {
+              Heading: "Today's schedule",
+              Subheading: ''
+            }
+          },
+          {
+            componentId: 'list',
+            variants: {
+              Layout: 'Basic',
+              'Image Style': 'None',
+              Size: 'Compact',
+              Action: 'None'
+            },
+            properties: {
+              'Show Header': false,
+              Items: JSON.stringify([
+                {
+                  title: 'U12 Practice',
+                  description: '4:00 PM · Field 2 · Coach Mara'
+                },
+                {
+                  title: 'Adult Yoga',
+                  description: '6:00 PM · Studio A · 14 booked'
+                },
+                {
+                  title: 'U16 Game vs. Northside',
+                  description: '7:30 PM · Main Field'
+                }
+              ])
+            }
+          }
+        ]
+      },
+      {
+        id: 'page-3',
+        name: 'Account',
+        icon: 'User',
+        requireLogin: true,
+        elements: [
+          {
+            componentId: 'heading',
+            variants: {
+              Size: 'Medium',
+              Alignment: 'Left'
+            },
+            properties: {
+              Heading: 'Your club',
+              Subheading: 'Riverside Athletic · Pro plan'
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: 'Billing',
+              Description: 'Pro plan, renews May 1',
+              Icon: 'CreditCard',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: 'Team & roles',
+              Description: 'Invite coaches and admins',
+              Icon: 'Users',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: 'Forms & waivers',
+              Description: '3 templates active',
+              Icon: 'ClipboardCheck',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'card',
+            variants: {
+              'Image Style': 'Icon',
+              Layout: 'Vertical',
+              Action: 'None',
+              'Icon Filled': 'No'
+            },
+            properties: {
+              Title: 'Notifications',
+              Description: 'Dues, practices, and forms',
+              Icon: 'Bell',
+              Shrinked: true
+            }
+          },
+          {
+            componentId: 'spacer',
+            properties: {
+              Height: 16
+            }
+          },
+          {
+            componentId: 'button',
+            variants: {
+              Type: 'Standard',
+              Variant: 'Outlined',
+              Corner: 'Rounded'
+            },
+            properties: {
+              Label: 'Sign out',
+              'Left Icon': 'none',
+              'Right Icon': 'none',
+              'Full Width': true
+            }
+          }
+        ]
+      }
+    ],
+    headerActions: [],
+    appHeader: {
+      layout: 'Center',
+      contentAlign: 'Center',
+      size: 'Large',
+      minHeight: 320,
+      icon: 'Trophy',
+      imageStyle: 'None',
+      textColor: '#FFFFFF',
+      textColorMode: 'auto',
+      bgSource: 'image',
+      backgroundMode: 'solid',
+      backgroundImageUrl: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1200&h=640&fit=crop',
+      title: 'Run your club without the clipboard.',
+      subtitle: 'Bookings, payments, and member updates — handled, so you can get back to coaching.',
+      show: true
+    },
+    theme: {
+      color: '#19A44B',
+      tint: 40,
+      font: 'Geist',
+      headingFont: 'Hanken Grotesk',
+      radius: 'Small',
+      harmonyOffset: 120,
+      activePreset: 'Forest',
+      colorMode: 'dark',
+      tokenOverrides: {
+
+      }
     }
   },
 ]

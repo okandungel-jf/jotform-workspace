@@ -73,6 +73,7 @@ export { Spacer } from './components/Spacer';
 
 // Layout
 export { AppDesigner, applyDefaultTheme, applyStoredOrDefaultTheme } from './layout/AppDesigner';
+export type { AppDesignerSnapshot } from './layout/AppDesigner';
 export { BottomSheet } from './layout/components/BottomSheet';
 
 // Runtime (collections + form sheet for dynamic preset flows)

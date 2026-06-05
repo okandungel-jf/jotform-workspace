@@ -350,9 +350,14 @@ function applyThemeSnapshot(s: AppDesignerSnapshot, targetSelector = '.app-scope
  * Apply the stored AppDesigner snapshot for the given namespace, falling back
  * to the default theme when no snapshot exists.
  */
-export function applyStoredOrDefaultTheme(namespace?: string, targetSelector = '.app-scope') {
+export function applyStoredOrDefaultTheme(
+  namespace?: string,
+  targetSelector = '.app-scope',
+  fallback?: AppDesignerSnapshot,
+) {
   const stored = namespace ? loadAppDesignerSnapshot(namespace) : null;
   if (stored) applyThemeSnapshot(stored, targetSelector);
+  else if (fallback) applyThemeSnapshot(fallback, targetSelector);
   else applyDefaultTheme();
 }
 

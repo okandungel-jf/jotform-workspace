@@ -1724,8 +1724,8 @@ export function BuildPage({
   }, [])
 
   useEffect(() => {
-    applyStoredOrDefaultTheme(preset?.id === 'empty' ? undefined : preset?.id)
-  }, [preset?.id])
+    applyStoredOrDefaultTheme(preset?.id === 'empty' ? undefined : preset?.id, '.app-scope', preset?.theme)
+  }, [preset?.id, preset?.theme])
 
   useEffect(() => {
     const builder = document.querySelector('.builder')
