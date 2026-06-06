@@ -85,8 +85,8 @@ export const FAQ: FC<FaqProps> = ({
   skeletonAnimation = 'pulse',
   onItemsChange,
 }) => {
-  // Single-open accordion — first visible item open by default.
-  const [openIndex, setOpenIndex] = useState(() => items.findIndex((it) => it.visible !== false));
+  // Single-open accordion — all items start collapsed.
+  const [openIndex, setOpenIndex] = useState(-1);
   const editable = Boolean(onItemsChange);
   const baseId = useId();
 

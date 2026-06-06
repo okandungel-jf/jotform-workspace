@@ -95,7 +95,7 @@ ComponentRegistry.register({
       type: 'FaqItem[]',
       default: '[{question, answer}, ...]',
       description:
-        'Array of `{ question, answer }` objects. Single-open accordion — opening one item closes the others, with the first item open by default. Questions and answers are editable inline on the canvas; the full list (add / delete) is managed from the properties panel.',
+        'Array of `{ question, answer }` objects. Single-open accordion — opening one item closes the others; all items start collapsed. Questions and answers are editable inline on the canvas; the full list (add / delete) is managed from the properties panel.',
     },
     {
       name: 'selected',

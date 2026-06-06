@@ -1367,11 +1367,11 @@ export function BuildPage({
   useEffect(() => { setEditingProductIndex(null); setEditingOptionIndex(null); setProductSettingsTab('basic'); setProductSearch(''); setFilterOpen(false); setOptionModalOpen(false); setEditingModifierIndex(null); setModifierModalOpen(false); setSubscriptionModalOpen(false); setEditingFaqIndex(null); setEditingTestimonialIndex(null) }, [selectedElementId, propertyTab])
 
   // Seed missing default properties on selection for elements whose schema gained
-  // new props after they were already on the canvas (e.g. Testimonial's Items list).
-  const migratedDefaultIds = useRef<Set<string>>(new Set())
+  // new props after they were already on the canvas (e.g. Testimonial's Items list
+  // and display toggles). Idempotent: only fills props that are absent, so a
+  // toggle the user deliberately turned off (a real `false`) is preserved.
   useEffect(() => {
     if (!selectedElementId) return
-    if (migratedDefaultIds.current.has(selectedElementId)) return
     const all = [...pagesRef.current.flatMap((p) => p.elements), ...headerActionsRef.current]
     const el = all.find((e) => e.id === selectedElementId)
     if (!el || (el.componentId !== 'social-follow' && el.componentId !== 'testimonial')) return
@@ -1384,14 +1384,44 @@ export function BuildPage({
         updates[prop.name] = prop.default as string | boolean | number
       }
     }
-    migratedDefaultIds.current.add(selectedElementId)
-    if (Object.keys(updates).length === 0) return
+    // Non-destructive upgrade for an untouched legacy Testimonial demo: its items
+    // predate the role/rating fields, so toggling Show Role/Rating shows nothing.
+    // Only re-seed when the items are still the exact default (same names, no
+    // role/rating) — a customized list is left alone.
+    if (el.componentId === 'testimonial') {
+      try {
+        const items = JSON.parse(String(el.properties['Items'] ?? '[]'))
+        const def = comp.properties.find((p) => p.name === 'Items')?.default
+        const defItems = typeof def === 'string' ? JSON.parse(def) : []
+        // Upgrade an untouched default demo (an unedited prefix of the current
+        // default — e.g. the original 3 items) to the full default set, now 4
+        // items so the Grid stays balanced. A customized list is left alone.
+        const isUntouchedDemo =
+          Array.isArray(items) && Array.isArray(defItems) &&
+          items.length > 0 && items.length < defItems.length &&
+          items.every((it, i) => it && typeof it === 'object' && defItems[i] && it.name === defItems[i].name && it.text === defItems[i].text)
+        if (isUntouchedDemo && typeof def === 'string') updates['Items'] = def
+      } catch {
+        // ignore malformed Items
+      }
+    }
+    // Normalize any variant value that is no longer a valid option (e.g. a
+    // removed "Shadow" card style) back to its default, so the segmented
+    // control and the rendered output stay in sync.
+    const variantUpdates: Record<string, string> = {}
+    for (const [group, config] of Object.entries(comp.variants)) {
+      const cur = el.variants[group]
+      if (cur !== undefined && !config.options.includes(String(cur))) {
+        variantUpdates[group] = config.default || config.options[0]
+      }
+    }
+    if (Object.keys(updates).length === 0 && Object.keys(variantUpdates).length === 0) return
     setPages((prev) =>
       prev.map((page) => ({
         ...page,
         elements: page.elements.map((e) =>
           e.id === selectedElementId
-            ? { ...e, properties: { ...e.properties, ...updates } }
+            ? { ...e, variants: { ...e.variants, ...variantUpdates }, properties: { ...e.properties, ...updates } }
             : e,
         ),
       })),
@@ -3659,7 +3689,7 @@ export function BuildPage({
                     const current: TestimonialItem =
                       idx !== null && idx < list.length
                         ? (list[idx] ?? { name: '', text: '' })
-                        : { name: '', text: '' }
+                        : { name: '', text: '', rating: 5 }
                     const updateItem = (updates: Partial<TestimonialItem>) => {
                       if (idx === null) return
                       const next = [...list]
@@ -3806,6 +3836,15 @@ export function BuildPage({
                                     </DSFormField>
                                   </div>
                                   <div className="property-panel__field">
+                                    <DSFormField title="Role" size="md" showDescription={false} showHelpText={false}>
+                                      <DSInput
+                                        value={current.role ?? ''}
+                                        placeholder="Role / company (e.g. Founder, Acme)"
+                                        onChange={(e) => updateField('role', e.target.value)}
+                                      />
+                                    </DSFormField>
+                                  </div>
+                                  <div className="property-panel__field">
                                     <DSFormField title="Description" size="md" showDescription={false} showHelpText={false}>
                                       <DSTextArea
                                         size="md"
@@ -3813,6 +3852,17 @@ export function BuildPage({
                                         placeholder="What did they say?"
                                         value={current.text ?? ''}
                                         onChange={(e) => updateField('text', e.target.value)}
+                                      />
+                                    </DSFormField>
+                                  </div>
+                                  <div className="property-panel__field">
+                                    <DSFormField title="Rating" description="Star rating from 0 to 5." size="md" showDescription showHelpText={false}>
+                                      <DSNumberInput
+                                        showUnit={false}
+                                        min={0}
+                                        max={5}
+                                        value={typeof current.rating === 'number' ? current.rating : 5}
+                                        onChange={(val) => updateField('rating', val ?? 0)}
                                       />
                                     </DSFormField>
                                   </div>
@@ -5207,7 +5257,9 @@ export function BuildPage({
                               ? false
                               : isFaq
                                 ? propertyTab === 'style'
-                                : propertyTab === 'general'
+                                : isTestimonial
+                                  ? propertyTab === 'style'
+                                  : propertyTab === 'general'
 
                   const cardTabVariants = propertyTab === 'layout' ? CARD_LAYOUT_VARIANTS : []
                   const cardTabProps = propertyTab === 'layout' ? CARD_LAYOUT_PROPS : []
@@ -5279,8 +5331,8 @@ export function BuildPage({
                       }
                       if (isTestimonial) {
                         // General is a bespoke list panel (returns early); Style shows the
-                        // Show Avatars display toggle. Items is managed by the list panel.
-                        if (propertyTab === 'style') return prop.name === 'Show Avatars'
+                        // display toggles. Items is managed by the list panel.
+                        if (propertyTab === 'style') return ['Show Avatars', 'Show Rating', 'Show Role', 'Show Quote Icon', 'Show Arrows'].includes(prop.name)
                         return false
                       }
                       if (isButton) {

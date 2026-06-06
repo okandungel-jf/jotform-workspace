@@ -7179,8 +7179,17 @@ export const APP_PRESETS: AppPreset[] = [
           },
           {
             componentId: 'testimonial',
+            variants: {
+              Layout: 'Grid'
+            },
             properties: {
-              'Show Avatars': true
+              'Show Avatars': true,
+              Items: JSON.stringify([
+                { name: 'Marcus Bell', role: 'VP of Sales, Northwind', rating: 5, text: '“Cadence gave us a forecast the board actually trusts — and our reps finally know which deals to work first.”', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face' },
+                { name: 'Priya Nair', role: 'RevOps Lead, Stacker', rating: 5, text: '“We cut forecast prep from two days to ten minutes — and the accuracy went up, not down.”', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face' },
+                { name: 'Tom Whitfield', role: 'Head of Revenue, Loop', rating: 5, text: '“Pipeline reviews used to be guesswork. Now every number is backed by data finance signs off on.”', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face' },
+                { name: 'Elena Brandt', role: 'Sales Director, Vista', rating: 4, text: '“Onboarding our 24-person team took an afternoon. Adoption across the floor was immediate.”', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face' }
+              ])
             }
           },
           {

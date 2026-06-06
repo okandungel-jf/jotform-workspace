@@ -1,60 +1,126 @@
 // ============================================
 // JotForm Apps - Testimonial Component
+// Layouts: Carousel · Slider · Grid · Spotlight
 // ============================================
 
 .jf-testimonial {
   width: 100%;
   max-width: 100%;
-  padding: 0;
   font-family: var(--font-family);
-
-  &--shrinked {
-    width: 300px;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: center;
 
   &--selected {
     outline: 2px solid var(--border-info);
     outline-offset: 4px;
   }
-}
 
-.jf-testimonial__card {
-  background: var(--bg-fill);
-  box-shadow: 0 0 2px 0 rgba(37, 45, 91, 0.04), 0 4px 8px 0 rgba(84, 95, 111, 0.16);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6) var(--space-6) var(--space-5);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-  overflow: hidden;
-}
-
-// Content - horizontal (default)
-.jf-testimonial__content {
-  display: flex;
-  gap: var(--space-4);
-  align-items: flex-start;
-  width: 100%;
-
-  &--vertical {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+  &--shrinked {
+    width: 408px;
   }
 }
 
-// Avatar
+// =========================================
+// Card
+// =========================================
+.jf-testimonial__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--bg-fill);
+  // Border is the default treatment; only the "None" style removes it.
+  border: 1px solid var(--border);
+  min-width: 0;
+  width: 100%;
+}
+
+// Card style modifiers
+.jf-testimonial--card-none .jf-testimonial__card {
+  background: transparent;
+  border: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+// Alignment
+.jf-testimonial--align-left .jf-testimonial__card {
+  text-align: left;
+  align-items: flex-start;
+}
+
+.jf-testimonial--align-center .jf-testimonial__card {
+  text-align: center;
+  align-items: center;
+}
+
+// =========================================
+// Quote icon
+// =========================================
+.jf-testimonial__quote-icon {
+  color: var(--fg-brand);
+  flex-shrink: 0;
+}
+
+// =========================================
+// Stars
+// =========================================
+.jf-testimonial__stars {
+  display: flex;
+  gap: 2px;
+}
+
+.jf-testimonial__star {
+  color: var(--fg-disabled);
+}
+
+.jf-testimonial__star--on {
+  color: var(--fg-warning);
+}
+
+// =========================================
+// Quote text
+// =========================================
+.jf-testimonial__quote {
+  margin: 0;
+  font-size: var(--font-size-paragraph-md);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-paragraph-md);
+  color: var(--fg-primary);
+  overflow-wrap: anywhere;
+}
+
+// =========================================
+// Author (avatar + name + role)
+// =========================================
+.jf-testimonial__author {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  // Pin to the bottom so multi-card layouts keep aligned author rows.
+  margin-top: auto;
+}
+
+.jf-testimonial--align-center .jf-testimonial__author {
+  flex-direction: column;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
 .jf-testimonial__avatar {
-  width: 88px;
-  height: 88px;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
   border-radius: var(--radius-rounded);
   background: var(--bg-surface-brand);
+  color: var(--fg-brand);
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  color: var(--fg-brand);
   overflow: hidden;
 }
 
@@ -64,58 +130,227 @@
   object-fit: cover;
 }
 
-// Text
-.jf-testimonial__text {
-  flex: 1;
-  min-width: 0;
+.jf-testimonial__author-meta {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
-// Heading/H6/Bold
+.jf-testimonial--align-center .jf-testimonial__author-meta {
+  align-items: center;
+}
+
 .jf-testimonial__name {
-  font-size: var(--font-size-paragraph-md); // fluid 16→18 (author name = content title)
+  font-size: var(--font-size-paragraph-md);
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-label-lg);
   color: var(--fg-primary);
-  overflow: hidden;
-  max-height: 144px;
-  min-height: 36px;
-  margin: 0;
+  overflow-wrap: anywhere;
 }
 
-// Paragraph/XSmall/Regular
-.jf-testimonial__quote {
-  font-size: var(--font-size-paragraph-sm-fluid); // fluid 14→16 (multi-line quote, capped by max-height)
+.jf-testimonial__role {
+  font-size: var(--font-size-paragraph-sm-fluid);
   font-weight: var(--font-weight-regular);
   line-height: var(--line-height-paragraph-sm);
-  color: var(--fg-primary);
-  overflow: hidden;
-  max-height: 144px;
-  min-height: 36px;
-  margin: 0;
+  color: var(--fg-secondary);
+  overflow-wrap: anywhere;
 }
 
-// Navigation
-.jf-testimonial__nav {
+// =========================================
+// Layout: Grid (responsive auto-fill)
+// =========================================
+.jf-testimonial__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: var(--space-4);
+  width: 100%;
+  align-items: stretch;
+}
+
+.jf-testimonial__grid .jf-testimonial__card {
+  height: 100%;
+}
+
+// =========================================
+// Layout: Slider (horizontal scroll-snap)
+// =========================================
+.jf-testimonial__slider {
+  position: relative;
   display: flex;
-  gap: var(--space-2);
+  gap: var(--space-4);
+  width: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  padding-bottom: var(--space-1);
+
+  // Soft edge fade for clipped cards — width per side is toggled from the scroll
+  // handler so the start/end never fade when there is nothing to scroll there.
+  --fade-l: 0px;
+  --fade-r: 0px;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent 100%);
+
+  &[data-fade-start='true'] {
+    --fade-l: var(--space-6);
+  }
+
+  &[data-fade-end='true'] {
+    --fade-r: var(--space-6);
+  }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-.jf-testimonial__nav-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-rounded);
-  background: color-mix(in srgb, var(--fg-primary) 8%, var(--bg-fill));
+.jf-testimonial__slide {
+  flex: 0 0 auto;
+  width: min(320px, 82%);
+  // Middle slides centre in the viewport (symmetric peek on both sides); the
+  // first/last align to the edges so they never leave a gap.
+  scroll-snap-align: center;
+  display: flex;
+
+  &:first-child {
+    scroll-snap-align: start;
+  }
+
+  &:last-child {
+    scroll-snap-align: end;
+  }
+}
+
+.jf-testimonial__slide .jf-testimonial__card {
+  height: 100%;
+}
+
+// =========================================
+// Layout: Carousel (single card, arrows flank)
+// =========================================
+.jf-testimonial__stage {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.jf-testimonial--carousel .jf-testimonial__stage .jf-testimonial__card,
+.jf-testimonial--spotlight .jf-testimonial__stage .jf-testimonial__card {
+  flex: 1;
+  min-width: 0;
+}
+
+// =========================================
+// Layout: Spotlight (large, centered, chromeless)
+// =========================================
+.jf-testimonial--spotlight .jf-testimonial__stage {
+  justify-content: center;
+}
+
+.jf-testimonial--spotlight .jf-testimonial__card {
+  max-width: 720px;
+  background: transparent;
   border: none;
+  box-shadow: none;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+}
+
+.jf-testimonial--spotlight .jf-testimonial__quote {
+  font-size: var(--font-size-heading-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-heading-sm);
+  letter-spacing: -0.32px;
+}
+
+.jf-testimonial--spotlight .jf-testimonial__author {
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: 0;
+}
+
+.jf-testimonial--spotlight .jf-testimonial__avatar {
+  width: 56px;
+  height: 56px;
+}
+
+.jf-testimonial--spotlight .jf-testimonial__quote-icon {
+  width: 36px;
+  height: 36px;
+}
+
+// =========================================
+// Navigation arrows
+// =========================================
+.jf-testimonial__arrow {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: var(--radius-rounded);
+  background: color-mix(in srgb, var(--fg-primary) 6%, var(--bg-fill));
+  border: 1px solid var(--border);
+  color: var(--fg-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--fg-primary);
-  transition: background 200ms ease;
+  transition: background 200ms ease, border-color 200ms ease;
 
   &:hover {
-    background: color-mix(in srgb, var(--fg-primary) 15%, var(--bg-fill));
+    background: color-mix(in srgb, var(--fg-primary) 12%, var(--bg-fill));
+    border-color: var(--border-hover);
+  }
+}
+
+.jf-testimonial__nav {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+// =========================================
+// Dots
+// =========================================
+.jf-testimonial__dots {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  align-items: center;
+}
+
+.jf-testimonial__dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-rounded);
+  background: var(--border);
+  cursor: pointer;
+  transition: background 200ms ease, width 200ms ease;
+
+  &--active {
+    background: var(--fg-brand);
+    width: 20px;
+  }
+}
+
+// =========================================
+// Responsive: drop carousel/spotlight arrows below on a narrow page
+// =========================================
+@container app-content (max-width: 479px) {
+  .jf-testimonial--carousel .jf-testimonial__stage,
+  .jf-testimonial--spotlight .jf-testimonial__stage {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .jf-testimonial--carousel .jf-testimonial__stage .jf-testimonial__card,
+  .jf-testimonial--spotlight .jf-testimonial__stage .jf-testimonial__card {
+    order: -1;
+    flex-basis: 100%;
   }
 }
