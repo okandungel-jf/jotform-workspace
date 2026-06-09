@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useLayoutEffect, type RefObject } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import {
   Icon,
@@ -7,7 +7,6 @@ import {
   Tabs as DSTabs,
   Segmented as DSSegmented,
 } from '@jf/design-system'
-import { BottomNavigation, AppIcon } from '@jf/app-elements'
 import {
   DndContext,
   closestCenter,
@@ -36,174 +35,6 @@ export type NavAlignment = 'left' | 'center' | 'right'
 // bar with a centred menu; 'left' = sidebar.
 export type DesktopNavVariant = 'top' | 'contained' | 'compact' | 'left'
 
-// A slice of the live-preview phone mockup, reused inside the (dark) panel. The
-// panel's `data-theme="dark"` would bleed chrome tokens into the app-scope, so we
-// copy the app's resolved theme tokens from <html> onto the mockup root — the
-// same accent + light/dark surfaces the real live preview shows.
-const PREVIEW_THEME_TOKENS = [
-  '--bg-surface', '--bg-surface-hover', '--bg-page', '--bg-fill-brand', '--bg-fill-brand-hover',
-  '--border', '--fg-primary', '--fg-secondary', '--fg-tertiary', '--fg-inverse',
-  '--fg-brand', '--fg-brand-hover', '--font-family', '--font-family-heading', '--gray-900',
-  // Primitives the semantics derive from — backstop if a semantic resolves to a var().
-  '--neutral-0', '--neutral-50', '--neutral-100', '--neutral-200', '--neutral-300',
-  '--neutral-400', '--neutral-500', '--neutral-600', '--neutral-700', '--neutral-800',
-  '--neutral-900', '--neutral-950',
-  '--primary-50', '--primary-100', '--primary-200', '--primary-300', '--primary-400',
-  '--primary-500', '--primary-600', '--primary-700', '--primary-800', '--primary-900',
-  '--primary-950',
-]
-
-// Copy the app's resolved theme tokens from <html> onto an in-panel preview root
-// so it reflects the live accent + light/dark surfaces despite the dark chrome.
-function useCopiedThemeTokens<T extends HTMLElement>(ref: RefObject<T | null>) {
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const cs = getComputedStyle(document.documentElement)
-    PREVIEW_THEME_TOKENS.forEach((token) => {
-      const value = cs.getPropertyValue(token).trim()
-      if (value) el.style.setProperty(token, value)
-    })
-  }, [ref])
-}
-
-// Mobile top-nav mockup: the same flat card chrome as the other previews, with
-// the app branding (icon + name) on the left and a hamburger menu on the right,
-// a divider, then the placeholder content. Shares the fixed-height card so it
-// stays consistent with the bottom-nav preview.
-function MobileTopPreview({ appName, appIcon }: { appName: string; appIcon: string }) {
-  const ref = useRef<HTMLDivElement>(null)
-  useCopiedThemeTokens(ref)
-  return (
-    <div className="nav-menu-desktop nav-menu-mobile" ref={ref}>
-      <div className="nav-menu-desktop__screen app-scope">
-        <div className="nav-menu-mobile__top-bar">
-          <span className="nav-menu-mobile__brand">
-            <span className="nav-menu-mobile__app-icon">
-              <AppIcon name={appIcon} size={24} />
-            </span>
-            <span className="nav-menu-mobile__top-title">{appName}</span>
-          </span>
-          <span className="nav-menu-mobile__top-menu">
-            <AppIcon name="Menu" size={20} />
-          </span>
-        </div>
-        <div className="nav-menu-desktop__divider" />
-        <div className="nav-menu-desktop__content">
-          <span className="nav-menu-desktop__placeholder" />
-          <span className="nav-menu-desktop__base" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Desktop nav mockup: a laptop window with either a top nav bar ('top') or a
-// left sidebar ('left'), themed via the copied tokens. The nav items render per
-// the chosen display style; alignment applies to the top variant only.
-function DesktopPreview({
-  pages,
-  variant,
-  displayStyle,
-  alignment,
-}: {
-  pages: NavMenuPage[]
-  variant: DesktopNavVariant
-  displayStyle: DesktopDisplayStyle
-  alignment: NavAlignment
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  useCopiedThemeTokens(ref)
-  const navPages = pages.filter((p) => !p.hidden)
-  const shown = navPages.slice(0, variant === 'left' ? 4 : 2)
-  const hasOverflow = navPages.length > shown.length
-
-  const navItems = (
-    <>
-      {shown.map((p) => (
-        <span key={p.id} className="nav-menu-desktop__nav-item">
-          {displayStyle === 'iconText' && (
-            <span className="nav-menu-desktop__nav-icon">
-              <LucideIcon name={p.icon || DEFAULT_PAGE_ICON} size={16} />
-            </span>
-          )}
-          <span className="nav-menu-desktop__nav-label">{p.name}</span>
-        </span>
-      ))}
-      {hasOverflow && (
-        <span className="nav-menu-desktop__nav-more">
-          <LucideIcon name="Ellipsis" size={16} />
-        </span>
-      )}
-    </>
-  )
-
-  return (
-    <div className={`nav-menu-desktop nav-menu-desktop--${variant}`} ref={ref}>
-      <div className="nav-menu-desktop__screen app-scope">
-        {variant !== 'left' ? (
-          <>
-            <div className={`nav-menu-desktop__nav nav-menu-desktop__nav--${alignment}`}>{navItems}</div>
-            <div className="nav-menu-desktop__divider" />
-            <div className="nav-menu-desktop__content">
-              <span className="nav-menu-desktop__placeholder" />
-              <span className="nav-menu-desktop__base" />
-            </div>
-          </>
-        ) : (
-          <div className="nav-menu-desktop__body">
-            <div className="nav-menu-desktop__sidebar">{navItems}</div>
-            <div className="nav-menu-desktop__content nav-menu-desktop__content--left">
-              <span className="nav-menu-desktop__placeholder" />
-              <span className="nav-menu-desktop__base" />
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// Mobile nav mockup: reuses the same flat card chrome as DesktopPreview
-// (peach card → white screen → placeholder content) and pins the real themed
-// BottomNavigation under it, so the selected/default item styles come straight
-// from the app theme. Its own border-top serves as the separator.
-function MobilePreview({
-  pages,
-  displayStyle,
-}: {
-  pages: NavMenuPage[]
-  displayStyle: NavDisplayStyle
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  useCopiedThemeTokens(ref)
-  const navPages = pages.filter((p) => !p.hidden)
-  // Mirror the live bottom nav: first 4 items, plus a "More" item at 5+.
-  const previewItems =
-    navPages.length >= 5
-      ? [
-          ...navPages.slice(0, 4).map((p) => ({ icon: p.icon || DEFAULT_PAGE_ICON, label: p.name })),
-          { icon: 'Ellipsis', label: 'More' },
-        ]
-      : navPages.map((p) => ({ icon: p.icon || DEFAULT_PAGE_ICON, label: p.name }))
-
-  return (
-    <div className="nav-menu-desktop nav-menu-mobile" ref={ref}>
-      <div className="nav-menu-desktop__screen app-scope">
-        <div className="nav-menu-desktop__content">
-          <span className="nav-menu-desktop__placeholder" />
-          <span className="nav-menu-desktop__base" />
-        </div>
-        <BottomNavigation
-          items={previewItems}
-          activeIndex={0}
-          showLabels={displayStyle !== 'icon'}
-        />
-      </div>
-    </div>
-  )
-}
-
 export interface NavMenuPage {
   id: string
   name: string
@@ -215,9 +46,6 @@ export interface NavMenuPage {
 interface NavigationMenuPanelProps {
   /** Full ordered page list — the panel lists the non-hidden ones as nav items. */
   pages: NavMenuPage[]
-  /** App branding shown in the top-nav preview. */
-  appName: string
-  appIcon: string
   enabled: boolean
   displayStyle: NavDisplayStyle
   topNavEnabled: boolean
@@ -243,6 +71,9 @@ interface NavigationMenuPanelProps {
   /** Add a hidden page back into the nav (un-hides it). */
   onAddToNav: (pageId: string) => void
   onClose: () => void
+  /** Active platform tab — controlled so the builder canvas preview can mirror it. */
+  tab: 'mobile' | 'desktop'
+  onTabChange: (tab: 'mobile' | 'desktop') => void
 }
 
 // A single draggable nav item: drag handle + a FieldMapper-style card (FieldChip
@@ -328,8 +159,6 @@ function NavMenuItem({
 
 export function NavigationMenuPanel({
   pages,
-  appName,
-  appIcon,
   enabled,
   displayStyle,
   topNavEnabled,
@@ -351,8 +180,9 @@ export function NavigationMenuPanel({
   onRemoveFromNav,
   onAddToNav,
   onClose,
+  tab,
+  onTabChange,
 }: NavigationMenuPanelProps) {
-  const [tab, setTab] = useState('mobile')
   const [addOpen, setAddOpen] = useState(false)
   const [addAnchor, setAddAnchor] = useState<DOMRect | null>(null)
   const addTriggerRef = useRef<HTMLButtonElement>(null)
@@ -403,7 +233,7 @@ export function NavigationMenuPanel({
         <DSTabs
           accent="apps"
           value={tab}
-          onChange={setTab}
+          onChange={(v) => onTabChange(v as 'mobile' | 'desktop')}
           items={[
             { value: 'mobile', label: 'Mobile' },
             { value: 'desktop', label: 'Desktop' },
@@ -430,12 +260,6 @@ export function NavigationMenuPanel({
 
           {enabled && (
             <>
-              {navPages.length > 0 && (
-                <div className="property-panel__field">
-                  <MobilePreview pages={pages} displayStyle={displayStyle} />
-                </div>
-              )}
-
               <div className="property-panel__field">
                 <DSFormField title="Display Style" size="md" showDescription={false} showHelpText={false}>
                   <DSSegmented
@@ -515,11 +339,6 @@ export function NavigationMenuPanel({
             </DSFormField>
           </div>
 
-          {topNavEnabled && (
-            <div className="property-panel__field">
-              <MobileTopPreview appName={appName} appIcon={appIcon} />
-            </div>
-          )}
         </div>
       )}
 
@@ -542,15 +361,6 @@ export function NavigationMenuPanel({
 
           {desktopEnabled && (
             <>
-              <div className="property-panel__field">
-                <DesktopPreview
-                  pages={pages}
-                  variant={desktopVariant}
-                  displayStyle={desktopDisplayStyle}
-                  alignment={desktopAlignment}
-                />
-              </div>
-
               <div className="property-panel__field">
                 <DSFormField title="Layout" size="md" showDescription={false} showHelpText={false}>
                   <DSSegmented

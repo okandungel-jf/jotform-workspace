@@ -1366,6 +1366,9 @@ export function BuildPage({
   // Bottom-navigation menu settings (mobile), edited via the Navigation Menu panel.
   const [bottomNavEnabled, setBottomNavEnabled] = useState(true)
   const [bottomNavDisplayStyle, setBottomNavDisplayStyle] = useState<'iconText' | 'icon'>('iconText')
+  // Mobile/Desktop tab of the Navigation Properties panel — lifted here so the
+  // builder canvas can mirror it as a live preview while the panel is open.
+  const [navMenuTab, setNavMenuTab] = useState<'mobile' | 'desktop'>('mobile')
   const [topNavEnabled, setTopNavEnabled] = useState(false)
   // Desktop navigation — independent from the mobile settings above.
   const [desktopNavVariant, setDesktopNavVariant] = useState<'top' | 'contained' | 'compact' | 'left'>('top')
@@ -1612,9 +1615,12 @@ export function BuildPage({
       return
     }
     const autoHide =
-      previewDevice === 'desktop' &&
-      desktopNavVariant !== 'left' &&
-      !desktopNavSticky
+      (previewDevice === 'desktop' &&
+        desktopNavVariant !== 'left' &&
+        !desktopNavSticky) ||
+      // Landing on phone behaves like the desktop top nav: the bar scrolls away
+      // with the content instead of staying pinned over the hero.
+      (previewDevice === 'phone' && !!pages[0]?.landing && !isPreviewLoggedIn)
     // Clear any leftover transform when auto-hide isn't active (e.g. sticky on).
     const resetHeader = previewTopHeaderRef.current
     if (resetHeader && !autoHide) {
@@ -1624,7 +1630,12 @@ export function BuildPage({
     // Distance to fully scroll the bar off the top. The compact bar floats 16px
     // (--space-4) below the top, so it needs that extra travel (16 + 64) to clear
     // — otherwise its bottom edge stays pinned at the float offset.
-    const HEADER_H = desktopNavVariant === 'compact' ? 80 : 64
+    // Phone: hide the bar by its full footprint (offset top + height); desktop
+    // uses the known bar heights (compact floats 16px below the top).
+    const headerEl = previewTopHeaderRef.current
+    const HEADER_H = previewDevice === 'phone'
+      ? (headerEl ? headerEl.offsetTop + headerEl.offsetHeight : 102)
+      : (desktopNavVariant === 'compact' ? 80 : 64)
     let lastScrollTop = previewContentScalerEl.scrollTop
     let offset = 0
     const onScroll = () => {
@@ -1652,7 +1663,15 @@ export function BuildPage({
     onScroll()
     previewContentScalerEl.addEventListener('scroll', onScroll, { passive: true })
     return () => previewContentScalerEl.removeEventListener('scroll', onScroll)
-  }, [previewContentScalerEl, previewDevice, desktopNavVariant, desktopNavSticky])
+  }, [previewContentScalerEl, previewDevice, desktopNavVariant, desktopNavSticky, pages, isPreviewLoggedIn])
+
+  // While the Navigation Properties panel is open, mirror its Mobile/Desktop tab
+  // onto the canvas preview device so the left builder area previews the choice.
+  useEffect(() => {
+    if (rightPanel === 'navigation') {
+      setPreviewDevice(navMenuTab === 'desktop' ? 'desktop' : 'phone')
+    }
+  }, [rightPanel, navMenuTab])
 
   // The hamburger / "More" menu reuses the page's scroll container, which also
   // carries a small scale-compensation overflow — so a page scrolled before
@@ -3056,16 +3075,19 @@ export function BuildPage({
       {!chromeless && (
       <div className={`build-page__canvas-wrapper${isDragging ? ' build-page__canvas--dragging' : ''}`}>
       <main ref={canvasRef} className="build-page__canvas" onClick={() => {
+        // While the navigation preview fills the canvas, clicks belong to the
+        // interactive preview — don't deselect or close the nav settings panel.
+        if (rightPanel === 'navigation') return
         setSelectedElementId(null)
         setRightPanel('preview')
       }}>
           {/* Floating Buttons */}
           <div className="build-page__floating-buttons">
-            <button className={`build-page__add-element-btn${leftPanelOpen || (selectedElementId === APP_HEADER_ID && rightPanel === 'properties') ? ' build-page__add-element-btn--hidden' : ''}`} onClick={(e) => { e.stopPropagation(); if (isMobileView) { setMobileElementsSheet(true); } else { setLeftPanelOpen(true); } }}>
+            <button className={`build-page__add-element-btn${leftPanelOpen || rightPanel === 'navigation' || (selectedElementId === APP_HEADER_ID && rightPanel === 'properties') ? ' build-page__add-element-btn--hidden' : ''}`} onClick={(e) => { e.stopPropagation(); if (isMobileView) { setMobileElementsSheet(true); } else { setLeftPanelOpen(true); } }}>
               <Icon name="plus" category="general" size={24} />
               <span className="build-page__add-element-btn-tooltip">Add Element</span>
             </button>
-            <button ref={designBtnRef} className={`build-page__design-btn${rightPanel === 'designer' || (selectedElementId === APP_HEADER_ID && rightPanel === 'properties') ? ' build-page__design-btn--hidden' : ''}${!designBtnOnHeader ? ' build-page__design-btn--brand' : ''}`} onClick={(e) => {
+            <button ref={designBtnRef} className={`build-page__design-btn${rightPanel === 'designer' || rightPanel === 'navigation' || (selectedElementId === APP_HEADER_ID && rightPanel === 'properties') ? ' build-page__design-btn--hidden' : ''}${!designBtnOnHeader ? ' build-page__design-btn--brand' : ''}`} onClick={(e) => {
               e.stopPropagation()
               setSelectedElementId(null)
               setRightPanel('designer')
@@ -3084,6 +3106,20 @@ export function BuildPage({
               <span className="build-page__preview-btn-tooltip">Live Preview</span>
             </button>
           </div>
+          {rightPanel === 'navigation' ? (
+          /* Navigation preview: the left builder area becomes a live preview of
+             the app, mirroring the panel's Mobile/Desktop tab (via previewDevice).
+             Reuses phoneScreenContent, which adapts to previewDevice. */
+          <div className={`build-page__nav-preview build-page__nav-preview--${previewDevice === 'desktop' ? 'desktop' : 'mobile'}`}>
+            {previewDevice === 'desktop' ? (
+              <div className="build-page__nav-preview-frame app-preview-screen__desktop">{phoneScreenContent}</div>
+            ) : (
+              <div className="build-page__nav-preview-frame">
+                <div className="live-preview__phone-screen">{phoneScreenContent}</div>
+              </div>
+            )}
+          </div>
+          ) : (
           <div className="app-scope">
             <div className="themes-view__device">
               <div ref={appHeaderRef}>
@@ -3236,11 +3272,13 @@ export function BuildPage({
               </div>
             </div>
           </div>
+          )}
 
       </main>
 
-      {/* Page Navigation Bar */}
-      {!isMobileView && pages.length > 1 && (
+      {/* Page Navigation Bar — hidden while the navigation settings panel is open
+          (it is edited from there); restored when the panel closes. */}
+      {!isMobileView && pages.length > 1 && rightPanel !== 'navigation' && (
         <PageNavigationBar
           pages={pages}
           activePageId={activePageId}
@@ -3299,9 +3337,9 @@ export function BuildPage({
             {/* Properties Panel */}
             {rightPanel === 'navigation' ? (
               <NavigationMenuPanel
+                tab={navMenuTab}
+                onTabChange={setNavMenuTab}
                 pages={pages}
-                appName={appTitle}
-                appIcon={appHeaderState.icon}
                 enabled={bottomNavEnabled}
                 displayStyle={bottomNavDisplayStyle}
                 topNavEnabled={topNavEnabled}

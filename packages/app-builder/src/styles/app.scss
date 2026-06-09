@@ -1051,6 +1051,56 @@ body {
   }
 }
 
+// Navigation preview — shown in the builder canvas while the Navigation
+// Properties panel is open. The left area becomes a live, interactive preview
+// of the app (reusing phoneScreenContent), mirroring the panel's Mobile/Desktop
+// tab. Mobile renders a clean device card (no status bar / bezel); desktop
+// renders the full desktop layout via the existing app-preview-screen styles.
+.build-page__nav-preview {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  min-height: 100%;
+  padding: var(--spacing-2xl, 40px) var(--spacing-lg, 24px);
+}
+
+// Mobile: clean phone-aspect card (matches the live preview's screen, minus the
+// gray shell / black bezel). The phone-screen fills the card edge-to-edge.
+.build-page__nav-preview--mobile .build-page__nav-preview-frame {
+  position: relative;
+  width: 390px;
+  max-width: 100%;
+  aspect-ratio: 461 / 965;
+  border-radius: 44px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  flex-shrink: 0;
+}
+
+.build-page__nav-preview--mobile .live-preview__phone-screen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+// Clean card: drop the iOS status bar the live preview normally shows.
+.build-page__nav-preview--mobile .live-preview__status-bar,
+.build-page__nav-preview--mobile .live-preview__status-bar-bg {
+  display: none;
+}
+
+// Desktop: a wide framed surface; the desktop nav layout renders inside.
+.build-page__nav-preview--desktop .build-page__nav-preview-frame {
+  width: 100%;
+  max-width: 1200px;
+  min-height: 640px;
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  background: var(--bg-page, #f3f3fe);
+}
+
 .build-page__canvas-wrapper {
   display: flex;
   flex-direction: column;
