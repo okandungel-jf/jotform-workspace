@@ -25,7 +25,15 @@
   // horizontal inset (var(--app-header-inset)) so their content box matches the
   // page card's .themes-view__app exactly. A gutter on the full-bleed header
   // would double-inset the title/button vs the page elements below.
-  padding: var(--space-12) 0;
+  //
+  // Asymmetric vertical padding: bottom = top + 16px to compensate the first
+  // page's -16px tuck (see .themes-view__canvas--first / page-wrapper--first).
+  // The page card overlaps the header's bottom by 16px, so without this the
+  // visible bottom gap reads 16px tighter than the top. Adding the tuck amount
+  // back to padding-bottom makes the visible top/bottom gaps symmetric in every
+  // shell (the tuck is a uniform -16px across builder canvas, phone, tablet and
+  // desktop — measured). --valign-bottom overrides this below for its own math.
+  padding: var(--space-12) 0 calc(var(--space-12) + var(--space-4));
   background: var(--bg-fill-brand);
   font-family: var(--font-family);
 
