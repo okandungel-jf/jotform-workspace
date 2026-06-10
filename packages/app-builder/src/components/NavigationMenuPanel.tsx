@@ -255,6 +255,38 @@ export function NavigationMenuPanel({
         <div className="property-panel__body">
           <div className="property-panel__field property-panel__field--inline">
             <DSFormField
+              title="Top Navigation"
+              size="md"
+              showDescription={false}
+              showHelpText={false}
+            >
+              <DSToggle
+                size="md"
+                checked={topNavEnabled}
+                onChange={(e) => onToggleTopNavEnabled(e.target.checked)}
+              />
+            </DSFormField>
+          </div>
+
+          {topNavEnabled && (
+            <div className="property-panel__field">
+              <DSFormField title="Background" size="md" showDescription={false} showHelpText={false}>
+                <DSSegmented
+                  accent="apps"
+                  variant="text"
+                  value={topNavTransparent ? 'transparent' : 'solid'}
+                  onChange={(value) => onToggleTopNavTransparent(value === 'transparent')}
+                  items={[
+                    { value: 'solid', label: 'Solid' },
+                    { value: 'transparent', label: 'Transparent' },
+                  ]}
+                />
+              </DSFormField>
+            </div>
+          )}
+
+          <div className="property-panel__field property-panel__field--inline">
+            <DSFormField
               title="Bottom Navigation"
               size="md"
               showDescription={false}
@@ -270,21 +302,6 @@ export function NavigationMenuPanel({
 
           {enabled && (
             <>
-              <div className="property-panel__field">
-                <DSFormField title="Display Style" size="md" showDescription={false} showHelpText={false}>
-                  <DSSegmented
-                    accent="apps"
-                    variant="text"
-                    value={displayStyle}
-                    onChange={(value) => onChangeDisplayStyle(value as NavDisplayStyle)}
-                    items={[
-                      { value: 'iconText', label: 'Icon & Text' },
-                      { value: 'icon', label: 'Icon Only' },
-                    ]}
-                  />
-                </DSFormField>
-              </div>
-
               <div className="property-panel__field">
                 <DSFormField title="Menu Items" size="md" showDescription={false} showHelpText={false}>
                   <DndContext
@@ -339,39 +356,22 @@ export function NavigationMenuPanel({
                   )}
                 </DSFormField>
               </div>
+
+              <div className="property-panel__field">
+                <DSFormField title="Display Style" size="md" showDescription={false} showHelpText={false}>
+                  <DSSegmented
+                    accent="apps"
+                    variant="text"
+                    value={displayStyle}
+                    onChange={(value) => onChangeDisplayStyle(value as NavDisplayStyle)}
+                    items={[
+                      { value: 'iconText', label: 'Icon & Text' },
+                      { value: 'icon', label: 'Icon Only' },
+                    ]}
+                  />
+                </DSFormField>
+              </div>
             </>
-          )}
-
-          <div className="property-panel__field property-panel__field--inline">
-            <DSFormField
-              title="Top Navigation"
-              size="md"
-              showDescription={false}
-              showHelpText={false}
-            >
-              <DSToggle
-                size="md"
-                checked={topNavEnabled}
-                onChange={(e) => onToggleTopNavEnabled(e.target.checked)}
-              />
-            </DSFormField>
-          </div>
-
-          {topNavEnabled && (
-            <div className="property-panel__field property-panel__field--inline">
-              <DSFormField
-                title="Transparent"
-                size="md"
-                showDescription={false}
-                showHelpText={false}
-              >
-                <DSToggle
-                  size="md"
-                  checked={topNavTransparent}
-                  onChange={(e) => onToggleTopNavTransparent(e.target.checked)}
-                />
-              </DSFormField>
-            </div>
           )}
 
         </div>
