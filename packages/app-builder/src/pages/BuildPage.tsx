@@ -499,17 +499,16 @@ function HeroCtaButton({
 // Resolve the app header's custom background fill to a CSS value (solid color or
 // gradient), or undefined when unset so the AppHeader falls back to --bg-fill-brand.
 function resolveHeaderBackground(s: AppHeaderState): string | undefined {
-  if ((s.bgSource ?? 'color') !== 'color') return undefined
   if (s.backgroundMode === 'gradient' && s.gradientStart && s.gradientEnd) {
     return `linear-gradient(to bottom, ${s.gradientStart}, ${s.gradientEnd})`
   }
   return s.backgroundColor || undefined
 }
 
-// The header background image, but only when the Background source is set to Image
-// (color and image are mutually exclusive).
+// The header background image. When set it wins over the color (AppHeader paints the
+// image over the color), so color + image inputs can both be shown without a toggle.
 function resolveHeaderImage(s: AppHeaderState): string | null {
-  return (s.bgSource ?? 'color') === 'image' ? s.backgroundImageUrl : null
+  return s.backgroundImageUrl ?? null
 }
 
 // Relative luminance → readable text color (same 0.4 threshold as the button
@@ -533,7 +532,7 @@ function resolveHeaderTextColor(s: AppHeaderState): string | undefined {
   if (mode === 'light') return '#FFFFFF'
   if (mode === 'dark') return '#091141'
   // auto: an image background (shown under a dark scrim) reads best with white text.
-  if ((s.bgSource ?? 'color') === 'image') return s.backgroundImageUrl ? '#FFFFFF' : undefined
+  if (s.backgroundImageUrl) return '#FFFFFF'
   const bg = s.backgroundMode === 'gradient' ? (s.gradientStart || s.gradientEnd) : s.backgroundColor
   return bg ? headerTextContrast(bg) : undefined
 }
@@ -5984,91 +5983,68 @@ export function BuildPage({
                           </div>
                           )}
                           <div className="property-panel__field">
-                            <DSFormField title="Background" size="md" showDescription={false} showHelpText={false}>
-                              <Segmented
-                                accent="apps"
-                                variant="text"
-                                value={appHeaderState.bgSource ?? 'color'}
-                                onChange={(val) => setAppHeaderState((s) => ({ ...s, bgSource: val as 'color' | 'image' }))}
-                                items={[
-                                  { value: 'color', label: 'Color' },
-                                  { value: 'image', label: 'Image' },
-                                ]}
-                              />
-                            </DSFormField>
-                          </div>
-                          {(appHeaderState.bgSource ?? 'color') === 'color' && (
-                          <div className="property-panel__field">
-                            <DSFormField title="Background Color" size="md" showDescription={false} showHelpText={false}>
-                              <HeaderBackgroundField
-                                mode={appHeaderState.backgroundMode ?? 'solid'}
-                                color={appHeaderState.backgroundColor ?? ''}
-                                gradientStart={appHeaderState.gradientStart ?? ''}
-                                gradientEnd={appHeaderState.gradientEnd ?? ''}
-                                onModeChange={(m) => setAppHeaderState((s) => ({ ...s, backgroundMode: m }))}
-                                onColorChange={(c) => setAppHeaderState((s) => ({ ...s, backgroundColor: c }))}
-                                onGradientChange={(start, end) => setAppHeaderState((s) => ({ ...s, gradientStart: start, gradientEnd: end }))}
-                              />
-                            </DSFormField>
-                          </div>
-                          )}
-                          {(appHeaderState.bgSource ?? 'color') === 'image' && (
-                          <div className="property-panel__field">
-                            <DSFormField title="Background Image" size="md" showDescription={false} showHelpText={false}>
-                              <input
-                                ref={appHeaderBgImageInputRef}
-                                type="file"
-                                accept="image/*"
-                                hidden
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0]
-                                  if (!file) return
-                                  compressImageFile(file).then((url) => {
-                                    setAppHeaderState((s) => ({
-                                      ...s,
-                                      backgroundImageUrl: url,
-                                      backgroundImageName: file.name,
-                                    }))
-                                  })
-                                  e.target.value = ''
-                                }}
-                              />
-                              {appHeaderState.backgroundImageUrl ? (
-                                <div className="image-preview">
-                                  <div
-                                    className="image-preview__thumb"
-                                    style={{ backgroundImage: `url(${appHeaderState.backgroundImageUrl})` }}
-                                  />
-                                  <span className="image-preview__name" title={appHeaderState.backgroundImageName ?? ''}>
-                                    {appHeaderState.backgroundImageName ?? 'image'}
-                                  </span>
+                            <div className="property-panel__bg-row">
+                              <DSFormField title="Background Color" size="md" showDescription={false} showHelpText={false}>
+                                <HeaderBackgroundField
+                                  mode={appHeaderState.backgroundMode ?? 'solid'}
+                                  color={appHeaderState.backgroundColor ?? ''}
+                                  gradientStart={appHeaderState.gradientStart ?? ''}
+                                  gradientEnd={appHeaderState.gradientEnd ?? ''}
+                                  onModeChange={(m) => setAppHeaderState((s) => ({ ...s, backgroundMode: m }))}
+                                  onColorChange={(c) => setAppHeaderState((s) => ({ ...s, backgroundColor: c }))}
+                                  onGradientChange={(start, end) => setAppHeaderState((s) => ({ ...s, gradientStart: start, gradientEnd: end }))}
+                                />
+                              </DSFormField>
+                              <DSFormField title="Background Image" size="md" showDescription={false} showHelpText={false}>
+                                <input
+                                  ref={appHeaderBgImageInputRef}
+                                  type="file"
+                                  accept="image/*"
+                                  hidden
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0]
+                                    if (!file) return
+                                    compressImageFile(file).then((url) => {
+                                      setAppHeaderState((s) => ({
+                                        ...s,
+                                        backgroundImageUrl: url,
+                                        backgroundImageName: file.name,
+                                      }))
+                                    })
+                                    e.target.value = ''
+                                  }}
+                                />
+                                {appHeaderState.backgroundImageUrl ? (
+                                  <div className="image-preview">
+                                    <div
+                                      className="image-preview__thumb"
+                                      style={{ backgroundImage: `url(${appHeaderState.backgroundImageUrl})` }}
+                                    />
+                                    <span className="image-preview__name" title={appHeaderState.backgroundImageName ?? ''}>
+                                      {appHeaderState.backgroundImageName ?? 'image'}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      className="image-preview__remove"
+                                      aria-label="Remove image"
+                                      onClick={() => setAppHeaderState((s) => ({ ...s, backgroundImageUrl: null, backgroundImageName: null }))}
+                                    >
+                                      <Icon name="trash-filled" category="general" size={16} />
+                                    </button>
+                                  </div>
+                                ) : (
                                   <button
                                     type="button"
-                                    className="image-preview__remove"
-                                    aria-label="Remove image"
-                                    onClick={() => setAppHeaderState((s) => ({ ...s, backgroundImageUrl: null, backgroundImageName: null }))}
-                                  >
-                                    <Icon name="trash-filled" category="general" size={16} />
-                                  </button>
-                                </div>
-                              ) : (
-                                <div className="upload-area">
-                                  <DSButton
-                                    variant="filled"
-                                    colorScheme="secondary"
-                                    shape="rectangle"
-                                    size="md"
-                                    leftIcon={<Icon name="image-plus-filled" category="media" size={16} />}
+                                    className="property-panel__bg-image-choose"
                                     onClick={() => appHeaderBgImageInputRef.current?.click()}
                                   >
-                                    Choose File
-                                  </DSButton>
-                                  <span className="upload-area__hint">OR DRAG AND DROP HERE</span>
-                                </div>
-                              )}
-                            </DSFormField>
+                                    <Icon name="image-plus-filled" category="media" size={16} />
+                                    <span>Choose a file</span>
+                                  </button>
+                                )}
+                              </DSFormField>
+                            </div>
                           </div>
-                          )}
                           {SHOW_APP_HEADER_TEXT_COLOR && (
                           <div className="property-panel__field">
                             <DSFormField title="Text Color" size="md" showDescription={false} showHelpText={false}>
@@ -6205,9 +6181,18 @@ export function BuildPage({
                           <div className="property-panel__field">
                             <DSFormField title="Target Page" size="md" showDescription={false} showHelpText={false}>
                               <DSDropdownSingle
-                                value={appHeaderState.ctaPageId ?? (pages[0]?.id ?? '')}
+                                value={appHeaderState.ctaPageId ?? (pages[1]?.id ?? '')}
                                 onChange={(val) => setAppHeaderState((s) => ({ ...s, ctaPageId: val }))}
-                                options={pages.map((p) => ({ value: p.id, label: p.name }))}
+                                // The hero lives on the first page, so navigating to it is a no-op —
+                                // drop it from the options (keep original index for the icon fallback).
+                                options={pages
+                                  .map((p, i) => ({ p, i }))
+                                  .filter(({ p }) => p.id !== pages[0]?.id)
+                                  .map(({ p, i }) => ({
+                                    value: p.id,
+                                    label: p.name,
+                                    leading: <AppIcon name={getPageIconName(p, i)} size={20} />,
+                                  }))}
                               />
                             </DSFormField>
                           </div>

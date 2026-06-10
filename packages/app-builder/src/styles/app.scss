@@ -4612,6 +4612,64 @@ body {
   flex-direction: column;
 }
 
+// App header background — color + image inputs side by side (no source toggle).
+.property-panel__bg-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+  align-items: start;
+}
+// Grid items default to min-width:auto, which lets a long image filename push the
+// column past its track — pin to 0 so the 1fr columns hold and the name truncates.
+.property-panel__bg-row > * {
+  min-width: 0;
+}
+
+// Background Image input — match the ColorInput shell (40px, gray-500, transparent
+// border → gray-300 on hover) so it sits flush beside the Background Color input.
+.property-panel__bg-row .image-preview,
+.property-panel__bg-image-choose {
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--gray-500);
+  border: 1px solid transparent;
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.property-panel__bg-row .image-preview:hover,
+.property-panel__bg-image-choose:hover {
+  border-color: var(--gray-300);
+  box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.15);
+}
+// Filled — thumb + name + remove sized to the 40px shell.
+.property-panel__bg-row .image-preview {
+  gap: var(--spacing-xs);
+  padding: 0 var(--spacing-2xs);
+}
+.property-panel__bg-row .image-preview__thumb {
+  width: 28px;
+  height: 28px;
+  background-size: cover;
+}
+.property-panel__bg-row .image-preview__remove {
+  width: 28px;
+  height: 28px;
+}
+// Empty — a centered "Choose a file" affordance in the same shell.
+.property-panel__bg-image-choose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2xs);
+  width: 100%;
+  padding: 0 var(--spacing-sm);
+  color: var(--core-white);
+  font-family: var(--font-family-circular);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-book);
+  cursor: pointer;
+}
+
 // List items editor modal
 .list-items-editor {
   display: flex;
