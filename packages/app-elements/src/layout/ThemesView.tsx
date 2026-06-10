@@ -228,7 +228,7 @@ const FONT_OPTIONS = [
   'Varela Round',
 ];
 
-const HEADING_FONT_OPTIONS = [
+export const HEADING_FONT_OPTIONS = [
   'Playfair Display',
   'Merriweather',
   'Lora',
@@ -285,7 +285,7 @@ const FONT_PAIRINGS: FontPairing[] = [
   { heading: 'Inter', body: 'Inter', tags: ['clean', 'neutral'] },
 ];
 
-function loadGoogleFont(fontName: string) {
+export function loadGoogleFont(fontName: string) {
   const id = `gfont-${fontName.replace(/\s+/g, '-')}`;
   if (document.getElementById(id)) return;
   const link = document.createElement('link');

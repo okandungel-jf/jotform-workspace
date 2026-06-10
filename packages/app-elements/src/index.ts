@@ -81,6 +81,9 @@ export { Spacer } from './components/Spacer';
 // Layout
 export { AppDesigner, applyDefaultTheme, applyStoredOrDefaultTheme } from './layout/AppDesigner';
 export type { AppDesignerSnapshot } from './layout/AppDesigner';
+// App Designer font catalogue — reused by the builder so its Title Font dropdown
+// lists the exact same heading fonts (and loads them for live previews).
+export { HEADING_FONT_OPTIONS, loadGoogleFont } from './layout/ThemesView';
 export { BottomSheet } from './layout/components/BottomSheet';
 
 // Runtime (collections + form sheet for dynamic preset flows)

@@ -2966,6 +2966,77 @@ body {
   background: var(--bg-fill-brand);
 }
 
+// App Header — Cover archetype. A profile-style header: a brand cover band with
+// the app-identity icon card straddling its bottom edge and the title beside it
+// (mirrors the profile system-page header). Default band height 200px.
+.app-cover-header {
+  width: 100%;
+
+  &--interactive { cursor: pointer; }
+}
+// Selection ring wraps ONLY the cover band (the image/colour background), not the
+// light identity area below. White (inverse) reads on a brand colour or photo like
+// the standard header. The avatar straddles the band's bottom edge, so it carries a
+// z-index (below) to sit ABOVE this ring — the ring passes behind it, not through it.
+.app-cover-header--selected .app-cover-header__cover {
+  outline: 2px solid var(--fg-inverse);
+  outline-offset: -2px;
+}
+.app-cover-header__cover {
+  height: 200px;
+  background: var(--bg-fill-brand);
+}
+.app-cover-header__identity {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: var(--app-header-max, 100%);
+  margin-inline: auto;
+  padding: 0 var(--app-header-inset, var(--space-4)) var(--space-10);
+}
+// Avatar flush with the page content's left edge (canvas + desktop preview, where
+// the card is centered). Full-bleed mobile/tablet keep the inset so the avatar
+// tracks the card's own edge there.
+.build-page__canvas .themes-view__device .app-cover-header__identity,
+.app-preview-screen__desktop .app-cover-header__identity {
+  padding-left: 0;
+}
+.app-cover-header__avatar {
+  flex-shrink: 0;
+  width: 118px;
+  height: 118px;
+  // Straddle the cover bottom edge: 30px above it, 88px below.
+  margin-top: -30px;
+  // Sit above the cover band's selection ring so it passes behind the avatar.
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  // Match the page cards' corner radius instead of a full circle.
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface-brand);
+  color: var(--fg-brand);
+  line-height: 1;
+  box-shadow: inset 0 0 0 4px var(--bg-surface);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+.app-cover-header__name {
+  margin: 18px 0 0;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-heading-md);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--fg-primary);
+}
+
 .live-preview__profile-header-identity {
   display: flex;
   align-items: flex-start;
@@ -2995,17 +3066,22 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  // Initials avatar — mirror the Card element's icon colors: brand-tinted
-  // surface background + brand foreground.
+  overflow: hidden;
+  // Match the page cards' corner radius instead of a full circle.
+  border-radius: var(--radius-lg);
+  // App-identity icon — mirror the Card element's icon colors: brand-tinted
+  // surface background + brand foreground (the Icon inherits currentColor).
   background: var(--bg-surface-brand);
   color: var(--fg-brand);
-  font-family: var(--font-family-heading);
-  font-size: var(--font-size-heading-xl);
-  font-weight: 700;
   line-height: 1;
   // 4px inner border (inset box-shadow, per the DS border convention).
   box-shadow: inset 0 0 0 4px var(--bg-surface);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
 .live-preview__profile-header-name {
