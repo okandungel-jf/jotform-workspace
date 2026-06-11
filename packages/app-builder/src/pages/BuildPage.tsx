@@ -233,6 +233,7 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
         size: storedHeader.size ?? APP_HEADER_DEFAULTS.size,
         // Normalise any legacy 'auto' (the removed Auto-height toggle) to the default.
         minHeight: typeof storedHeader.minHeight === 'number' ? storedHeader.minHeight : APP_HEADER_DEFAULTS.minHeight,
+        coverHeight: typeof storedHeader.coverHeight === 'number' ? storedHeader.coverHeight : APP_HEADER_DEFAULTS.coverHeight,
         icon: storedHeader.icon ?? APP_HEADER_DEFAULTS.icon,
         skeleton: storedHeader.skeleton ?? APP_HEADER_DEFAULTS.skeleton,
         show: typeof storedHeader.show === 'boolean' ? storedHeader.show : APP_HEADER_DEFAULTS.show,
@@ -249,6 +250,8 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
         contentDirection: storedHeader.contentDirection ?? APP_HEADER_DEFAULTS.contentDirection,
         titleFont: storedHeader.titleFont ?? APP_HEADER_DEFAULTS.titleFont,
         titleColor: storedHeader.titleColor ?? APP_HEADER_DEFAULTS.titleColor,
+        iconColor: storedHeader.iconColor,
+        iconBgColor: storedHeader.iconBgColor,
         backgroundColor: storedHeader.backgroundColor,
         gradientStart: storedHeader.gradientStart,
         gradientEnd: storedHeader.gradientEnd,
@@ -323,6 +326,10 @@ interface AppHeaderState {
   // title/description grows past it). Optional so older snapshots fall back to
   // the default (272px). Edited via the Height slider in the properties panel.
   minHeight?: number
+  // Cover/Profile cover-band (the coloured/image background strip) height in px.
+  // Optional so older snapshots fall back to the default (200px). Edited via the
+  // Background Height slider in the Cover/Profile properties panel.
+  coverHeight?: number
   // ── Default-layout style controls (panel + state for now; canvas wiring TBD) ──
   // Header size scale for the Default archetype (Compact/Default/Maximum) — kept
   // separate from Hero's `size` so the two archetypes don't fight over one field.
@@ -333,6 +340,10 @@ interface AppHeaderState {
   titleFont?: string
   titleColor?: string
   icon: string
+  // App-icon avatar colour overrides (Icon variant, Default/Cover/Profile). Optional —
+  // when unset the avatar tracks the theme tokens (--fg-brand / --bg-surface-brand).
+  iconColor?: string
+  iconBgColor?: string
   skeleton: boolean
   show: boolean
   imageStyle: AppHeaderImageStyle
@@ -393,6 +404,8 @@ const APP_HEADER_DEFAULTS: AppHeaderState = {
   // Hero's default banner height (Hero is the only archetype that uses minHeight;
   // Default uses its own Compact/Default/Maximum scale). Adjustable via the slider.
   minHeight: 400,
+  // Cover/Profile cover-band height (the coloured/image strip behind the avatar+title).
+  coverHeight: 200,
   backgroundMode: 'solid',
   textColorMode: 'auto',
   bgSource: 'color',
@@ -536,10 +549,12 @@ function HeroCtaButton({
   )
 }
 
-// Cover archetype header — a profile-style banner: a brand cover band with the
-// app-identity icon card straddling its bottom edge and the title beside it
-// (mirrors the profile system-page header). Renders in place of <AppHeader> when
-// the Cover layout is selected.
+// Cover / Profile archetype header — a brand cover band with the app-identity card
+// straddling its bottom edge. Two `kind`s share this structure:
+//   'cover'   → rounded-square avatar on the left, title/description beside it.
+//   'profile' → circular avatar centered over the band, title/description stacked
+//               vertically below it (mirrors the profile system-page header).
+// Renders in place of <AppHeader> when the Cover or Profile layout is selected.
 function CoverHeader({
   title,
   subtitle,
@@ -548,6 +563,10 @@ function CoverHeader({
   backgroundImage,
   selected,
   onClick,
+  kind = 'cover',
+  coverHeight = COVER_HEADER_HEIGHT_DEFAULT,
+  iconColor,
+  iconBgColor,
 }: {
   title: string
   subtitle?: string
@@ -556,6 +575,13 @@ function CoverHeader({
   backgroundImage?: string | null
   selected?: boolean
   onClick?: (e: React.MouseEvent) => void
+  // Layout family: 'cover' (left-aligned, default) or 'profile' (centered, circular avatar).
+  kind?: 'cover' | 'profile'
+  // Height of the cover band (the coloured/image strip) in px.
+  coverHeight?: number
+  // Avatar icon + background colour overrides (Icon variant). Unset → theme tokens.
+  iconColor?: string
+  iconBgColor?: string
 }) {
   const coverStyle = backgroundImage
     ? { background: `url(${backgroundImage}) center / cover no-repeat` }
@@ -564,6 +590,7 @@ function CoverHeader({
       : undefined
   const rootClass = [
     'app-cover-header',
+    kind === 'profile' && 'app-cover-header--profile',
     onClick && 'app-cover-header--interactive',
     selected && 'app-cover-header--selected',
   ]
@@ -576,9 +603,12 @@ function CoverHeader({
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
     >
-      <div className="app-cover-header__cover" style={coverStyle} />
+      <div className="app-cover-header__cover" style={{ ...coverStyle, height: coverHeight }} />
       <div className="app-cover-header__identity">
-        <span className="app-cover-header__avatar">
+        <span
+          className="app-cover-header__avatar"
+          style={{ background: iconBgColor || undefined, color: iconColor || undefined }}
+        >
           {appIcon.variant === 'Image' && appIcon.imageUrl ? (
             <img src={appIcon.imageUrl} alt="" />
           ) : (
@@ -642,6 +672,9 @@ const APP_HEADER_TITLE_PLACEHOLDER = 'Your App Title'
 // Hero shows its own title placeholder — the big banner gets a distinct prompt.
 const HERO_TITLE_PLACEHOLDER = 'Hero Title'
 const APP_HEADER_DESC_PLACEHOLDER = 'Add a short description to tell people what your app does.'
+// The app's default name (mirrors appPresets.ts). Until the app is renamed, the header
+// title falls back to this — treated as an unfilled placeholder, not a real title.
+const DEFAULT_APP_TITLE = 'App Title'
 
 // The header banner's title for display: an explicit value (including '' to hide
 // it) wins; otherwise a real app name shows through, else an archetype-specific
@@ -662,9 +695,15 @@ function resolveHeaderSubtitle(s: AppHeaderState, appDesc: string): string {
 
 // Banner-height slider bounds (px). It drives min-height, so content can still
 // grow past the chosen value — a low value just means a more compact banner.
-const APP_HEADER_HEIGHT_MIN = 160
+const APP_HEADER_HEIGHT_MIN = 280
 const APP_HEADER_HEIGHT_MAX = 600
 const APP_HEADER_HEIGHT_DEFAULT = 272
+
+// Cover/Profile cover-band height slider bounds (px) — the coloured/image strip behind
+// the avatar+title. Smaller range than the Hero banner since it's only the background band.
+const COVER_HEADER_HEIGHT_MIN = 120
+const COVER_HEADER_HEIGHT_MAX = 400
+const COVER_HEADER_HEIGHT_DEFAULT = 200
 
 // Header size presets (Default archetype) → banner min-height in px.
 const DEFAULT_HEADER_SIZE_HEIGHT: Record<AppHeaderSizePreset, number> = {
@@ -696,8 +735,8 @@ function resolveAppHeaderArchetypeProps(s: AppHeaderState): {
       minHeight: DEFAULT_HEADER_SIZE_HEIGHT[s.headerSize ?? 'Default'],
       // Default exposes an explicit Title Color (no Auto/Light/Dark mode).
       textColor: s.titleColor || undefined,
-      // Default is the icon-forward, app-style header.
-      imageStyle: 'Icon',
+      // Default is icon-forward, but honours the App Icon variant (icon or image).
+      imageStyle: s.imageStyle === 'Image' ? 'Image' : 'Icon',
     }
   }
   return {
@@ -1875,7 +1914,10 @@ export function BuildPage({
   // Page to land on after signing in (set when a logged-out user opens a protected page).
   const pendingAuthRedirectRef = useRef<string | null>(null)
   const [isPreviewLoggedIn, setIsPreviewLoggedIn] = useState(false)
-  const [viewingAsRole, setViewingAsRole] = useState<'anyone' | 'admin' | 'user'>('admin')
+  // The preview role doubles as the auth state: 'anyone' (Public) views the app logged
+  // out; Admin/User view it logged in. Defaults to Public so the preview opens on the
+  // public/landing view, consistent with isPreviewLoggedIn starting false.
+  const [viewingAsRole, setViewingAsRole] = useState<'anyone' | 'admin' | 'user'>('anyone')
   const [previewDevice, setPreviewDevice] = useState<'phone' | 'tablet' | 'desktop'>('phone')
   const [isLivePreviewVisible, setIsLivePreviewVisible] = useState(true)
   // Slider position is "sticky": only updated when its target slot is visible.
@@ -2124,9 +2166,24 @@ export function BuildPage({
   // Cover is the profile-style header (cover band + avatar card + name); it renders
   // its own structure instead of the standard <AppHeader>.
   const appHeaderIsCover = (appHeaderState.headerLayout ?? 'Hero') === 'Cover'
+  // Profile is Cover's centered sibling (circular avatar over the band, stacked text
+  // below). It shares CoverHeader's render via the 'profile' kind.
+  const appHeaderIsProfile = (appHeaderState.headerLayout ?? 'Hero') === 'Profile'
+  // Cover + Profile both swap the standard <AppHeader> for the bespoke CoverHeader and
+  // share the same canvas treatment (no first-page tuck, inline page label).
+  const appHeaderIsCoverLike = appHeaderIsCover || appHeaderIsProfile
   // Archetype-driven visual props (alignment/size/height/text colour), shared by
   // all three AppHeader render sites so they never drift.
   const appHeaderArchetypeProps = resolveAppHeaderArchetypeProps(appHeaderState)
+  // The Cover/Profile avatar (and the Default icon) read the header's OWN icon state so
+  // it's editable from the App Icon control in the General tab — distinct from the
+  // Settings-managed nav-logo `appIcon` prop. 'None' falls back to an icon for these
+  // layouts (the avatar is integral; only Hero can hide it).
+  const appHeaderIcon = {
+    variant: (appHeaderState.imageStyle === 'Image' ? 'Image' : 'Icon') as 'Image' | 'Icon',
+    icon: appHeaderState.icon,
+    imageUrl: appHeaderState.imageUrl,
+  }
   const heroCtaConfig: HeroCtaConfig = {
     label: appHeaderState.ctaLabel ?? 'Get Started',
     action: appHeaderState.ctaAction ?? 'Do Nothing',
@@ -2373,6 +2430,84 @@ export function BuildPage({
     return () => cleanups.forEach((fn) => fn())
   }, [appTitle, appSubtitle, appHeaderState.title, appHeaderState.subtitle, appHeaderState.ctaLabel, appHeaderState.ctaEnabled, appHeaderState.headerLayout])
 
+  // Inline-edit the Cover/Profile header's title + description. The block above
+  // targets the standard .jf-app-header__* banner; the bespoke CoverHeader renders
+  // .app-cover-header__name / __subtitle instead, so those need their own wiring.
+  // The resolved value (app name / description / placeholder) acts as the default:
+  // focus clears it to a dimmed placeholder, blur commits real text or reverts.
+  useEffect(() => {
+    const container = appHeaderRef.current
+    if (!container || !appHeaderIsCoverLike) return
+
+    const fields = [
+      {
+        el: container.querySelector('.app-cover-header__name') as HTMLElement | null,
+        defaultValue: resolveHeaderTitle(appHeaderState, appTitle),
+        // Copy that counts as an unfilled placeholder — focus clears it (whether it's a
+        // stored value OR a resolved fallback), like the Banner element's title/desc.
+        placeholders: [DEFAULT_APP_TITLE, APP_HEADER_TITLE_PLACEHOLDER],
+        commit: (v: string) => setAppHeaderState((s) => ({ ...s, title: v })),
+        clear: () => setAppHeaderState((s) => ({ ...s, title: undefined })),
+      },
+      {
+        el: container.querySelector('.app-cover-header__subtitle') as HTMLElement | null,
+        defaultValue: resolveHeaderSubtitle(appHeaderState, appSubtitle),
+        placeholders: [APP_HEADER_DESC_PLACEHOLDER],
+        commit: (v: string) => setAppHeaderState((s) => ({ ...s, subtitle: v })),
+        clear: () => setAppHeaderState((s) => ({ ...s, subtitle: undefined })),
+      },
+    ]
+
+    const cleanups: (() => void)[] = []
+    for (const { el, defaultValue, placeholders, commit, clear } of fields) {
+      if (!el) continue
+      el.contentEditable = 'true'
+      el.style.outline = 'none'
+      el.style.cursor = 'text'
+      // At rest the field shows full-opacity copy (a value OR the default placeholder
+      // copy) — mirrors the Banner. The dimmed ::before hint only appears while empty.
+      el.dataset.placeholder = defaultValue
+      // Unfilled when empty or still showing one of the known placeholder strings.
+      const isPlaceholderCopy = (txt: string) => txt.trim() === '' || placeholders.includes(txt.trim())
+
+      const handleFocus = () => {
+        // Clear placeholder copy on focus → it dims (::before) and there's nothing to
+        // delete; real text (a custom value or a real app name) is left for editing.
+        if (isPlaceholderCopy(el.textContent || '')) {
+          el.textContent = ''
+          el.classList.add('build-page__inline-placeholder')
+        }
+      }
+      const handleInput = () => {
+        el.classList.toggle('build-page__inline-placeholder', !el.textContent)
+      }
+      const handleBlur = () => {
+        // innerText preserves the line breaks contentEditable inserts; strip trailing ones.
+        const newText = el.innerText.replace(/\n+$/, '')
+        // Back at rest → real copy is shown again, so the prompt class always comes off.
+        el.classList.remove('build-page__inline-placeholder')
+        if (newText.trim()) {
+          commit(newText)
+        } else {
+          // Emptied → drop the override so it falls back to the resolved default copy.
+          clear()
+          el.textContent = defaultValue
+        }
+      }
+
+      el.addEventListener('focus', handleFocus)
+      el.addEventListener('input', handleInput)
+      el.addEventListener('blur', handleBlur)
+      cleanups.push(() => {
+        el.removeEventListener('focus', handleFocus)
+        el.removeEventListener('input', handleInput)
+        el.removeEventListener('blur', handleBlur)
+      })
+    }
+
+    return () => cleanups.forEach((fn) => fn())
+  }, [appHeaderIsCoverLike, appHeaderState, appTitle, appSubtitle])
+
   const [activeTab, setActiveTab] = useState<'basic' | 'widgets'>('basic')
   const [widgetSearch, setWidgetSearch] = useState('')
   useEffect(() => { setWidgetSearch('') }, [activeTab])
@@ -2530,6 +2665,9 @@ export function BuildPage({
   // ("home"); logout returns to the landing page.
   const handlePreviewLogin = useCallback(() => {
     setIsPreviewLoggedIn(true)
+    // Keep the role pill in sync: an in-app login (popover) becomes Admin; a role already
+    // chosen via the dropdown (Admin/User) is preserved.
+    setViewingAsRole((r) => (r === 'anyone' ? 'admin' : r))
     setIsLoginPopoverOpen(false)
     setIsMorePageOpen(false)
     const arr = pagesRef.current
@@ -2546,12 +2684,27 @@ export function BuildPage({
 
   const handlePreviewLogout = useCallback(() => {
     setIsPreviewLoggedIn(false)
+    // Logging out returns to the Public role.
+    setViewingAsRole('anyone')
     setIsAvatarPopoverOpen(false)
     setIsMorePageOpen(false)
     setIsPreviewProfileOpen(false)
     const arr = pagesRef.current
     if (arr[0]?.landing) setActivePageId(arr[0].id)
   }, [])
+
+  // Switching the preview role drives the auth state: Admin/User → logged in, Public →
+  // logged out. Crossing that boundary runs the same login/logout transition (landing ↔
+  // home) as the in-app auth actions; switching between Admin and User just re-tags the role.
+  const handleViewingRoleChange = (role: 'anyone' | 'admin' | 'user') => {
+    const wasLoggedIn = viewingAsRole !== 'anyone'
+    const nowLoggedIn = role !== 'anyone'
+    setViewingAsRole(role)
+    if (wasLoggedIn !== nowLoggedIn) {
+      if (nowLoggedIn) handlePreviewLogin()
+      else handlePreviewLogout()
+    }
+  }
 
   // Safety net: if the landing page is the active page while logged in (e.g. the
   // landing toggle was flipped on while signed in), it's now hidden from nav, so
@@ -3302,18 +3455,22 @@ export function BuildPage({
             const isFirstPage = activePage?.id === pages[0]?.id
             return activePage ? (
               <>
-              {isFirstPage && appHeaderState.show && appHeaderIsCover && (
+              {isFirstPage && appHeaderState.show && appHeaderIsCoverLike && (
                 <div className="live-preview__app-header-slot">
                   <CoverHeader
+                    kind={appHeaderIsProfile ? 'profile' : 'cover'}
+                    coverHeight={appHeaderState.coverHeight ?? COVER_HEADER_HEIGHT_DEFAULT}
+                    iconColor={appHeaderState.iconColor}
+                    iconBgColor={appHeaderState.iconBgColor}
                     title={resolveHeaderTitle(appHeaderState, appTitle)}
                     subtitle={resolveHeaderSubtitle(appHeaderState, appSubtitle)}
-                    appIcon={appIcon}
+                    appIcon={appHeaderIcon}
                     background={resolveHeaderBackground(appHeaderState)}
                     backgroundImage={resolveHeaderImage(appHeaderState)}
                   />
                 </div>
               )}
-              {isFirstPage && appHeaderState.show && !appHeaderIsCover && (
+              {isFirstPage && appHeaderState.show && !appHeaderIsCoverLike && (
                 <div className="live-preview__app-header-slot">
                 <AppHeader
                   layout={appHeaderArchetypeProps.layout}
@@ -3321,6 +3478,8 @@ export function BuildPage({
                   size={appHeaderArchetypeProps.size}
                   minHeight={appHeaderArchetypeProps.minHeight}
                   icon={appHeaderState.icon}
+                  iconColor={appHeaderState.iconColor}
+                  iconBgColor={appHeaderState.iconBgColor}
                   imageStyle={appHeaderArchetypeProps.imageStyle}
                   imageUrl={appHeaderState.imageUrl}
                   textColor={appHeaderArchetypeProps.textColor}
@@ -3432,7 +3591,7 @@ export function BuildPage({
         onBack={() => onPreviewClose?.()}
         appScreen={phoneScreenContent}
         role={viewingAsRole}
-        onRoleChange={setViewingAsRole}
+        onRoleChange={handleViewingRoleChange}
       />
     )}
     <div className="build-page">
@@ -3563,23 +3722,29 @@ export function BuildPage({
           <div className="app-scope">
             <div className="themes-view__device">
               <div ref={appHeaderRef}>
-                {appHeaderState.show && appHeaderIsCover && (
+                {appHeaderState.show && appHeaderIsCoverLike && (
                   <CoverHeader
+                    kind={appHeaderIsProfile ? 'profile' : 'cover'}
+                    coverHeight={appHeaderState.coverHeight ?? COVER_HEADER_HEIGHT_DEFAULT}
+                    iconColor={appHeaderState.iconColor}
+                    iconBgColor={appHeaderState.iconBgColor}
                     title={resolveHeaderTitle(appHeaderState, appTitle)}
                     subtitle={resolveHeaderSubtitle(appHeaderState, appSubtitle)}
-                    appIcon={appIcon}
+                    appIcon={appHeaderIcon}
                     background={resolveHeaderBackground(appHeaderState)}
                     backgroundImage={resolveHeaderImage(appHeaderState)}
                     selected={selectedElementId === APP_HEADER_ID}
                     onClick={(e) => { e.stopPropagation(); setSelectedElementId(APP_HEADER_ID); setRightPanel('properties') }}
                   />
                 )}
-                {appHeaderState.show && !appHeaderIsCover && <AppHeader
+                {appHeaderState.show && !appHeaderIsCoverLike && <AppHeader
                   layout={appHeaderArchetypeProps.layout}
                   contentAlign={appHeaderArchetypeProps.contentAlign}
                   size={appHeaderArchetypeProps.size}
                   minHeight={appHeaderArchetypeProps.minHeight}
                   icon={appHeaderState.icon}
+                  iconColor={appHeaderState.iconColor}
+                  iconBgColor={appHeaderState.iconBgColor}
                   imageStyle={appHeaderArchetypeProps.imageStyle}
                   imageUrl={appHeaderState.imageUrl}
                   textColor={appHeaderArchetypeProps.textColor}
@@ -3649,15 +3814,15 @@ export function BuildPage({
               </div>
 
               {pages.map((page, pageIndex) => (
-                <div key={page.id} className={`build-page__page-wrapper${pageIndex === 0 && appHeaderState.show && !appHeaderIsCover ? ' build-page__page-wrapper--first' : ''}`}>
+                <div key={page.id} className={`build-page__page-wrapper${pageIndex === 0 && appHeaderState.show && !appHeaderIsCoverLike ? ' build-page__page-wrapper--first' : ''}`}>
                   <CanvasPageLabel
                     page={page}
                     active={activePageId === page.id}
                     // Cover's header ends on the light page area (not a full-bleed brand
                     // band), so the card must NOT tuck under it and the page label must
                     // not float over it (white-on-light + avatar overlap) — render it inline.
-                    floating={pageIndex === 0 && appHeaderState.show && !appHeaderIsCover}
-                    overlayColor={pageIndex === 0 && !appHeaderIsCover ? appHeaderState.textColor : undefined}
+                    floating={pageIndex === 0 && appHeaderState.show && !appHeaderIsCoverLike}
+                    overlayColor={pageIndex === 0 && !appHeaderIsCoverLike ? appHeaderState.textColor : undefined}
                     onRename={(name) => updatePage(page.id, { name })}
                     onOpenSettings={() => openPageSettings(page.id)}
                   />
@@ -4025,6 +4190,100 @@ export function BuildPage({
                             />
                           </DSFormField>
                         </div>
+                        {/* App Icon — variant (Icon / Image) + icon picker or image upload.
+                            Drives the Default/Cover/Profile avatar. Hero hides it (it uses
+                            its own hero image in the Style tab). */}
+                        {(appHeaderState.headerLayout ?? 'Hero') !== 'Hero' && (
+                        <div className="property-panel__field">
+                          <DSFormField title="App Icon" size="md" showDescription={false} showHelpText={false}>
+                            <Segmented
+                              accent="apps"
+                              variant="text"
+                              value={appHeaderState.imageStyle === 'Image' ? 'Image' : 'Icon'}
+                              onChange={(val) => setAppHeaderState((s) => ({ ...s, imageStyle: val as AppHeaderImageStyle }))}
+                              items={[
+                                { value: 'Icon', label: 'Icon' },
+                                { value: 'Image', label: 'Image' },
+                              ]}
+                            />
+                          </DSFormField>
+                          {appHeaderState.imageStyle === 'Image' ? (
+                            <>
+                              <input
+                                ref={appHeaderImageInputRef}
+                                type="file"
+                                accept="image/*"
+                                hidden
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0]
+                                  if (!file) return
+                                  compressImageFile(file).then((url) => {
+                                    setAppHeaderState((s) => ({ ...s, imageUrl: url, imageName: file.name }))
+                                  })
+                                  e.target.value = ''
+                                }}
+                              />
+                              {appHeaderState.imageUrl ? (
+                                <div className="image-preview">
+                                  <div
+                                    className="image-preview__thumb"
+                                    style={{ backgroundImage: `url(${appHeaderState.imageUrl})` }}
+                                  />
+                                  <span className="image-preview__name" title={appHeaderState.imageName ?? ''}>
+                                    {appHeaderState.imageName ?? 'image'}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    className="image-preview__remove"
+                                    aria-label="Remove image"
+                                    onClick={() => setAppHeaderState((s) => ({ ...s, imageUrl: null, imageName: null }))}
+                                  >
+                                    <Icon name="trash-filled" category="general" size={16} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="upload-area">
+                                  <DSButton
+                                    variant="filled"
+                                    colorScheme="secondary"
+                                    shape="rectangle"
+                                    size="md"
+                                    leftIcon={<Icon name="image-plus-filled" category="media" size={16} />}
+                                    onClick={() => appHeaderImageInputRef.current?.click()}
+                                  >
+                                    Choose File
+                                  </DSButton>
+                                  <span className="upload-area__hint">OR DRAG AND DROP HERE</span>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <IconPropertyField
+                                value={appHeaderState.icon}
+                                onChange={(val) => setAppHeaderState((s) => ({ ...s, icon: val }))}
+                              />
+                              {/* Icon Color + Background Color — avatar overrides; unset tracks the theme. */}
+                              <div className="property-panel__bg-row">
+                                <DSFormField title="Icon Color" size="md" showDescription={false} showHelpText={false}>
+                                  <ColorInputWithPicker
+                                    size="md"
+                                    color={appHeaderState.iconColor ?? ''}
+                                    onColorChange={(c) => setAppHeaderState((s) => ({ ...s, iconColor: c }))}
+                                  />
+                                </DSFormField>
+                                <DSFormField title="Background Color" size="md" showDescription={false} showHelpText={false}>
+                                  <ColorInputWithPicker
+                                    size="md"
+                                    color={appHeaderState.iconBgColor ?? ''}
+                                    onColorChange={(c) => setAppHeaderState((s) => ({ ...s, iconBgColor: c }))}
+                                  />
+                                </DSFormField>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        )}
                       </div>
                     )
                   }
@@ -6720,6 +6979,22 @@ export function BuildPage({
                               </DSFormField>
                             </div>
                           </div>
+                          {/* Background Height — the cover band (coloured/image strip) */}
+                          <div className="property-panel__field">
+                            <DSFormField title="Background Height" size="md" showDescription={false} showHelpText={false}>
+                              <DSSlider
+                                size="md"
+                                min={COVER_HEADER_HEIGHT_MIN}
+                                max={COVER_HEADER_HEIGHT_MAX}
+                                step={4}
+                                value={typeof appHeaderState.coverHeight === 'number' ? appHeaderState.coverHeight : COVER_HEADER_HEIGHT_DEFAULT}
+                                onChange={(v) => setAppHeaderState((s) => ({ ...s, coverHeight: v }))}
+                                showValue
+                                formatValue={(v) => `${v}px`}
+                                aria-label="Cover background height"
+                              />
+                            </DSFormField>
+                          </div>
                           {/* Header Alignment — Left / Right only (Cover has no centered variant) */}
                           <div className="property-panel__field">
                             <DSFormField title="Header Alignment" size="md" showDescription={false} showHelpText={false}>
@@ -6755,8 +7030,7 @@ export function BuildPage({
                           </div>
                           </>
                           )}
-                          {/* Profile layout — Style controls (Background + Title Font/Color).
-                              Panel + state only; canvas render wired later. */}
+                          {/* Profile layout — Style controls (Background + Background Height + Title Font/Color). */}
                           {(appHeaderState.headerLayout ?? 'Hero') === 'Profile' && (
                           <>
                           {/* Background — color/gradient + image (shared fields) */}
@@ -6822,6 +7096,22 @@ export function BuildPage({
                                 )}
                               </DSFormField>
                             </div>
+                          </div>
+                          {/* Background Height — the cover band (coloured/image strip) */}
+                          <div className="property-panel__field">
+                            <DSFormField title="Background Height" size="md" showDescription={false} showHelpText={false}>
+                              <DSSlider
+                                size="md"
+                                min={COVER_HEADER_HEIGHT_MIN}
+                                max={COVER_HEADER_HEIGHT_MAX}
+                                step={4}
+                                value={typeof appHeaderState.coverHeight === 'number' ? appHeaderState.coverHeight : COVER_HEADER_HEIGHT_DEFAULT}
+                                onChange={(v) => setAppHeaderState((s) => ({ ...s, coverHeight: v }))}
+                                showValue
+                                formatValue={(v) => `${v}px`}
+                                aria-label="Profile background height"
+                              />
+                            </DSFormField>
                           </div>
                           {/* Title Font + Title Color */}
                           <div className="property-panel__field">
@@ -6932,7 +7222,7 @@ export function BuildPage({
                       <DSDropdownSingle
                         size="sm"
                         value={viewingAsRole}
-                        onChange={(v) => setViewingAsRole(v as 'anyone' | 'admin' | 'user')}
+                        onChange={(v) => handleViewingRoleChange(v as 'anyone' | 'admin' | 'user')}
                         options={[
                           { value: 'admin', label: 'Admin', leading: <span className="live-preview__role-dot" style={{ background: 'var(--purple-200)' }} /> },
                           { value: 'user', label: 'User', leading: <span className="live-preview__role-dot" style={{ background: 'var(--blue-200)' }} /> },
@@ -7174,18 +7464,22 @@ export function BuildPage({
                             const isFirstPage = activePage?.id === pages[0]?.id
                             return activePage ? (
                               <>
-                              {isFirstPage && appHeaderState.show && appHeaderIsCover && (
+                              {isFirstPage && appHeaderState.show && appHeaderIsCoverLike && (
                                 <div>
                                   <CoverHeader
+                                    kind={appHeaderIsProfile ? 'profile' : 'cover'}
+                                    coverHeight={appHeaderState.coverHeight ?? COVER_HEADER_HEIGHT_DEFAULT}
+                                    iconColor={appHeaderState.iconColor}
+                                    iconBgColor={appHeaderState.iconBgColor}
                                     title={resolveHeaderTitle(appHeaderState, appTitle)}
                                     subtitle={resolveHeaderSubtitle(appHeaderState, appSubtitle)}
-                                    appIcon={appIcon}
+                                    appIcon={appHeaderIcon}
                                     background={resolveHeaderBackground(appHeaderState)}
                                     backgroundImage={resolveHeaderImage(appHeaderState)}
                                   />
                                 </div>
                               )}
-                              {isFirstPage && appHeaderState.show && !appHeaderIsCover && (
+                              {isFirstPage && appHeaderState.show && !appHeaderIsCoverLike && (
                                 <div>
                                 <AppHeader
                                   layout={appHeaderArchetypeProps.layout}
@@ -7193,6 +7487,8 @@ export function BuildPage({
                                   size={appHeaderArchetypeProps.size}
                                   minHeight={appHeaderArchetypeProps.minHeight}
                                   icon={appHeaderState.icon}
+                                  iconColor={appHeaderState.iconColor}
+                                  iconBgColor={appHeaderState.iconBgColor}
                                   imageStyle={appHeaderArchetypeProps.imageStyle}
                                   imageUrl={appHeaderState.imageUrl}
                                   textColor={appHeaderArchetypeProps.textColor}

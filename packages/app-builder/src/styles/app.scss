@@ -3028,13 +3028,26 @@ body {
   background: var(--bg-surface-brand);
   color: var(--fg-brand);
   line-height: 1;
-  box-shadow: inset 0 0 0 4px var(--bg-surface);
+  // Same elevation as the page cards (themes-view__canvas). Outer shadow isn't clipped
+  // by overflow:hidden, so it coexists with the inset surface ring on ::after.
+  box-shadow: var(--shadow-sm);
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
+}
+// The surface ring paints ABOVE the avatar content (icon OR image) so an uploaded photo
+// can't cover it — a child <img> would otherwise sit on top of an inset box-shadow.
+// border-radius: inherit tracks the avatar's own radius (rounded square / profile circle).
+.app-cover-header__avatar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 4px var(--bg-surface);
+  pointer-events: none;
 }
 .app-cover-header__text {
   // Push the title/description down so the title sits at the cover bottom edge (the
@@ -3056,6 +3069,40 @@ body {
   line-height: var(--line-height-paragraph-md);
   color: var(--fg-secondary);
   text-wrap: pretty;
+}
+
+// ── Profile variant ── Cover's centered sibling: a circular avatar straddling the
+// band's bottom edge with the title/description stacked vertically below it.
+.app-cover-header--profile {
+  .app-cover-header__identity {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-4);
+    // Symmetric inset — the centered column never tracks a single edge.
+    padding-inline: var(--app-header-inset, var(--space-4));
+  }
+  .app-cover-header__avatar {
+    // A true circle, straddling ~half over the cover band (vs. Cover's -30px peek).
+    border-radius: var(--radius-rounded);
+    margin-top: -59px;
+  }
+  // Stacked below the avatar — the row-layout top offset no longer applies; the
+  // identity gap handles the avatar→title spacing.
+  .app-cover-header__text {
+    margin-top: 0;
+  }
+  // Keep a readable measure so the description wraps centered instead of stretching.
+  .app-cover-header__subtitle {
+    max-width: 48ch;
+    margin-inline: auto;
+  }
+}
+// Cover pulls its avatar flush-left on the canvas / desktop preview; the centered
+// Profile variant must keep its symmetric inset there (higher specificity wins).
+.build-page__canvas .themes-view__device .app-cover-header--profile .app-cover-header__identity,
+.app-preview-screen__desktop .app-cover-header--profile .app-cover-header__identity {
+  padding-left: var(--app-header-inset, var(--space-4));
 }
 
 .live-preview__profile-header-identity {

@@ -22,6 +22,9 @@ export interface AppHeaderProps {
   icon?: string;
   imageStyle?: AppHeaderImageStyle;
   imageUrl?: string | null;
+  /** Icon-variant avatar colour overrides. Unset → theme tokens (white box / brand icon). */
+  iconColor?: string;
+  iconBgColor?: string;
   title?: string;
   subtitle?: string;
   textColor?: string;
@@ -49,6 +52,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   icon = 'Leaf',
   imageStyle = 'Icon',
   imageUrl,
+  iconColor,
+  iconBgColor,
   title = 'Urban Jungle',
   subtitle = "Istanbul's Rare Plant Haven",
   textColor,
@@ -139,6 +144,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         {imageStyle !== 'None' && (
           <div
             className={iconClass}
+            // Icon-variant colour overrides; never on the image variant (would tint the photo box).
+            style={imageStyle === 'Image' ? undefined : { background: iconBgColor || undefined, color: iconColor || undefined }}
             onClick={onIconClick}
             role={onIconClick ? 'button' : undefined}
             tabIndex={onIconClick ? 0 : undefined}
