@@ -258,7 +258,10 @@ ComponentRegistry.register({
         imageStyle={variants['Image Style'] as ListImageStyle}
         size={variants['Size'] as ListSize}
         action={variants['Action'] as ListAction}
+        actionIcon={(props['Action Icon'] as string) || undefined}
         actionIconFilled={variants['Icon Filled'] === 'Yes'}
+        actionIconColor={(props['Indicator Icon Color'] as string) || '#C8CEED'}
+        actionBgColor={(props['Indicator Background Color'] as string) || '#FFFFFF'}
         buttonLabel={props['Button Label'] as string}
         // Card layout props
         cardImageStyle={isCard ? variants['Card Image Style'] as CardImageStyle : undefined}

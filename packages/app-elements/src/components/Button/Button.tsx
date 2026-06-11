@@ -22,6 +22,10 @@ export interface ButtonProps {
   iconOnlyIcon?: string;
   iconOnlyFilled?: boolean;
   iconOnlySm?: boolean;
+  /** Icon-only: override the glyph colour (icon inherits via currentColor). */
+  iconColor?: string;
+  /** Icon-only: override the button background colour. */
+  iconBgColor?: string;
   selected?: boolean;
   shrinked?: boolean;
   fullWidth?: boolean;
@@ -47,6 +51,8 @@ export const Button: React.FC<ButtonProps> = ({
   iconOnlyIcon = 'Plus',
   iconOnlyFilled = true,
   iconOnlySm = false,
+  iconColor,
+  iconBgColor,
   selected = false,
   shrinked = false,
   fullWidth = false,
@@ -71,8 +77,17 @@ export const Button: React.FC<ButtonProps> = ({
       selected && 'jf-btn-icon--selected',
     ].filter(Boolean).join(' ');
 
+    const iconOnlyStyle: React.CSSProperties = {};
+    if (iconColor) iconOnlyStyle.color = iconColor;
+    if (iconBgColor) iconOnlyStyle.background = iconBgColor;
+
     return (
-      <button className={iconOnlyClasses} disabled={isDisabled} onClick={onClick}>
+      <button
+        className={iconOnlyClasses}
+        style={iconColor || iconBgColor ? iconOnlyStyle : undefined}
+        disabled={isDisabled}
+        onClick={onClick}
+      >
         <Icon name={iconOnlyIcon} className="jf-btn-icon__icon" size={iconOnlySm ? 16 : 24} />
       </button>
     );

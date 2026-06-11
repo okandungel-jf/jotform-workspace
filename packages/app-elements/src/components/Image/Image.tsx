@@ -5,10 +5,12 @@ import './Image.scss';
 
 export type ImageAlignment = 'Left' | 'Center' | 'Right';
 export type ImageSize = 'Normal' | 'Large';
+export type ImageShape = 'Square' | 'Circle' | 'Rounded';
 
 export interface ImageProps {
   alignment?: ImageAlignment;
   size?: ImageSize;
+  shape?: ImageShape;
   hasImage?: boolean;
   imageUrl?: string;
   altText?: string;
@@ -23,6 +25,7 @@ export interface ImageProps {
 export const Image: FC<ImageProps> = ({
   alignment = 'Left',
   size = 'Normal',
+  shape = 'Square',
   hasImage = false,
   imageUrl,
   altText = '',
@@ -144,9 +147,15 @@ export const Image: FC<ImageProps> = ({
     mediaStyle.objectFit = 'cover';
   }
 
+  const mediaClasses = [
+    'jf-image__media',
+    shape === 'Circle' && 'jf-image__media--circle',
+    shape === 'Rounded' && 'jf-image__media--rounded',
+  ].filter(Boolean).join(' ');
+
   return (
     <div className={rootClasses}>
-      <img className="jf-image__media" src={imageUrl} alt={altText} style={mediaStyle} />
+      <img className={mediaClasses} src={imageUrl} alt={altText} style={mediaStyle} />
     </div>
   );
 };

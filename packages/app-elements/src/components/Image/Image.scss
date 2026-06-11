@@ -43,6 +43,16 @@
   width: 100%;
   height: auto;
   object-fit: cover;
+
+  &--circle {
+    aspect-ratio: 1;
+    border-radius: var(--radius-rounded);
+    object-fit: cover;
+  }
+
+  &--rounded {
+    border-radius: var(--radius-lg);
+  }
 }
 
 // =========================================

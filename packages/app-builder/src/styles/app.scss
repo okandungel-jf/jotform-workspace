@@ -1874,6 +1874,29 @@ body {
   cursor: pointer;
 }
 
+// Dynamic detail page back affordance: labelled "‹ Back" (desktop). Uses the
+// header's neutral text colour (inherited), not a link/accent colour.
+.live-preview__top-header-back--labeled {
+  gap: var(--space-1);
+  margin-right: 0;
+}
+
+.live-preview__top-header-back-label {
+  font-family: var(--font-family);
+  font-size: var(--font-size-md, 16px);
+  font-weight: var(--font-weight-medium, 500);
+}
+
+// A source List wired to "Open Dynamic Page" — rows are clickable in preview.
+.themes-view__section--list-link {
+  cursor: pointer;
+
+  .jf-list-item,
+  .jf-card {
+    cursor: pointer;
+  }
+}
+
 .live-preview__top-header-page-name {
   font-family: var(--font-family-heading);
   font-size: var(--font-size-heading-sm);
@@ -4221,6 +4244,126 @@ body {
 
 .canvas-page-label:hover .canvas-page-label__gear {
   opacity: 1;
+}
+
+// ── Dynamic detail page breadcrumb (List "Open Dynamic Page") ───────────────
+// Sits above the dynamic page's card, in place of the regular page label.
+.dynamic-page-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 644px;
+  margin: 0 auto;
+  padding: 0 0 var(--space-2);
+  font-family: var(--font-family-circular);
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+}
+
+.dynamic-page-header__crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  // Match the regular canvas page label (.canvas-page-label__name).
+  font-size: var(--font-size-label-md, 14px);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--fg-disabled);
+  white-space: nowrap;
+
+  svg { color: var(--fg-disabled); }
+}
+
+.dynamic-page-header__source {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.dynamic-page-header__sep {
+  color: var(--fg-disabled);
+  flex-shrink: 0;
+}
+
+.dynamic-page-header__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 24px;
+  padding: 0 var(--space-1) 0 var(--space-2);
+  border: none;
+  border-radius: 20px; // chrome pill — hardcoded radius (not a token)
+  background: var(--bg-surface-brand);
+  color: var(--fg-secondary);
+  font-family: inherit;
+  font-size: var(--font-size-label-md, 14px);
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover { background: var(--bg-surface-brand-hover, #dbd6fa); }
+  svg { color: var(--fg-secondary); }
+}
+
+.dynamic-page-header__menu {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 20;
+  min-width: 180px;
+  padding: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--bg-fill);
+  border: 1px solid var(--border);
+  border-radius: 12px; // chrome dropdown — hardcoded radius
+  box-shadow: 0 8px 24px rgba(9, 17, 65, 0.12);
+}
+
+.dynamic-page-header__menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: none;
+  border-radius: var(--radius-md, 8px);
+  font-family: inherit;
+  font-size: var(--font-size-label-md, 14px);
+  color: var(--fg-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease;
+
+  &:hover { background: var(--bg-surface-hover, #f1f1f4); }
+  &--active { color: var(--fg-brand); }
+  svg { color: var(--fg-brand); flex-shrink: 0; }
+}
+
+// "Go to Dynamic Page" link inside the List ACTIONS panel.
+.list-actions__go-link {
+  margin-top: var(--space-2);
+}
+
+// Two color fields side by side (e.g. Click Indicator Icon/Background Color).
+.property-panel__color-row {
+  display: flex;
+  gap: var(--ds-space-3, 12px);
+
+  > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 }
 
 // First page: float the label over the header, just above the card's top-left.
@@ -8623,6 +8766,12 @@ body.builder--phone-only {
   .live-preview__top-header-page,
   .live-preview__top-header-btn {
     display: none;
+  }
+
+  // Exception: a dynamic detail page's Back affordance replaces the nav entirely,
+  // so its container must stay visible on desktop (the regular page name does not).
+  .live-preview__top-header-page:has(.live-preview__top-header-back--labeled) {
+    display: flex;
   }
 
   // Desktop compact is a flex item with content-fit width so the nav sits

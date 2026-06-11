@@ -30,6 +30,10 @@ export interface ListProps {
   /** Icon name for the per-item action when `action="Icon"` (default ChevronRight). */
   actionIcon?: string;
   actionIconFilled?: boolean;
+  /** Click-indicator icon colour (when `action="Icon"`). */
+  actionIconColor?: string;
+  /** Click-indicator background colour (when `action="Icon"`). */
+  actionBgColor?: string;
   buttonLabel?: string;
   // Card layout props
   cardImageStyle?: CardImageStyle;
@@ -55,7 +59,7 @@ const ImagePlaceholder: FC<{ size: number }> = ({ size: s }) => (
 // ============================================
 // Action element (matches Card component style)
 // ============================================
-const ListActionEl: FC<{ action: ListAction; actionIcon: string; actionIconFilled: boolean; buttonLabel: string }> = ({ action, actionIcon, actionIconFilled, buttonLabel }) => {
+const ListActionEl: FC<{ action: ListAction; actionIcon: string; actionIconFilled: boolean; buttonLabel: string; actionIconColor?: string; actionBgColor?: string }> = ({ action, actionIcon, actionIconFilled, buttonLabel, actionIconColor, actionBgColor }) => {
   if (action === 'None') return null;
   if (action === 'Icon') {
     return (
@@ -63,6 +67,8 @@ const ListActionEl: FC<{ action: ListAction; actionIcon: string; actionIconFille
         iconOnly
         iconOnlyIcon={actionIcon}
         iconOnlyFilled={actionIconFilled}
+        iconColor={actionIconColor}
+        iconBgColor={actionBgColor}
         corner="Default"
       />
     );
@@ -85,7 +91,9 @@ const BasicListItem: FC<{
   actionIcon: string;
   actionIconFilled: boolean;
   buttonLabel: string;
-}> = ({ item, imageStyle, size, action, actionIcon, actionIconFilled, buttonLabel }) => {
+  actionIconColor?: string;
+  actionBgColor?: string;
+}> = ({ item, imageStyle, size, action, actionIcon, actionIconFilled, buttonLabel, actionIconColor, actionBgColor }) => {
   const isCompact = size === 'Compact';
   const imgSize = isCompact ? 60 : 104;
   const iconSize = isCompact ? 32 : 48;
@@ -112,7 +120,7 @@ const BasicListItem: FC<{
           <div className="jf-list-item__title">{item.title}</div>
           <div className="jf-list-item__desc">{item.description}</div>
         </div>
-        <ListActionEl action={action} actionIcon={actionIcon} actionIconFilled={actionIconFilled} buttonLabel={buttonLabel} />
+        <ListActionEl action={action} actionIcon={actionIcon} actionIconFilled={actionIconFilled} buttonLabel={buttonLabel} actionIconColor={actionIconColor} actionBgColor={actionBgColor} />
       </div>
     </div>
   );
@@ -201,6 +209,8 @@ export const List: FC<ListProps> = ({
   action = 'None',
   actionIcon = 'ChevronRight',
   actionIconFilled = true,
+  actionIconColor,
+  actionBgColor,
   buttonLabel = 'Edit',
   cardImageStyle = 'Square',
   cardLayout = 'Horizontal',
@@ -287,7 +297,7 @@ export const List: FC<ListProps> = ({
       {header}
       {items.map((item, i) => (
         <Fragment key={i}>
-          <BasicListItem item={item} imageStyle={imageStyle} size={size} action={action} actionIcon={actionIcon} actionIconFilled={actionIconFilled} buttonLabel={buttonLabel} />
+          <BasicListItem item={item} imageStyle={imageStyle} size={size} action={action} actionIcon={actionIcon} actionIconFilled={actionIconFilled} buttonLabel={buttonLabel} actionIconColor={actionIconColor} actionBgColor={actionBgColor} />
           {i < items.length - 1 && <div className="jf-list__divider" />}
         </Fragment>
       ))}

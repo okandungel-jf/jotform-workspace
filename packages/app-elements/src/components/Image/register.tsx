@@ -1,6 +1,6 @@
 import { ComponentRegistry } from '../../types/registry';
 import { Image } from './Image';
-import type { ImageAlignment, ImageSize } from './Image';
+import type { ImageAlignment, ImageSize, ImageShape } from './Image';
 import type { VariantValues, PropertyValues, StateValues } from '../../types/component';
 import imageScss from './Image.scss?raw';
 
@@ -23,6 +23,11 @@ ComponentRegistry.register({
     Size: {
       options: ['Normal', 'Large'],
       default: 'Normal',
+      showWhen: { 'Has Image': 'Yes' },
+    },
+    'Image Shape': {
+      options: ['Square', 'Circle', 'Rounded'],
+      default: 'Square',
       showWhen: { 'Has Image': 'Yes' },
     },
   },
@@ -54,6 +59,7 @@ ComponentRegistry.register({
     { name: 'altText', type: 'string', default: '""', description: 'Alt text for the rendered image.' },
     { name: 'alignment', type: '"Left" | "Center" | "Right"', default: '"Left"', description: 'Horizontal alignment of the image within its container.' },
     { name: 'size', type: '"Normal" | "Large"', default: '"Normal"', description: 'Size variant for the rendered image.' },
+    { name: 'shape', type: '"Square" | "Circle" | "Rounded"', default: '"Square"', description: 'Corner shape of the rendered image. **Circle** crops to a 1:1 rounded avatar; **Rounded** applies radius-lg.' },
     { name: 'width', type: 'number', default: 'undefined', description: 'Explicit pixel width. When omitted, height (if set) caps via max-height.' },
     { name: 'height', type: 'number', default: 'undefined', description: 'Explicit pixel height. When set without width, applied as max-height.' },
     { name: 'selected', type: 'boolean', default: 'false', description: 'Outline shown when selected on the canvas.' },
@@ -70,6 +76,7 @@ ComponentRegistry.register({
         hasImage={hasImage}
         alignment={hasImage ? variants['Alignment'] as ImageAlignment : undefined}
         size={hasImage ? variants['Size'] as ImageSize : undefined}
+        shape={hasImage ? variants['Image Shape'] as ImageShape : undefined}
         imageUrl={props['Image URL'] as string}
         altText={props['Alt Text'] as string}
         width={Number.isFinite(widthValue) && widthValue > 0 ? widthValue : undefined}
