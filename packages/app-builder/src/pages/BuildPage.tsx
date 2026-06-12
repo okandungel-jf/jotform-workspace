@@ -2395,6 +2395,10 @@ export function BuildPage({
   const bottomNavItems = hasNavOverflow
     ? [...visibleNavPages.map((p, i) => ({ icon: getPageIconName(p, i), label: p.name })), { icon: 'Ellipsis', label: 'More' }]
     : visibleNavPages.map((p, i) => ({ icon: getPageIconName(p, i), label: p.name }))
+  // The mobile tab bar only appears when there is more than one item to switch
+  // between. Hidden / dynamic / landing pages drop out of navPages above, so an
+  // app that ends up with a single visible tab shows no bottom navigation at all.
+  const hasMultipleNavItems = bottomNavItems.length > 1
   const bottomNavActiveIndex = (() => {
     if (hasNavOverflow && (isMorePageOpen || isActiveInOverflow)) return visibleNavPages.length
     const idx = visibleNavPages.findIndex((p) => p.id === activePageId)
@@ -3947,7 +3951,7 @@ export function BuildPage({
           })()}
         </div>
       </div>
-      {pages.length > 1 && bottomNavEnabled && !isPreviewCartOpen && !isPreviewCheckoutOpen && !isPreviewDetailOpen && !isPreviewProfileOpen && !showLandingNav && !activePageIsDynamic && (
+      {hasMultipleNavItems && bottomNavEnabled && !isPreviewCartOpen && !isPreviewCheckoutOpen && !isPreviewDetailOpen && !isPreviewProfileOpen && !showLandingNav && !activePageIsDynamic && (
         <div className="live-preview__bottom-nav app-scope">
           <BottomNavigation
             items={bottomNavItems}
@@ -3980,7 +3984,7 @@ export function BuildPage({
       />
       <LivePreviewOrderBar
         hidden={isPreviewCartOpen || isPreviewCheckoutOpen || isPreviewDetailOpen || isPreviewProfileOpen}
-        hasBottomNav={pages.length > 1}
+        hasBottomNav={hasMultipleNavItems}
         onClick={() => setIsPreviewCheckoutOpen(true)}
       />
     </>
@@ -8105,7 +8109,7 @@ export function BuildPage({
                           })()}
                         </div>
                       </div>
-                      {pages.length > 1 && bottomNavEnabled && !isPreviewCartOpen && !isPreviewCheckoutOpen && !isPreviewDetailOpen && !isPreviewProfileOpen && !showLandingNav && !activePageIsDynamic && (
+                      {hasMultipleNavItems && bottomNavEnabled && !isPreviewCartOpen && !isPreviewCheckoutOpen && !isPreviewDetailOpen && !isPreviewProfileOpen && !showLandingNav && !activePageIsDynamic && (
                         <div className="live-preview__bottom-nav app-scope">
                           <BottomNavigation
                             items={bottomNavItems}
@@ -8138,7 +8142,7 @@ export function BuildPage({
                       />
                       <LivePreviewOrderBar
                         hidden={isPreviewCartOpen || isPreviewCheckoutOpen || isPreviewDetailOpen || isPreviewProfileOpen}
-                        hasBottomNav={pages.length > 1}
+                        hasBottomNav={hasMultipleNavItems}
                         onClick={() => setIsPreviewCheckoutOpen(true)}
                       />
                       </>
