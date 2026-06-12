@@ -4808,6 +4808,22 @@ body {
   }
 }
 
+// When the builder element IS selected, the paragraph becomes its own editable
+// surface: re-show its toolbar and re-enable pointer interaction. This must out-
+// specify the display-only rules `.build-page__canvas .themes-view__app` (0,3,0)
+// applies to every paragraph (the live-preview default) — the editor canvas shares
+// that same container chain — so the override carries the full ancestor path plus
+// the --selected class (0,4,0).
+.build-page__canvas .themes-view__app .build-page__canvas-element--selected {
+  .jf-paragraph__toolbar {
+    display: flex;
+  }
+  .jf-paragraph__editor {
+    pointer-events: auto;
+    cursor: text;
+  }
+}
+
 // ============================================
 // Right Panel - Properties
 // ============================================

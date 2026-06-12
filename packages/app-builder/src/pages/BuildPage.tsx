@@ -1488,13 +1488,6 @@ const SortableElement = memo(function SortableElement({
       }
     }
 
-    if (isSelected && element.componentId === 'paragraph') {
-      const editor = container.querySelector('.jf-paragraph__editor') as HTMLElement | null
-      if (editor) {
-        requestAnimationFrame(() => editor.click())
-      }
-    }
-
     return () => cleanups.forEach((fn) => fn())
   }, [isSelected, element.componentId, element.id, comp, onPropertyChange])
 
@@ -1516,7 +1509,16 @@ const SortableElement = memo(function SortableElement({
         <Icon name="grid-dots-vertical" category="general" size={24} />
       </div>
       <div ref={contentRef} className="build-page__canvas-element-content">
-        {comp.render(element.variants, element.properties, element.states, (name, value) => onPropertyChange(element.id, name, value))}
+        {comp.render(
+          element.variants,
+          element.properties,
+          // Paragraph owns its own rich-text toolbar, shown via its `selected` prop.
+          // Drive it from the builder's selection so the toolbar appears when the
+          // element is selected in the canvas (every other element shows the outline
+          // wrapper instead). Controlled selection — no internal click-to-select.
+          element.componentId === 'paragraph' ? { ...element.states, Selected: isSelected } : element.states,
+          (name, value) => onPropertyChange(element.id, name, value),
+        )}
       </div>
     </section>
   )

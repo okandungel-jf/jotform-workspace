@@ -101,7 +101,7 @@ ComponentRegistry.register({
         toolbar={variants['Toolbar'] as ParagraphToolbar}
         placeholder={props['Placeholder'] as string}
         defaultValue={props['Text'] as string}
-        selected={states['Selected'] ? true : undefined}
+        selected={Boolean(states['Selected'])}
       />
     );
   },
