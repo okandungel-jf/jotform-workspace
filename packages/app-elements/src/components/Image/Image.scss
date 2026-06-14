@@ -55,6 +55,21 @@
   }
 }
 
+// Bound-but-empty placeholder: a neutral fill + centered image icon, occupying the
+// image's default footprint (full width, image-height floor). Shape classes above
+// add the matching radius (circle/rounded).
+.jf-image__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  background: var(--bg-fill-hover);
+}
+
+.jf-image__placeholder-icon {
+  color: var(--fg-tertiary);
+}
+
 // =========================================
 // Image Builder (upload state)
 // =========================================

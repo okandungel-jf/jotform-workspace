@@ -158,6 +158,22 @@ const DYNAMIC_DETAIL_FIELD_OPTIONS: { value: string; label: string; icon: string
   { value: 'Image', label: 'Image', icon: 'paperclip-diagonal', iconCategory: 'forms-files' },
 ]
 
+// Inline field-reference tags shown in the Paragraph editor, rendered as {tag}
+// (mirrors Jotform's {qid_name} merge-field format). Keyed by the logical field.
+const DYNAMIC_DETAIL_FIELD_TAGS: Record<string, string> = {
+  Title: '1_title',
+  Description: '4_description',
+}
+
+const fieldTag = (value: string) => DYNAMIC_DETAIL_FIELD_TAGS[value] ?? value.toLowerCase()
+
+// Text columns offered by the Paragraph's "Add Field" menu on a dynamic page —
+// the bound table's text fields (Image is not text → excluded). `value` resolves
+// against the previewed item; `tag` is the inline {tag} display.
+const DYNAMIC_DETAIL_TEXT_COLUMNS = DYNAMIC_DETAIL_FIELD_OPTIONS
+  .filter((o) => o.value !== 'Image')
+  .map((o) => ({ value: o.value, label: o.label, tag: fieldTag(o.value) }))
+
 // Read a composer's tokens (stored as JSON under `tokenPropKey`); when unset,
 // default to a single chip for `defaultFieldValue` (or empty when omitted).
 function readComposerTokens(el: CanvasElement, tokenPropKey: string, defaultFieldValue?: string): FieldToken[] {
@@ -213,7 +229,13 @@ function applyDynamicBinding(el: CanvasElement, item: DynamicDetailItem | undefi
     const variants = { ...el.variants }
     const url = boundColumn === 'Image' ? (item.image ?? '') : ''
     properties['Image URL'] = url
-    if (url) variants['Has Image'] = 'Yes'
+    if (url) {
+      variants['Has Image'] = 'Yes'
+    } else {
+      // Bound to a data-source column but the row has no image → show the read-only
+      // placeholder (icon + fill) instead of the upload box.
+      properties['__boundEmpty'] = true
+    }
     return { ...el, properties, variants }
   }
   // Card composes its Title/Description from field tokens on a dynamic page.
@@ -227,6 +249,29 @@ function applyDynamicBinding(el: CanvasElement, item: DynamicDetailItem | undefi
     if (typeof d === 'string' && d.trim().startsWith('[')) properties['Description'] = resolveFieldTokens(d, item)
     else if (item) properties['Description'] = item.description ?? ''
     return { ...el, properties }
+  }
+  // Paragraph composes its Text from inline {tag} field tokens on a dynamic page.
+  // Unfocused the canvas shows the resolved value; focused the paragraph surfaces
+  // the tokens and an "Add Field" menu fed by the bound table's text columns.
+  if (el.componentId === 'paragraph') {
+    // The bound text columns the in-canvas "Add Field" menu offers. There is no
+    // side-channel into a registered render, so thread them via a property.
+    const fieldOptions = JSON.stringify(DYNAMIC_DETAIL_TEXT_COLUMNS)
+    const tk = el.properties['Text Tokens']
+    if (typeof tk === 'string' && tk.trim().startsWith('[')) {
+      return { ...el, properties: { ...el.properties, Text: resolveFieldTokens(tk, item), __fieldOptions: fieldOptions } }
+    }
+    // Legacy __bindField='description' (pages seeded before the token model):
+    // synthesize a Description token so the focused token view works, and resolve
+    // the unfocused text from the previewed item.
+    if (el.properties[DYNAMIC_BIND_KEY] === 'description') {
+      const tokens = JSON.stringify([
+        { type: 'field', value: 'Description', label: 'Description', tag: fieldTag('Description'), icon: 'type-square-filled', iconCategory: 'editor' },
+      ])
+      return { ...el, properties: { ...el.properties, 'Text Tokens': tokens, Text: item?.description ?? '', __fieldOptions: fieldOptions } }
+    }
+    // Freshly-added paragraph (no tokens yet): still expose the Add Field columns.
+    return { ...el, properties: { ...el.properties, __fieldOptions: fieldOptions } }
   }
   const bind = el.properties[DYNAMIC_BIND_KEY] as DynamicBindField | undefined
   if (!bind || !item) return el
@@ -281,7 +326,12 @@ function createDynamicDetailPage(listId: string, pageId: string, elementIds: str
   }
   if (paragraphComp) {
     const para = createCanvasElement(paragraphComp, elementIds[2])
-    para.properties[DYNAMIC_BIND_KEY] = 'description'
+    // Description is field-composed (token model, like the Heading): seed a single
+    // Description token. Unfocused the canvas resolves it to the row's value;
+    // focused the paragraph surfaces it as an inline {4_description} token.
+    para.properties['Text Tokens'] = JSON.stringify([
+      { type: 'field', value: 'Description', label: 'Description', tag: fieldTag('Description'), icon: 'type-square-filled', iconCategory: 'editor' },
+    ])
     elements.push(para)
   }
   return { id: pageId, name: 'Dynamic Page', dynamic: true, dynamicSourceElementId: listId, elements }
@@ -338,6 +388,7 @@ const ELEMENT_ICON_MAP: Record<string, { icon: string; iconCategory: string }> =
   'daily-task-manager': { icon: 'table', iconCategory: 'general' },
   'progress-indicator': { icon: 'list-check-square-filled', iconCategory: 'general' },
   'spacer': { icon: 'spacer-vertical-filled', iconCategory: 'layout' },
+  'divider': { icon: 'minus-sm', iconCategory: 'general' },
 }
 
 interface PanelGroup {
@@ -346,7 +397,7 @@ interface PanelGroup {
 }
 
 const BASIC_GROUPS: PanelGroup[] = [
-  { elementIds: ['form', 'heading', 'banner', 'list', 'paragraph', 'card', 'sign-document', 'document', 'image', 'image-gallery', 'button', 'spacer'] },
+  { elementIds: ['form', 'heading', 'banner', 'list', 'paragraph', 'card', 'sign-document', 'document', 'image', 'image-gallery', 'button', 'spacer', 'divider'] },
   { label: 'PAYMENT ELEMENTS', elementIds: ['product-list', 'donation-box'] },
   { label: 'FEATURED WIDGETS', elementIds: ['social-follow', 'testimonial', 'faq'] },
   { label: 'DATA ELEMENTS', elementIds: ['table'] },
@@ -383,7 +434,7 @@ function createCanvasElement(comp: RegisteredComponent, id: string): CanvasEleme
   }
 }
 
-function buildCanvasElementsFromPreset(presetElements: PresetElement[], startId: number): { elements: CanvasElement[]; nextId: number } {
+function buildCanvasElementsFromPreset(presetElements: PresetElement[], startId: number, keyToId?: Record<string, string>): { elements: CanvasElement[]; nextId: number } {
   const elements: CanvasElement[] = []
   let id = startId
   for (const pe of presetElements) {
@@ -392,9 +443,20 @@ function buildCanvasElementsFromPreset(presetElements: PresetElement[], startId:
     const el = createCanvasElement(comp, `element-${id++}`)
     if (pe.variants) Object.assign(el.variants, pe.variants)
     if (pe.properties) Object.assign(el.properties, pe.properties)
+    // Record the preset's stable link id → generated element id, so a dynamic
+    // detail page can resolve its source List (PresetPage.dynamicSourceKey).
+    if (pe.key && keyToId) keyToId[pe.key] = el.id
     elements.push(el)
   }
   return { elements, nextId: id }
+}
+
+// "Always-fresh" presets ignore any stored/remote snapshot and always build from
+// the preset definition (and never persist one): the Empty sandbox, and the
+// `showcase-*` reference apps — so editing their definition is reflected on reload
+// without users having to clear cached snapshots.
+function isAlwaysFreshPreset(id: string | undefined): boolean {
+  return id === 'empty' || (!!id && id.startsWith('showcase-'))
 }
 
 function buildInitialStateFromPreset(preset: AppPreset | undefined): {
@@ -413,8 +475,8 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
       appHeader: { ...APP_HEADER_DEFAULTS },
     }
   }
-  // Empty App always starts from defaults — skip stored snapshot.
-  const stored = preset.id === 'empty' ? null : loadSnapshot(preset.id)
+  // Empty App + showcase reference apps always start from the definition.
+  const stored = isAlwaysFreshPreset(preset.id) ? null : loadSnapshot(preset.id)
   if (stored) {
     const pages = stored.pages as AppPage[]
     const storedHeader = (stored.appHeader ?? {}) as Partial<AppHeaderState>
@@ -476,16 +538,27 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
     }
   }
   let nextId = 1
+  const keyToId: Record<string, string> = {}
   const pages: AppPage[] = preset.pages.map((p) => {
-    const built = buildCanvasElementsFromPreset(p.elements, nextId)
+    const built = buildCanvasElementsFromPreset(p.elements, nextId, keyToId)
     nextId = built.nextId
-    return { id: p.id, name: p.name, icon: p.icon, landing: p.landing, requireLogin: p.requireLogin, elements: built.elements }
+    const page: AppPage = { id: p.id, name: p.name, icon: p.icon, landing: p.landing, requireLogin: p.requireLogin, elements: built.elements }
+    if (p.dynamic) page.dynamic = true
+    return page
+  })
+  // Resolve each dynamic detail page's source List from the preset's link key.
+  preset.pages.forEach((p, i) => {
+    if (p.dynamic && p.dynamicSourceKey && keyToId[p.dynamicSourceKey]) {
+      pages[i].dynamicSourceElementId = keyToId[p.dynamicSourceKey]
+    }
   })
   const headerBuilt = buildCanvasElementsFromPreset(preset.headerActions, nextId)
   return {
     pages,
     headerActions: headerBuilt.elements,
-    activePageId: pages[0].id,
+    // Land on the first real (non-dynamic) page; dynamic detail pages are reached
+    // by tapping a list item, never shown as the initial page or a nav tab.
+    activePageId: (pages.find((p) => !p.dynamic) ?? pages[0]).id,
     appSubtitle: preset.appSubtitle,
     appHeader: { ...APP_HEADER_DEFAULTS, ...(preset.appHeader ?? {}) },
   }
@@ -2241,8 +2314,8 @@ export function BuildPage({
 
   useEffect(() => {
     if (!preset) return
-    // Empty App is a sandbox — never persist its state.
-    if (preset.id === 'empty') return
+    // Empty App is a sandbox, showcase apps are always-fresh — never persist them.
+    if (isAlwaysFreshPreset(preset.id)) return
     const snap = { appTitle, appSubtitle, pages, headerActions, appHeader: appHeaderState }
     saveSnapshot(preset.id, snap) // local (IndexedDB) — instant
     syncAppToRemote(preset.id, snap) // remote (Vercel KV via /api) — debounced; no-op without a backend
@@ -4761,6 +4834,10 @@ export function BuildPage({
                   const isImage = selectedComponent.id === 'image'
                   const isList = selectedComponent.id === 'list'
                   const isHeading = selectedComponent.id === 'heading'
+                  // Paragraph is fully edited inline on the canvas (size/alignment/toolbar
+                  // via its own toolbar, text inline), so its General tab has no side-panel
+                  // controls — hide all variants & properties there.
+                  const isParagraph = selectedComponent.id === 'paragraph'
                   // The selected element lives on a dynamic detail page → its Heading
                   // text fields become field composers (bound to the source's fields).
                   const selectedOnDynamicPage = pages.some((p) => p.dynamic && p.elements.some((el) => el.id === selectedElement.id))
@@ -6700,6 +6777,50 @@ export function BuildPage({
                             )}
                           </DSFormField>
                         </div>
+                        <div className="property-panel__field property-panel__field--inline">
+                          <DSFormField
+                            title="Shrink"
+                            description="Make element smaller."
+                            size="md"
+                            showDescription
+                            showHelpText={false}
+                          >
+                            <DSToggle
+                              size="md"
+                              checked={Boolean(selectedElement.properties['Shrinked'])}
+                              onChange={(e) => handlePropertyChange(selectedElement.id, 'Shrinked', e.target.checked)}
+                            />
+                          </DSFormField>
+                        </div>
+                        <div className="property-panel__field">
+                          <DSFormField
+                            title="Duplicate Element"
+                            description="Clone selected elements with all saved properties."
+                            size="md"
+                            showDescription
+                            showHelpText={false}
+                          >
+                            <DSButton
+                              variant="filled"
+                              colorScheme="secondary"
+                              shape="rectangle"
+                              size="md"
+                              leftIcon={<Icon name="copy-filled" category="general" size={16} />}
+                            >
+                              Duplicate
+                            </DSButton>
+                          </DSFormField>
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  // Paragraph's General tab: size/alignment/toolbar/text are all edited
+                  // inline on the canvas, so the panel only offers the common element
+                  // actions (Shrink + Duplicate), mirroring the Card panel.
+                  if (isParagraph && propertyTab === 'general') {
+                    return (
+                      <div className="property-panel__body">
                         <div className="property-panel__field property-panel__field--inline">
                           <DSFormField
                             title="Shrink"
