@@ -10836,6 +10836,612 @@ export const APP_PRESETS: AppPreset[] = [
         ]
       }
     ]
+  },
+  {
+    "id": "showcase-camp",
+    "name": "Sunny Trails",
+    "appTitle": "Sunny Trails",
+    "appSubtitle": "Summer camp adventures.",
+    "appHeader": {
+      "show": true,
+      "layout": "Center",
+      "size": "Medium",
+      "title": "Sunny Trails",
+      "subtitle": "Summer camp adventures.",
+      "icon": "Tent",
+      "imageStyle": "Icon",
+      "backgroundMode": "gradient",
+      "bgSource": "color",
+      "gradientStart": "#E8A91D",
+      "gradientEnd": "#C7860A",
+      "textColorMode": "light"
+    },
+    "headerActions": [],
+    "theme": {
+      "color": "#D99A0B",
+      "tint": 55,
+      "font": "Fredoka",
+      "headingFont": "Fredoka",
+      "radius": "XLarge",
+      "harmonyOffset": 90,
+      "activePreset": "Mustard",
+      "colorMode": "light",
+      "tokenOverrides": {}
+    },
+    "pages": [
+      {
+        "id": "page-1",
+        "name": "Home",
+        "icon": "House",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "Camp Sessions",
+              "Subheading": "Pick a week and we’ll take it from there."
+            }
+          },
+          {
+            "componentId": "list",
+            "key": "src",
+            "variants": {
+              "Layout": "Card",
+              "Card Image Style": "None",
+              "Card Layout": "Horizontal",
+              "Card Size": "Medium",
+              "Card Action": "Icon"
+            },
+            "properties": {
+              "Show Header": false,
+              "Button Label": "View",
+              "Click Action": "Open Dynamic Page",
+              "Items": "[{\"title\":\"Explorer Week\",\"description\":\"Jul 8–12 · Ages 6–8\"},{\"title\":\"Nature Explorer Day\",\"description\":\"Day camp · Ages 6–8\"},{\"title\":\"Adventure Trail\",\"description\":\"Jul 15–19 · Ages 9–12\"}]"
+            }
+          }
+        ]
+      },
+      {
+        "id": "page-2",
+        "name": "Session",
+        "icon": "Tent",
+        "dynamic": true,
+        "dynamicSourceKey": "src",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"field\",\"value\":\"Title\",\"label\":\"Title\",\"icon\":\"type-square-filled\",\"iconCategory\":\"editor\"}]",
+              "Subheading Tokens": "[{\"type\":\"field\",\"value\":\"Description\",\"label\":\"Description\",\"icon\":\"type-square-filled\",\"iconCategory\":\"editor\"}]"
+            }
+          },
+          {
+            "componentId": "paragraph",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Text": "Hands-on outdoor games, scavenger hunts, crafts, and confidence-building group activities."
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Large",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"What you’ll do\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Outdoor Games\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Field games & relay races.\"}]",
+              "Icon": "Trophy"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Scavenger Hunts\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Explore the trails in teams.\"}]",
+              "Icon": "Map"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Arts & Crafts\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Make-and-take projects.\"}]",
+              "Icon": "Palette"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Team Challenges\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Build confidence together.\"}]",
+              "Icon": "Users"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Large",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Good to Know\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Dates\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"July 8–12\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Small",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Ages\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"6–8\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Small",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Group size\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"Up to 12 campers\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Large",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Default",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Register for This Session",
+              "Left Icon": "Pencil",
+              "Right Icon": "none"
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 12
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Outlined",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Back to Camp Sessions",
+              "Left Icon": "ArrowLeft",
+              "Right Icon": "none"
+            }
+          }
+        ]
+      },
+      {
+        "id": "page-3",
+        "name": "Register",
+        "icon": "Pencil",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "Register",
+              "Subheading": "Reserve your camper’s spot in a couple of minutes."
+            }
+          },
+          {
+            "componentId": "paragraph",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Text": "Choose a session, add your camper’s details, and we’ll email your confirmation and packing list."
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 24
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Default",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Start Registration",
+              "Left Icon": "none",
+              "Right Icon": "none"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "showcase-course",
+    "name": "Northpeak",
+    "appTitle": "Northpeak",
+    "appSubtitle": "Learn at your pace.",
+    "appHeader": {
+      "show": true,
+      "layout": "Center",
+      "size": "Medium",
+      "title": "Northpeak",
+      "subtitle": "Learn at your pace.",
+      "icon": "GraduationCap",
+      "imageStyle": "Icon",
+      "backgroundMode": "gradient",
+      "bgSource": "color",
+      "gradientStart": "#4A86E8",
+      "gradientEnd": "#2D6CDF",
+      "textColorMode": "light"
+    },
+    "headerActions": [],
+    "theme": {
+      "color": "#2D6CDF",
+      "tint": 22,
+      "font": "Inter",
+      "headingFont": "Inter",
+      "radius": "Large",
+      "harmonyOffset": 150,
+      "activePreset": "Electric Indigo",
+      "colorMode": "light",
+      "tokenOverrides": {}
+    },
+    "pages": [
+      {
+        "id": "page-1",
+        "name": "Home",
+        "icon": "House",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "Courses",
+              "Subheading": "Short, practical courses you can finish."
+            }
+          },
+          {
+            "componentId": "list",
+            "key": "src",
+            "variants": {
+              "Layout": "Card",
+              "Card Image Style": "None",
+              "Card Layout": "Horizontal",
+              "Card Size": "Medium",
+              "Card Action": "Icon"
+            },
+            "properties": {
+              "Show Header": false,
+              "Button Label": "View",
+              "Click Action": "Open Dynamic Page",
+              "Items": "[{\"title\":\"Project Management Basics\",\"description\":\"Master planning, teamwork, timelines, and delivery for modern projects.\"},{\"title\":\"Design Foundations\",\"description\":\"Layout, type, and colour for non-designers.\"},{\"title\":\"Data Analytics 101\",\"description\":\"Turn spreadsheets into decisions.\"}]"
+            }
+          }
+        ]
+      },
+      {
+        "id": "page-2",
+        "name": "Course",
+        "icon": "BookOpen",
+        "dynamic": true,
+        "dynamicSourceKey": "src",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"field\",\"value\":\"Title\",\"label\":\"Title\",\"icon\":\"type-square-filled\",\"iconCategory\":\"editor\"}]",
+              "Subheading Tokens": "[{\"type\":\"field\",\"value\":\"Description\",\"label\":\"Description\",\"icon\":\"type-square-filled\",\"iconCategory\":\"editor\"}]"
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 24
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Weekly Modules\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Square",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Week 1\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Project lifecycle & stakeholder roles\"}]"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Square",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Week 2\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Scope, timeline & task planning\"}]"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Square",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Week 3\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Team communication & risk management\"}]"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Square",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Week 4\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Delivery tracking & project wrap-up\"}]"
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 24
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Details\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Duration\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"4 weeks\"}]",
+              "Icon": "Clock"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Level\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Beginner\"}]",
+              "Icon": "Signal"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Format\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Self-paced · certificate\"}]",
+              "Icon": "Laptop"
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 24
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Default",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Enroll in This Course",
+              "Left Icon": "none",
+              "Right Icon": "none"
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 12
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Outlined",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Back to Courses",
+              "Left Icon": "ArrowLeft",
+              "Right Icon": "none"
+            }
+          }
+        ]
+      },
+      {
+        "id": "page-3",
+        "name": "About",
+        "icon": "Info",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "About Northpeak",
+              "Subheading": "Practical learning, built around your schedule."
+            }
+          },
+          {
+            "componentId": "paragraph",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Text": "Every course is self-paced with weekly modules, hands-on exercises, and a certificate on completion."
+            }
+          }
+        ]
+      }
+    ]
   }
 ]
 
