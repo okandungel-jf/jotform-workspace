@@ -58,6 +58,14 @@ export interface AppPreset {
   appHeader?: AppHeaderPresetConfig
   /** Default AppDesigner theme applied when no stored (builder-edited) theme exists. */
   theme?: AppDesignerSnapshot
+  /**
+   * Definition version. A stored (builder-edited) snapshot is reused only while its
+   * stamped `defVersion` matches this value. Bump it when you change a preset's
+   * definition in code and want that push to override saved builder edits: the next
+   * load sees the mismatch, discards the stale snapshot, and rebuilds from the
+   * definition. Undefined coerces to 0, so presets without one just persist normally.
+   */
+  defVersion?: number
 }
 
 export const EMPTY_PRESET_ID = 'empty'
@@ -9869,6 +9877,7 @@ export const APP_PRESETS: AppPreset[] = [
   },
   {
     "id": "showcase-recipe",
+    "defVersion": 1,
     "name": "Skillet",
     "appTitle": "Skillet",
     "appSubtitle": "Weeknight recipes, done right.",
@@ -10135,6 +10144,7 @@ export const APP_PRESETS: AppPreset[] = [
   },
   {
     "id": "showcase-hotel",
+    "defVersion": 1,
     "name": "Aurora Stays",
     "appTitle": "Aurora Stays",
     "appSubtitle": "Quiet luxury, perfectly located.",
@@ -10402,6 +10412,7 @@ export const APP_PRESETS: AppPreset[] = [
   },
   {
     "id": "showcase-audit",
+    "defVersion": 1,
     "name": "QA Pulse",
     "appTitle": "QA Pulse",
     "appSubtitle": "Call quality, at a glance.",
@@ -10839,6 +10850,7 @@ export const APP_PRESETS: AppPreset[] = [
   },
   {
     "id": "showcase-camp",
+    "defVersion": 1,
     "name": "Sunny Trails",
     "appTitle": "Sunny Trails",
     "appSubtitle": "Summer camp adventures.",
@@ -11165,6 +11177,7 @@ export const APP_PRESETS: AppPreset[] = [
   },
   {
     "id": "showcase-course",
+    "defVersion": 1,
     "name": "Northpeak",
     "appTitle": "Northpeak",
     "appSubtitle": "Learn at your pace.",

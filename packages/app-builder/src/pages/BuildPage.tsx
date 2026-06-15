@@ -451,13 +451,15 @@ function buildCanvasElementsFromPreset(presetElements: PresetElement[], startId:
   return { elements, nextId: id }
 }
 
-// "Always-fresh" presets ignore any stored/remote snapshot and always build from
-// the preset definition (and never persist one): the Empty sandbox, and the
-// `showcase-*` reference apps — so editing their definition is reflected on reload
-// without users having to clear cached snapshots.
-function isAlwaysFreshPreset(id: string | undefined): boolean {
-  return id === 'empty' || (!!id && id.startsWith('showcase-'))
+// The Empty App is a throwaway sandbox: it never persists and always starts blank.
+function isSandboxPreset(id: string | undefined): boolean {
+  return id === 'empty'
 }
+
+// Note: the definition-version gate (reuse a stored snapshot only while its stamped
+// `defVersion` still matches the preset's current one; drop it otherwise) lives in
+// storage.ts `loadSnapshot(presetId, defVersion)` so every read path stays consistent.
+// Bump a preset's `defVersion` in code when a push should override saved builder edits.
 
 function buildInitialStateFromPreset(preset: AppPreset | undefined): {
   pages: AppPage[]
@@ -475,8 +477,9 @@ function buildInitialStateFromPreset(preset: AppPreset | undefined): {
       appHeader: { ...APP_HEADER_DEFAULTS },
     }
   }
-  // Empty App + showcase reference apps always start from the definition.
-  const stored = isAlwaysFreshPreset(preset.id) ? null : loadSnapshot(preset.id)
+  // Sandbox never persists. Otherwise reuse the stored snapshot only if it was saved
+  // against the current definition version (a stale one is dropped so the push wins).
+  const stored = isSandboxPreset(preset.id) ? null : loadSnapshot(preset.id, preset.defVersion)
   if (stored) {
     const pages = stored.pages as AppPage[]
     const storedHeader = (stored.appHeader ?? {}) as Partial<AppHeaderState>
@@ -2314,9 +2317,10 @@ export function BuildPage({
 
   useEffect(() => {
     if (!preset) return
-    // Empty App is a sandbox, showcase apps are always-fresh — never persist them.
-    if (isAlwaysFreshPreset(preset.id)) return
-    const snap = { appTitle, appSubtitle, pages, headerActions, appHeader: appHeaderState }
+    // The Empty App is a sandbox — never persist it. Everything else persists, stamped
+    // with the current definition version so a later definition bump can supersede it.
+    if (isSandboxPreset(preset.id)) return
+    const snap = { appTitle, appSubtitle, pages, headerActions, appHeader: appHeaderState, defVersion: preset.defVersion ?? 0 }
     saveSnapshot(preset.id, snap) // local (IndexedDB) — instant
     syncAppToRemote(preset.id, snap) // remote (Vercel KV via /api) — debounced; no-op without a backend
   }, [preset, appTitle, appSubtitle, pages, headerActions, appHeaderState])

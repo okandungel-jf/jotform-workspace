@@ -22,8 +22,9 @@ export interface AppIconState {
 // Glyph defaults to the preset's app-header icon (or stored override) so the nav
 // logo looks right out of the box; the user then sets it explicitly in Settings.
 function iconForPreset(id: string): string {
-  if (id === EMPTY_PRESET_ID) return getPresetById(id).appHeader?.icon ?? 'Leaf'
-  return loadStoredAppHeaderIcon(id) ?? getPresetById(id).appHeader?.icon ?? 'Leaf'
+  const preset = getPresetById(id)
+  if (id === EMPTY_PRESET_ID) return preset.appHeader?.icon ?? 'Leaf'
+  return loadStoredAppHeaderIcon(id, preset.defVersion) ?? preset.appHeader?.icon ?? 'Leaf'
 }
 function defaultAppIcon(id: string): AppIconState {
   return { variant: 'Icon', icon: iconForPreset(id), imageUrl: null, imageName: null }
@@ -71,7 +72,7 @@ export function App() {
   const preset = useMemo(() => getPresetById(activePresetId), [activePresetId])
   // Empty App is a sandbox — never restore from storage.
   const titleForPreset = (id: string) =>
-    id === EMPTY_PRESET_ID ? getPresetById(id).appTitle : (loadStoredAppTitle(id) ?? getPresetById(id).appTitle)
+    id === EMPTY_PRESET_ID ? getPresetById(id).appTitle : (loadStoredAppTitle(id, getPresetById(id).defVersion) ?? getPresetById(id).appTitle)
   const [appTitle, setAppTitle] = useState(() => titleForPreset(urlPreset ?? EMPTY_PRESET_ID))
   const [appIcon, setAppIcon] = useState<AppIconState>(() => defaultAppIcon(urlPreset ?? EMPTY_PRESET_ID))
 
@@ -124,7 +125,7 @@ export function App() {
           }
           // Empty App never reads from storage — always show its preset name.
           if (p.id === EMPTY_PRESET_ID) return { id: p.id, name: p.name }
-          const storedTitle = loadStoredAppTitle(p.id)
+          const storedTitle = loadStoredAppTitle(p.id, p.defVersion)
           return { id: p.id, name: storedTitle && storedTitle !== p.appTitle ? storedTitle : p.name }
         })}
         activePresetId={activePresetId}

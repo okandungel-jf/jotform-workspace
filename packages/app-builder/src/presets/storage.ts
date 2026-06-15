@@ -21,6 +21,13 @@ export interface PresetSnapshot {
   appSubtitle: string
   pages: unknown
   headerActions: unknown
+  /**
+   * The preset definition version this snapshot was saved against (see
+   * `AppPreset.defVersion`). On load the snapshot is reused only while this still
+   * matches the preset's current `defVersion`; a stale one is discarded. Undefined
+   * coerces to 0.
+   */
+  defVersion?: number
   appHeader?: {
     layout: string
     icon: string
@@ -141,8 +148,21 @@ export async function initStorage(presetIds: readonly string[]): Promise<void> {
   }
 }
 
-export function loadSnapshot(presetId: string): PresetSnapshot | null {
-  return cache.get(presetId) ?? null
+// Returns the cached snapshot only while it was stamped with the preset's current
+// `defVersion`; a stale snapshot (older version — e.g. after a definition bump in code)
+// is discarded and null is returned. Single source of truth for the version gate, so
+// every read path (pages, title, header icon) stays consistent. `defVersion` undefined
+// coerces to 0, so presets without one persist normally.
+function currentSnapshot(presetId: string, defVersion: number | undefined): PresetSnapshot | null {
+  const snap = cache.get(presetId) ?? null
+  if (!snap) return null
+  if ((snap.defVersion ?? 0) === (defVersion ?? 0)) return snap
+  clearSnapshot(presetId)
+  return null
+}
+
+export function loadSnapshot(presetId: string, defVersion?: number): PresetSnapshot | null {
+  return currentSnapshot(presetId, defVersion)
 }
 
 export function saveSnapshot(presetId: string, snapshot: PresetSnapshot): void {
@@ -159,10 +179,10 @@ export function clearSnapshot(presetId: string): void {
     .catch(() => {})
 }
 
-export function loadStoredAppTitle(presetId: string): string | null {
-  return cache.get(presetId)?.appTitle ?? null
+export function loadStoredAppTitle(presetId: string, defVersion?: number): string | null {
+  return currentSnapshot(presetId, defVersion)?.appTitle ?? null
 }
 
-export function loadStoredAppHeaderIcon(presetId: string): string | null {
-  return cache.get(presetId)?.appHeader?.icon ?? null
+export function loadStoredAppHeaderIcon(presetId: string, defVersion?: number): string | null {
+  return currentSnapshot(presetId, defVersion)?.appHeader?.icon ?? null
 }
