@@ -895,85 +895,282 @@ export const APP_PRESETS: AppPreset[] = [
   {
     id: 'healthcare',
     name: 'Healthcare Clinic',
-    appTitle: 'HealthCare Clinic',
-    appSubtitle: 'Quality healthcare you can trust',
+    appTitle: 'Meridian Health',
+    appSubtitle: 'Modern family care, close to home',
+    defVersion: 2,
     pages: [
       {
         id: 'page-1',
-        name: 'Home',
+        name: 'Landing',
         icon: 'House',
+        landing: true,
         elements: [
+          // ── HERO ──────────────────────────────────────────────
           {
             componentId: 'heading',
             variants: { Size: 'Large', Alignment: 'Center' },
             properties: {
-              Heading: 'Welcome to Our Clinic',
-              Subheading: '',
+              Heading: 'Healthcare that finally feels personal.',
+              Subheading: 'Same-day appointments, doctors who listen, and a clinic that remembers your name.',
+            },
+          },
+          {
+            componentId: 'image',
+            variants: { 'Has Image': 'Yes', Alignment: 'Center', Size: 'Large' },
+            properties: {
+              'Image URL': 'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=1000&h=600&fit=crop',
+              'Alt Text': 'A Meridian Health doctor talking with a patient',
             },
           },
           {
             componentId: 'paragraph',
             variants: { Size: 'Medium', Alignment: 'Center' },
             properties: {
-              Text: 'Delivering high-quality care with skilled and trusted professionals — focused on your comfort and confidence at every step.',
+              Text: 'From annual check-ups to specialist care, Meridian brings modern medicine and genuine warmth under one roof — book online in minutes, most insurance accepted.',
             },
-          },
-          {
-            componentId: 'spacer',
-            properties: { Height: 8 },
           },
           {
             componentId: 'button',
-            variants: { Type: 'Standard', Variant: 'Default' },
+            variants: { Type: 'Standard', Variant: 'Default', Corner: 'Rounded' },
             properties: {
-              Label: 'Book Appointment',
-              'Left Icon': 'CalendarPlus',
+              Label: 'Book an Appointment',
+              'Left Icon': 'none',
+              'Right Icon': 'ArrowRight',
               'Full Width': true,
             },
           },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── TRUST STAT ROW (4 shrinked tiles, even group) ─────
           {
-            componentId: 'spacer',
-            properties: { Height: 16 },
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: '25+ years', Description: 'caring for families in the neighborhood', Icon: 'Heart', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: '50k+ patients', Description: 'trusted across two clinic locations', Icon: 'Users', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: 'Same day', Description: 'appointments available, including weekends', Icon: 'CalendarCheck', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: '4.9 ★', Description: 'averaged across 3,800+ patient reviews', Icon: 'Star', Shrinked: true },
+          },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── WHY MERIDIAN (emphasis heading + 6-tile feature grid) ─
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: {
+              Heading: 'Care built around you, not the clock.',
+              Subheading: 'Six things we get right so every visit feels easy.',
+              'Add Emphasis': true,
+              'Emphasis Text': 'WHY MERIDIAN',
+              'Emphasis Style': 'Badge',
+            },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: 'Board-Certified Doctors', Description: 'Experienced specialists across every major field.', Icon: 'Stethoscope', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: 'Same-Day & Weekends', Description: 'See a doctor when you actually need one.', Icon: 'CalendarClock', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: 'Telehealth Visits', Description: 'Quality care from home, by video or phone.', Icon: 'Video', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: 'Most Insurance Accepted', Description: 'Clear pricing and no surprise bills.', Icon: 'ShieldCheck', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: 'On-Site Lab & Imaging', Description: 'Bloodwork and scans without the extra trip.', Icon: 'Microscope', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: 'Family-Friendly Care', Description: 'One clinic for every age, from newborns up.', Icon: 'HeartHandshake', Shrinked: true },
+          },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── SPECIALTIES (emphasis heading + card-grid) ────────
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: {
+              Heading: 'Specialist care, all under one roof.',
+              Subheading: '',
+              'Add Emphasis': true,
+              'Emphasis Text': 'OUR SPECIALTIES',
+              'Emphasis Style': 'Badge',
+            },
+          },
+          {
+            componentId: 'list',
+            variants: {
+              Layout: 'Card',
+              'Card Image Style': 'Square',
+              'Card Layout': 'Vertical',
+              'Card Size': 'Medium',
+              'Card Action': 'None',
+            },
+            properties: {
+              'Show Header': false,
+              Items: JSON.stringify([
+                { title: 'Cardiology', description: 'Heart health & screenings', image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=600&fit=crop' },
+                { title: 'Dermatology', description: 'Skin, hair & nails', image: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=600&h=600&fit=crop' },
+                { title: 'Pediatrics', description: 'Care for little ones', image: 'https://images.unsplash.com/photo-1581595220892-b0739db3ba8c?w=600&h=600&fit=crop' },
+                { title: 'Internal Medicine', description: 'Everyday adult care', image: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=600&h=600&fit=crop' },
+              ]),
+            },
+          },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── MEET THE TEAM (emphasis heading + doctor list) ────
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: {
+              Heading: 'Doctors who actually listen.',
+              Subheading: 'Compassionate specialists, here for the long run.',
+              'Add Emphasis': true,
+              'Emphasis Text': 'MEET THE TEAM',
+              'Emphasis Style': 'Badge',
+            },
+          },
+          {
+            componentId: 'list',
+            variants: { Layout: 'Basic', 'Image Style': 'Circle', Size: 'Regular', Action: 'Icon' },
+            properties: {
+              'Show Header': false,
+              Items: JSON.stringify([
+                { title: 'Dr. Sarah Patel', description: 'Cardiology · 12 yrs experience', image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop' },
+                { title: 'Dr. Marcus Lee', description: 'Dermatology · 8 yrs experience', image: 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=200&h=200&fit=crop' },
+                { title: 'Dr. Anna Rivera', description: 'Internal Medicine · 15 yrs', image: 'https://images.unsplash.com/photo-1545996124-0501ebae84d0?w=200&h=200&fit=crop' },
+                { title: 'Dr. James Chen', description: 'Pediatrics · 10 yrs experience', image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop' },
+              ]),
+            },
+          },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── HOW IT WORKS (emphasis heading + 3 horizontal steps) ─
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: {
+              Heading: 'Care in three simple steps.',
+              Subheading: '',
+              'Add Emphasis': true,
+              'Emphasis Text': 'HOW IT WORKS',
+              'Emphasis Style': 'Badge',
+            },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Horizontal', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: '1 · Book online', Description: 'Pick a time that works — or request same-day care.', Icon: 'CalendarPlus' },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Horizontal', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: '2 · Meet your doctor', Description: 'In person or by video — whatever fits your day.', Icon: 'Stethoscope' },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Horizontal', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: '3 · Follow up with ease', Description: 'Results, prescriptions, and notes — all in your app.', Icon: 'ClipboardCheck' },
+          },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── PATIENT STORIES (emphasis heading + testimonial) ──
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: {
+              Heading: 'Loved by families like yours.',
+              Subheading: '',
+              'Add Emphasis': true,
+              'Emphasis Text': 'PATIENT STORIES',
+              'Emphasis Style': 'Badge',
+            },
+          },
+          {
+            componentId: 'testimonial',
+            properties: { 'Show Avatars': true },
+          },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── INSIDE THE CLINIC (emphasis heading + gallery) ────
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: {
+              Heading: 'A space designed to feel calm.',
+              Subheading: '',
+              'Add Emphasis': true,
+              'Emphasis Text': 'INSIDE THE CLINIC',
+              'Emphasis Style': 'Badge',
+            },
           },
           {
             componentId: 'image-gallery',
             variants: { Layout: '4' },
             properties: {
               Images: JSON.stringify([
-                'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&h=400&fit=crop',
-                'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop',
-                'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&h=400&fit=crop',
+                'https://images.unsplash.com/photo-1516841273335-e39b37888115?w=600&h=600&fit=crop',
+                'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=600&h=600&fit=crop',
+                'https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=600&h=600&fit=crop',
               ]),
             },
           },
-          {
-            componentId: 'spacer',
-            properties: { Height: 16 },
-          },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── FINAL CTA ─────────────────────────────────────────
           {
             componentId: 'heading',
-            variants: { Size: 'Medium', Alignment: 'Center' },
-            properties: { Heading: 'Why Choose Us', Subheading: '' },
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: { Heading: 'Your health, handled.', Subheading: 'Book your first visit today — most insurance accepted, no long waits.' },
           },
           {
-            componentId: 'card',
-            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
-            properties: { Title: 'Trusted Doctors', Description: 'Board-certified specialists', Icon: 'Stethoscope', Shrinked: true },
+            componentId: 'button',
+            variants: { Type: 'Standard', Variant: 'Default', Corner: 'Rounded' },
+            properties: {
+              Label: 'Book an Appointment',
+              'Left Icon': 'none',
+              'Right Icon': 'ArrowRight',
+              'Full Width': true,
+            },
           },
           {
-            componentId: 'card',
-            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
-            properties: { Title: 'Quick Care', Description: 'Same-day visits available', Icon: 'Zap', Shrinked: true },
+            componentId: 'button',
+            variants: { Type: 'Standard', Variant: 'Outlined', Corner: 'Rounded' },
+            properties: {
+              Label: 'Call (555) 010-2040',
+              'Left Icon': 'Phone',
+              'Right Icon': 'none',
+              'Full Width': true,
+            },
           },
+          { componentId: 'spacer', properties: { Height: 16 } },
           {
-            componentId: 'card',
-            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
-            properties: { Title: 'Modern Facilities', Description: 'State-of-the-art equipment', Icon: 'Building2', Shrinked: true },
-          },
-          {
-            componentId: 'card',
-            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
-            properties: { Title: 'Family Friendly', Description: 'All ages welcome', Icon: 'HeartHandshake', Shrinked: true },
+            componentId: 'social-follow',
+            variants: { Layout: 'Wrap', Variant: 'Secondary', Filled: 'No' },
+            properties: {},
           },
         ],
       },
@@ -981,6 +1178,7 @@ export const APP_PRESETS: AppPreset[] = [
         id: 'page-2',
         name: 'Appointments',
         icon: 'Calendar',
+        requireLogin: true,
         elements: [
           {
             componentId: 'heading',
@@ -1056,6 +1254,7 @@ export const APP_PRESETS: AppPreset[] = [
         id: 'page-3',
         name: 'Patients',
         icon: 'Users',
+        requireLogin: true,
         elements: [
           {
             componentId: 'heading',
@@ -1141,6 +1340,7 @@ export const APP_PRESETS: AppPreset[] = [
         id: 'page-4',
         name: 'Services',
         icon: 'Stethoscope',
+        requireLogin: true,
         elements: [
           {
             componentId: 'heading',
