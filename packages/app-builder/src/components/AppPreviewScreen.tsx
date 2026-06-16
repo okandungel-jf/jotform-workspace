@@ -15,10 +15,10 @@ interface AppPreviewScreenProps {
   onRoleChange?: (role: PreviewRole) => void
 }
 
-const ROLE_OPTIONS = [
-  { value: 'admin', label: 'Admin' },
-  { value: 'user', label: 'User' },
-  { value: 'anyone', label: 'Public' },
+const ROLE_OPTIONS: { value: PreviewRole; label: string; icon: string }[] = [
+  { value: 'admin', label: 'Admin', icon: 'user-shield' },
+  { value: 'user', label: 'User', icon: 'user-filled' },
+  { value: 'anyone', label: 'Public', icon: 'users-filled' },
 ]
 
 const DEVICE_TABS: { id: PreviewDevice; label: string; icon: string }[] = [
@@ -40,9 +40,10 @@ export function AppPreviewScreen({ device, onDeviceChange, onBack, appScreen, ro
                 type="button"
                 aria-pressed={isActive}
                 className={`app-preview-screen__role-option${isActive ? ' app-preview-screen__role-option--active' : ''}`}
-                onClick={() => onRoleChange?.(o.value as PreviewRole)}
+                onClick={() => onRoleChange?.(o.value)}
               >
-                {o.label}
+                <Icon name={o.icon} category="users" size={16} />
+                <span>{o.label}</span>
               </button>
             )
           })}
