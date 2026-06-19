@@ -1,0 +1,33 @@
+// ============================================
+// JotForm Apps - Divider Component
+// A thin themeable horizontal rule (line color from --border).
+// ============================================
+.jf-divider {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+
+  &--small { padding: var(--space-2) 0; }
+  &--medium { padding: var(--space-3) 0; }
+  &--large { padding: var(--space-5) 0; }
+
+  &--shrinked { width: 300px; }
+
+  &--selected {
+    outline: 2px solid var(--border-info);
+    outline-offset: 4px;
+  }
+}
+
+.jf-divider__line {
+  width: 100%;
+  height: 1px;
+  background: var(--border);
+}
+
+.jf-divider--dashed .jf-divider__line {
+  height: 0;
+  background: none;
+  border-top: 1px dashed var(--border);
+}

@@ -46,6 +46,7 @@ import './components/BottomNavigation/register';
 import './components/Paragraph/register';
 import './components/ProgressIndicator/register';
 import './components/Spacer/register';
+import './components/Divider/register';
 
 // Individual component exports
 export { Button } from './components/Button';
@@ -77,6 +78,8 @@ export { SocialFollow } from './components/SocialFollow';
 export { DailyTaskManager } from './components/DailyTaskManager';
 export { ProgressIndicator } from './components/ProgressIndicator';
 export { Spacer } from './components/Spacer';
+export { Divider } from './components/Divider';
+export type { DividerProps, DividerSpacing, DividerLineStyle } from './components/Divider';
 
 // Layout
 export { AppDesigner, applyDefaultTheme, applyStoredOrDefaultTheme } from './layout/AppDesigner';

@@ -1,8 +1,32 @@
 import { ComponentRegistry } from '../../types/registry';
+import type { FieldToken } from '@jf/design-system';
 import { Paragraph } from './Paragraph';
-import type { ParagraphSize, ParagraphAlignment, ParagraphToolbar } from './Paragraph';
+import type { ParagraphSize, ParagraphAlignment, ParagraphToolbar, ParagraphFieldOption } from './Paragraph';
 import type { VariantValues, PropertyValues, StateValues } from '../../types/component';
 import paragraphScss from './Paragraph.scss?raw';
+
+// Parse the field-token JSON a dynamic detail page stores under "Text Tokens".
+function parseFieldTokens(raw: unknown): FieldToken[] | undefined {
+  if (typeof raw !== 'string' || !raw.trim().startsWith('[')) return undefined;
+  try {
+    const parsed = JSON.parse(raw) as FieldToken[];
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// Bound data-table text columns the dynamic page injects under "__fieldOptions"
+// so the "Add Field" toolbar menu can offer them.
+function parseFieldOptions(raw: unknown): ParagraphFieldOption[] | undefined {
+  if (typeof raw !== 'string' || !raw.trim().startsWith('[')) return undefined;
+  try {
+    const parsed = JSON.parse(raw) as ParagraphFieldOption[];
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 ComponentRegistry.register({
   id: 'paragraph',
@@ -93,15 +117,30 @@ ComponentRegistry.register({
     },
   ],
 
-  render(variants: VariantValues, props: PropertyValues, states: StateValues) {
+  render(
+    variants: VariantValues,
+    props: PropertyValues,
+    states: StateValues,
+    onPropertyChange?: (name: string, value: string | boolean | number) => void,
+  ) {
+    // Alignment/Size are edited via the canvas toolbar (not the side panel), which
+    // persists them as properties; fall back to the variant default when unset so
+    // every render surface (canvas + live preview) reads the same value.
+    const alignment = (props['Alignment'] as ParagraphAlignment) || (variants['Alignment'] as ParagraphAlignment);
+    const size = (props['Size'] as ParagraphSize) || (variants['Size'] as ParagraphSize);
     return (
       <Paragraph
-        size={variants['Size'] as ParagraphSize}
-        alignment={variants['Alignment'] as ParagraphAlignment}
+        size={size}
+        alignment={alignment}
         toolbar={variants['Toolbar'] as ParagraphToolbar}
         placeholder={props['Placeholder'] as string}
         defaultValue={props['Text'] as string}
-        selected={states['Selected'] ? true : undefined}
+        selected={Boolean(states['Selected'])}
+        fieldTokens={parseFieldTokens(props['Text Tokens'])}
+        fieldOptions={parseFieldOptions(props['__fieldOptions'])}
+        onFieldTokensChange={onPropertyChange ? (tokens) => onPropertyChange('Text Tokens', JSON.stringify(tokens)) : undefined}
+        onAlignmentChange={onPropertyChange ? (a) => onPropertyChange('Alignment', a) : undefined}
+        onSizeChange={onPropertyChange ? (s) => onPropertyChange('Size', s) : undefined}
       />
     );
   },

@@ -4,6 +4,9 @@ export interface PresetElement {
   componentId: string
   variants?: Partial<VariantValues>
   properties?: Partial<PropertyValues>
+  /** Stable link id, resolved to the generated element id at build time. Lets a
+   *  dynamic detail page reference its source List (see PresetPage.dynamicSourceKey). */
+  key?: string
 }
 
 export interface PresetPage {
@@ -14,6 +17,10 @@ export interface PresetPage {
   landing?: boolean
   /** Visitors must sign in to view this page (inner pages behind the landing). */
   requireLogin?: boolean
+  /** A List-bound dynamic detail page (opened by tapping a list item, never a nav tab). */
+  dynamic?: boolean
+  /** The `key` of the source List element this dynamic detail page belongs to. */
+  dynamicSourceKey?: string
   elements: PresetElement[]
 }
 
@@ -51,6 +58,14 @@ export interface AppPreset {
   appHeader?: AppHeaderPresetConfig
   /** Default AppDesigner theme applied when no stored (builder-edited) theme exists. */
   theme?: AppDesignerSnapshot
+  /**
+   * Definition version. A stored (builder-edited) snapshot is reused only while its
+   * stamped `defVersion` matches this value. Bump it when you change a preset's
+   * definition in code and want that push to override saved builder edits: the next
+   * load sees the mismatch, discards the stale snapshot, and rebuilds from the
+   * definition. Undefined coerces to 0, so presets without one just persist normally.
+   */
+  defVersion?: number
 }
 
 export const EMPTY_PRESET_ID = 'empty'
@@ -880,85 +895,282 @@ export const APP_PRESETS: AppPreset[] = [
   {
     id: 'healthcare',
     name: 'Healthcare Clinic',
-    appTitle: 'HealthCare Clinic',
-    appSubtitle: 'Quality healthcare you can trust',
+    appTitle: 'Meridian Health',
+    appSubtitle: 'Modern family care, close to home',
+    defVersion: 2,
     pages: [
       {
         id: 'page-1',
-        name: 'Home',
+        name: 'Landing',
         icon: 'House',
+        landing: true,
         elements: [
+          // ── HERO ──────────────────────────────────────────────
           {
             componentId: 'heading',
             variants: { Size: 'Large', Alignment: 'Center' },
             properties: {
-              Heading: 'Welcome to Our Clinic',
-              Subheading: '',
+              Heading: 'Healthcare that finally feels personal.',
+              Subheading: 'Same-day appointments, doctors who listen, and a clinic that remembers your name.',
+            },
+          },
+          {
+            componentId: 'image',
+            variants: { 'Has Image': 'Yes', Alignment: 'Center', Size: 'Large' },
+            properties: {
+              'Image URL': 'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=1000&h=600&fit=crop',
+              'Alt Text': 'A Meridian Health doctor talking with a patient',
             },
           },
           {
             componentId: 'paragraph',
             variants: { Size: 'Medium', Alignment: 'Center' },
             properties: {
-              Text: 'Delivering high-quality care with skilled and trusted professionals — focused on your comfort and confidence at every step.',
+              Text: 'From annual check-ups to specialist care, Meridian brings modern medicine and genuine warmth under one roof — book online in minutes, most insurance accepted.',
             },
-          },
-          {
-            componentId: 'spacer',
-            properties: { Height: 8 },
           },
           {
             componentId: 'button',
-            variants: { Type: 'Standard', Variant: 'Default' },
+            variants: { Type: 'Standard', Variant: 'Default', Corner: 'Rounded' },
             properties: {
-              Label: 'Book Appointment',
-              'Left Icon': 'CalendarPlus',
+              Label: 'Book an Appointment',
+              'Left Icon': 'none',
+              'Right Icon': 'ArrowRight',
               'Full Width': true,
             },
           },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── TRUST STAT ROW (4 shrinked tiles, even group) ─────
           {
-            componentId: 'spacer',
-            properties: { Height: 16 },
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: '25+ years', Description: 'caring for families in the neighborhood', Icon: 'Heart', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: '50k+ patients', Description: 'trusted across two clinic locations', Icon: 'Users', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: 'Same day', Description: 'appointments available, including weekends', Icon: 'CalendarCheck', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: '4.9 ★', Description: 'averaged across 3,800+ patient reviews', Icon: 'Star', Shrinked: true },
+          },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── WHY MERIDIAN (emphasis heading + 6-tile feature grid) ─
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: {
+              Heading: 'Care built around you, not the clock.',
+              Subheading: 'Six things we get right so every visit feels easy.',
+              'Add Emphasis': true,
+              'Emphasis Text': 'WHY MERIDIAN',
+              'Emphasis Style': 'Badge',
+            },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: 'Board-Certified Doctors', Description: 'Experienced specialists across every major field.', Icon: 'Stethoscope', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: 'Same-Day & Weekends', Description: 'See a doctor when you actually need one.', Icon: 'CalendarClock', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: 'Telehealth Visits', Description: 'Quality care from home, by video or phone.', Icon: 'Video', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: 'Most Insurance Accepted', Description: 'Clear pricing and no surprise bills.', Icon: 'ShieldCheck', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: 'On-Site Lab & Imaging', Description: 'Bloodwork and scans without the extra trip.', Icon: 'Microscope', Shrinked: true },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: 'Family-Friendly Care', Description: 'One clinic for every age, from newborns up.', Icon: 'HeartHandshake', Shrinked: true },
+          },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── SPECIALTIES (emphasis heading + card-grid) ────────
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: {
+              Heading: 'Specialist care, all under one roof.',
+              Subheading: '',
+              'Add Emphasis': true,
+              'Emphasis Text': 'OUR SPECIALTIES',
+              'Emphasis Style': 'Badge',
+            },
+          },
+          {
+            componentId: 'list',
+            variants: {
+              Layout: 'Card',
+              'Card Image Style': 'Square',
+              'Card Layout': 'Vertical',
+              'Card Size': 'Medium',
+              'Card Action': 'None',
+            },
+            properties: {
+              'Show Header': false,
+              Items: JSON.stringify([
+                { title: 'Cardiology', description: 'Heart health & screenings', image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=600&fit=crop' },
+                { title: 'Dermatology', description: 'Skin, hair & nails', image: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=600&h=600&fit=crop' },
+                { title: 'Pediatrics', description: 'Care for little ones', image: 'https://images.unsplash.com/photo-1581595220892-b0739db3ba8c?w=600&h=600&fit=crop' },
+                { title: 'Internal Medicine', description: 'Everyday adult care', image: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=600&h=600&fit=crop' },
+              ]),
+            },
+          },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── MEET THE TEAM (emphasis heading + doctor list) ────
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: {
+              Heading: 'Doctors who actually listen.',
+              Subheading: 'Compassionate specialists, here for the long run.',
+              'Add Emphasis': true,
+              'Emphasis Text': 'MEET THE TEAM',
+              'Emphasis Style': 'Badge',
+            },
+          },
+          {
+            componentId: 'list',
+            variants: { Layout: 'Basic', 'Image Style': 'Circle', Size: 'Regular', Action: 'Icon' },
+            properties: {
+              'Show Header': false,
+              Items: JSON.stringify([
+                { title: 'Dr. Sarah Patel', description: 'Cardiology · 12 yrs experience', image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop' },
+                { title: 'Dr. Marcus Lee', description: 'Dermatology · 8 yrs experience', image: 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=200&h=200&fit=crop' },
+                { title: 'Dr. Anna Rivera', description: 'Internal Medicine · 15 yrs', image: 'https://images.unsplash.com/photo-1545996124-0501ebae84d0?w=200&h=200&fit=crop' },
+                { title: 'Dr. James Chen', description: 'Pediatrics · 10 yrs experience', image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop' },
+              ]),
+            },
+          },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── HOW IT WORKS (emphasis heading + 3 horizontal steps) ─
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: {
+              Heading: 'Care in three simple steps.',
+              Subheading: '',
+              'Add Emphasis': true,
+              'Emphasis Text': 'HOW IT WORKS',
+              'Emphasis Style': 'Badge',
+            },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Horizontal', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: '1 · Book online', Description: 'Pick a time that works — or request same-day care.', Icon: 'CalendarPlus' },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Horizontal', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: '2 · Meet your doctor', Description: 'In person or by video — whatever fits your day.', Icon: 'Stethoscope' },
+          },
+          {
+            componentId: 'card',
+            variants: { 'Image Style': 'Icon', Layout: 'Horizontal', Action: 'None', 'Icon Filled': 'No' },
+            properties: { Title: '3 · Follow up with ease', Description: 'Results, prescriptions, and notes — all in your app.', Icon: 'ClipboardCheck' },
+          },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── PATIENT STORIES (emphasis heading + testimonial) ──
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: {
+              Heading: 'Loved by families like yours.',
+              Subheading: '',
+              'Add Emphasis': true,
+              'Emphasis Text': 'PATIENT STORIES',
+              'Emphasis Style': 'Badge',
+            },
+          },
+          {
+            componentId: 'testimonial',
+            properties: { 'Show Avatars': true },
+          },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── INSIDE THE CLINIC (emphasis heading + gallery) ────
+          {
+            componentId: 'heading',
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: {
+              Heading: 'A space designed to feel calm.',
+              Subheading: '',
+              'Add Emphasis': true,
+              'Emphasis Text': 'INSIDE THE CLINIC',
+              'Emphasis Style': 'Badge',
+            },
           },
           {
             componentId: 'image-gallery',
             variants: { Layout: '4' },
             properties: {
               Images: JSON.stringify([
-                'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&h=400&fit=crop',
-                'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=400&fit=crop',
-                'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&h=400&fit=crop',
+                'https://images.unsplash.com/photo-1516841273335-e39b37888115?w=600&h=600&fit=crop',
+                'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=600&h=600&fit=crop',
+                'https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=600&h=600&fit=crop',
               ]),
             },
           },
-          {
-            componentId: 'spacer',
-            properties: { Height: 16 },
-          },
+          { componentId: 'spacer', properties: { Height: 32 } },
+
+          // ── FINAL CTA ─────────────────────────────────────────
           {
             componentId: 'heading',
-            variants: { Size: 'Medium', Alignment: 'Center' },
-            properties: { Heading: 'Why Choose Us', Subheading: '' },
+            variants: { Size: 'Large', Alignment: 'Center' },
+            properties: { Heading: 'Your health, handled.', Subheading: 'Book your first visit today — most insurance accepted, no long waits.' },
           },
           {
-            componentId: 'card',
-            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
-            properties: { Title: 'Trusted Doctors', Description: 'Board-certified specialists', Icon: 'Stethoscope', Shrinked: true },
+            componentId: 'button',
+            variants: { Type: 'Standard', Variant: 'Default', Corner: 'Rounded' },
+            properties: {
+              Label: 'Book an Appointment',
+              'Left Icon': 'none',
+              'Right Icon': 'ArrowRight',
+              'Full Width': true,
+            },
           },
           {
-            componentId: 'card',
-            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
-            properties: { Title: 'Quick Care', Description: 'Same-day visits available', Icon: 'Zap', Shrinked: true },
+            componentId: 'button',
+            variants: { Type: 'Standard', Variant: 'Outlined', Corner: 'Rounded' },
+            properties: {
+              Label: 'Call (555) 010-2040',
+              'Left Icon': 'Phone',
+              'Right Icon': 'none',
+              'Full Width': true,
+            },
           },
+          { componentId: 'spacer', properties: { Height: 16 } },
           {
-            componentId: 'card',
-            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
-            properties: { Title: 'Modern Facilities', Description: 'State-of-the-art equipment', Icon: 'Building2', Shrinked: true },
-          },
-          {
-            componentId: 'card',
-            variants: { 'Image Style': 'Icon', Layout: 'Vertical', Action: 'None' },
-            properties: { Title: 'Family Friendly', Description: 'All ages welcome', Icon: 'HeartHandshake', Shrinked: true },
+            componentId: 'social-follow',
+            variants: { Layout: 'Wrap', Variant: 'Secondary', Filled: 'No' },
+            properties: {},
           },
         ],
       },
@@ -966,6 +1178,7 @@ export const APP_PRESETS: AppPreset[] = [
         id: 'page-2',
         name: 'Appointments',
         icon: 'Calendar',
+        requireLogin: true,
         elements: [
           {
             componentId: 'heading',
@@ -1041,6 +1254,7 @@ export const APP_PRESETS: AppPreset[] = [
         id: 'page-3',
         name: 'Patients',
         icon: 'Users',
+        requireLogin: true,
         elements: [
           {
             componentId: 'heading',
@@ -1126,6 +1340,7 @@ export const APP_PRESETS: AppPreset[] = [
         id: 'page-4',
         name: 'Services',
         icon: 'Stethoscope',
+        requireLogin: true,
         elements: [
           {
             componentId: 'heading',
@@ -9860,6 +10075,1587 @@ export const APP_PRESETS: AppPreset[] = [
       }
     }
   },
+  {
+    "id": "showcase-recipe",
+    "defVersion": 1,
+    "name": "Skillet",
+    "appTitle": "Skillet",
+    "appSubtitle": "Weeknight recipes, done right.",
+    "appHeader": {
+      "show": true,
+      "layout": "Center",
+      "size": "Medium",
+      "title": "Skillet",
+      "subtitle": "Weeknight recipes, done right.",
+      "icon": "ChefHat",
+      "imageStyle": "Icon",
+      "backgroundMode": "gradient",
+      "bgSource": "color",
+      "gradientStart": "#F97101",
+      "gradientEnd": "#C2410C",
+      "textColorMode": "light"
+    },
+    "headerActions": [],
+    "theme": {
+      "color": "#F97101",
+      "tint": 60,
+      "font": "Bricolage Grotesque",
+      "headingFont": "Bricolage Grotesque",
+      "radius": "Large",
+      "harmonyOffset": 180,
+      "activePreset": "Sunset",
+      "colorMode": "light",
+      "tokenOverrides": {}
+    },
+    "pages": [
+      {
+        "id": "page-1",
+        "name": "Home",
+        "icon": "House",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "Tonight's Recipes",
+              "Subheading": "Fast, fresh dinners you can pull off any night of the week."
+            }
+          },
+          {
+            "componentId": "list",
+            "key": "src",
+            "variants": {
+              "Layout": "Card",
+              "Card Image Style": "Square",
+              "Card Layout": "Vertical",
+              "Card Size": "Medium",
+              "Card Action": "Button"
+            },
+            "properties": {
+              "Show Header": false,
+              "Button Label": "View Recipe",
+              "Click Action": "Open Dynamic Page",
+              "Items": "[{\"title\":\"Garlic Butter Salmon\",\"description\":\"Dinner · 30 min · Medium\",\"image\":\"https://images.unsplash.com/photo-1485921325833-c519f76c4927?w=800&h=600&fit=crop\"},{\"title\":\"Lemon Herb Chicken\",\"description\":\"Dinner · 40 min · Easy\",\"image\":\"https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=800&h=600&fit=crop\"},{\"title\":\"Veggie Stir-Fry\",\"description\":\"Dinner · 20 min · Easy\",\"image\":\"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=600&fit=crop\"}]"
+            }
+          }
+        ]
+      },
+      {
+        "id": "page-2",
+        "name": "Recipe",
+        "icon": "BookOpen",
+        "dynamic": true,
+        "dynamicSourceKey": "src",
+        "elements": [
+          {
+            "componentId": "image",
+            "variants": {
+              "Has Image": "No",
+              "Alignment": "Center",
+              "Size": "Large",
+              "Image Shape": "Rounded"
+            },
+            "properties": {
+              "Image Source": "Image",
+              "Alt Text": ""
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"field\",\"value\":\"Title\",\"label\":\"Title\",\"icon\":\"type-square-filled\",\"iconCategory\":\"editor\"}]",
+              "Subheading Tokens": "[{\"type\":\"field\",\"value\":\"Description\",\"label\":\"Description\",\"icon\":\"type-square-filled\",\"iconCategory\":\"editor\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Large",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Ingredients\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "paragraph",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Text": "2 salmon fillets\n2 tbsp butter\n2 garlic cloves, minced\n1 cup asparagus\n1 cup baby potatoes\nSalt, pepper & lemon"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Large",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Method\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"1. Roast the potatoes\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"Halve, toss with oil and salt, roast at 425°F for 15 min until golden.\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Small",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"2. Garlic butter & prep\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"Melt butter with garlic, brush over the salmon, add asparagus to the pan.\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Small",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"3. Bake & serve\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"Bake 10–12 min until the salmon flakes, finish with fresh lemon.\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Large",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Default",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Save Recipe",
+              "Left Icon": "Bookmark",
+              "Right Icon": "none"
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 12
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Outlined",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Back to Recipes",
+              "Left Icon": "ArrowLeft",
+              "Right Icon": "none"
+            }
+          }
+        ]
+      },
+      {
+        "id": "page-3",
+        "name": "Saved",
+        "icon": "Bookmark",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "Saved Recipes",
+              "Subheading": "Your personal cookbook lives here."
+            }
+          },
+          {
+            "componentId": "paragraph",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Text": "You haven't saved any recipes yet. Tap Save Recipe on any dish and it'll show up here."
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "showcase-hotel",
+    "defVersion": 1,
+    "name": "Aurora Stays",
+    "appTitle": "Aurora Stays",
+    "appSubtitle": "Quiet luxury, perfectly located.",
+    "appHeader": {
+      "show": true,
+      "layout": "Center",
+      "size": "Large",
+      "title": "Aurora Stays",
+      "subtitle": "Quiet luxury, perfectly located.",
+      "icon": "Hotel",
+      "imageStyle": "None",
+      "bgSource": "image",
+      "textColorMode": "light",
+      "backgroundImageUrl": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1000&h=600&fit=crop",
+      "backgroundImageName": "hotel-lobby"
+    },
+    "headerActions": [],
+    "theme": {
+      "color": "#5B9DF0",
+      "tint": 25,
+      "font": "Inter",
+      "headingFont": "Inter",
+      "radius": "Large",
+      "harmonyOffset": 150,
+      "activePreset": "Slate Blue",
+      "colorMode": "dark",
+      "tokenOverrides": {}
+    },
+    "pages": [
+      {
+        "id": "page-1",
+        "name": "Home",
+        "icon": "House",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "Stay With Us",
+              "Subheading": "Hand-picked rooms and suites for an effortless stay."
+            }
+          },
+          {
+            "componentId": "list",
+            "key": "src",
+            "variants": {
+              "Layout": "Card",
+              "Card Image Style": "Square",
+              "Card Layout": "Vertical",
+              "Card Size": "Medium",
+              "Card Action": "Button"
+            },
+            "properties": {
+              "Show Header": false,
+              "Button Label": "View Room",
+              "Click Action": "Open Dynamic Page",
+              "Items": "[{\"title\":\"Deluxe King Room\",\"description\":\"$245 / night · 2 Guests\",\"image\":\"https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&h=600&fit=crop\"},{\"title\":\"Garden Suite\",\"description\":\"$320 / night · 3 Guests\",\"image\":\"https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=800&h=600&fit=crop\"},{\"title\":\"Skyline Loft\",\"description\":\"$410 / night · 4 Guests\",\"image\":\"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop\"}]"
+            }
+          }
+        ]
+      },
+      {
+        "id": "page-2",
+        "name": "Room",
+        "icon": "Bed",
+        "dynamic": true,
+        "dynamicSourceKey": "src",
+        "elements": [
+          {
+            "componentId": "image",
+            "variants": {
+              "Has Image": "No",
+              "Alignment": "Center",
+              "Size": "Large",
+              "Image Shape": "Rounded"
+            },
+            "properties": {
+              "Image Source": "Image",
+              "Alt Text": ""
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"field\",\"value\":\"Title\",\"label\":\"Title\",\"icon\":\"type-square-filled\",\"iconCategory\":\"editor\"}]",
+              "Subheading Tokens": "[{\"type\":\"field\",\"value\":\"Description\",\"label\":\"Description\",\"icon\":\"type-square-filled\",\"iconCategory\":\"editor\"}]"
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Default",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Reserve This Room",
+              "Left Icon": "none",
+              "Right Icon": "none"
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 16
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Amenities\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"King Bed\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Plush, hotel-grade comfort.\"}]",
+              "Icon": "BedDouble"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Rainfall Shower\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Spa-style bathroom.\"}]",
+              "Icon": "ShowerHead"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"City View\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Floor-to-ceiling windows.\"}]",
+              "Icon": "Building2"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Fast Wi-Fi\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Free high-speed access.\"}]",
+              "Icon": "Wifi"
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 24
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"The Space\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "paragraph",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Text": "A 38 m² room with a private lounge corner, a dedicated work desk facing the skyline, blackout drapes, and a pillow menu for a deep night’s rest."
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 16
+            }
+          }
+        ]
+      },
+      {
+        "id": "page-3",
+        "name": "Book Stay",
+        "icon": "Calendar",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "Book Your Stay",
+              "Subheading": "Tell us your dates and we’ll find the perfect room."
+            }
+          },
+          {
+            "componentId": "paragraph",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Text": "Flexible cancellation up to 48 hours before arrival. Best-rate guarantee on every direct booking."
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 24
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Default",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Check Availability",
+              "Left Icon": "none",
+              "Right Icon": "none"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "showcase-audit",
+    "defVersion": 1,
+    "name": "QA Pulse",
+    "appTitle": "QA Pulse",
+    "appSubtitle": "Call quality, at a glance.",
+    "appHeader": {
+      "show": true,
+      "layout": "Center",
+      "size": "Medium",
+      "title": "QA Pulse",
+      "subtitle": "Call quality, at a glance.",
+      "icon": "Headset",
+      "imageStyle": "Icon",
+      "bgSource": "color",
+      "backgroundMode": "gradient",
+      "backgroundColor": "#0385C8",
+      "gradientStart": "#3DAEE6",
+      "gradientEnd": "#0385C8",
+      "textColorMode": "light"
+    },
+    "headerActions": [],
+    "theme": {
+      "color": "#0385C8",
+      "tint": 30,
+      "font": "DM Sans",
+      "headingFont": "DM Sans",
+      "radius": "Large",
+      "harmonyOffset": 150,
+      "activePreset": "Default",
+      "colorMode": "light",
+      "tokenOverrides": {}
+    },
+    "pages": [
+      {
+        "id": "page-1",
+        "name": "Home",
+        "icon": "House",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "Recent Audits",
+              "Subheading": "Your latest call reviews and their outcomes."
+            }
+          },
+          {
+            "componentId": "list",
+            "key": "src",
+            "variants": {
+              "Layout": "Card",
+              "Card Image Style": "Icon",
+              "Card Layout": "Horizontal",
+              "Card Size": "Medium",
+              "Card Action": "Icon"
+            },
+            "properties": {
+              "Show Header": false,
+              "Button Label": "View",
+              "Click Action": "Open Dynamic Page",
+              "Items": "[{\"title\":\"Alex Moreno\",\"description\":\"Billing dispute · Jun 5, 2026 · Fail\"},{\"title\":\"Priya Shah\",\"description\":\"Plan upgrade · Jun 4, 2026 · Pass\"},{\"title\":\"Diego Romero\",\"description\":\"Account access · Jun 3, 2026 · Pass\"}]"
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 24
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "This Week",
+              "Subheading": "How the team is tracking."
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Vertical",
+              "Action": "None"
+            },
+            "properties": {
+              "Title": "24",
+              "Description": "Calls Audited",
+              "Icon": "PhoneCall",
+              "Shrinked": true
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Vertical",
+              "Action": "None"
+            },
+            "properties": {
+              "Title": "88%",
+              "Description": "Pass Rate",
+              "Icon": "TrendingUp",
+              "Shrinked": true
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Vertical",
+              "Action": "None"
+            },
+            "properties": {
+              "Title": "81",
+              "Description": "Avg. Score",
+              "Icon": "Gauge",
+              "Shrinked": true
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Vertical",
+              "Action": "None"
+            },
+            "properties": {
+              "Title": "3",
+              "Description": "Need Coaching",
+              "Icon": "TriangleAlert",
+              "Shrinked": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "page-2",
+        "name": "Audit",
+        "icon": "ClipboardCheck",
+        "dynamic": true,
+        "dynamicSourceKey": "src",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"field\",\"value\":\"Title\",\"label\":\"Title\",\"icon\":\"type-square-filled\",\"iconCategory\":\"editor\"}]",
+              "Subheading Tokens": "[{\"type\":\"field\",\"value\":\"Description\",\"label\":\"Description\",\"icon\":\"type-square-filled\",\"iconCategory\":\"editor\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Large",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Call Details\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Case ID\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"CL-2094\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Small",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Topic\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"Billing dispute\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Small",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Duration\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"9m 12s\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Large",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Scores\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Compliance\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"78 / 100\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Small",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Empathy\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"82 / 100\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Small",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Resolution\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"76 / 100\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Small",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Overall\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"79 / 100\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Large",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Summary\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "paragraph",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Text": "Missed required disclosure and left the callback expectation unclear."
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Large",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Coaching Notes\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "paragraph",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Text": "Immediate coaching needed on the compliance script and on setting clear commitments."
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 24
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Default",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Back to Audits",
+              "Left Icon": "ArrowLeft",
+              "Right Icon": "none"
+            }
+          }
+        ]
+      },
+      {
+        "id": "page-3",
+        "name": "New Audit",
+        "icon": "CirclePlus",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "Start a New Audit",
+              "Subheading": "Score a call against the QA rubric in minutes."
+            }
+          },
+          {
+            "componentId": "paragraph",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Text": "Pick a recorded call, run through compliance, empathy, and resolution, then submit your scores and coaching notes."
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 24
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Default",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Start Audit",
+              "Left Icon": "Play",
+              "Right Icon": "none"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "showcase-camp",
+    "defVersion": 1,
+    "name": "Sunny Trails",
+    "appTitle": "Sunny Trails",
+    "appSubtitle": "Summer camp adventures.",
+    "appHeader": {
+      "show": true,
+      "layout": "Center",
+      "size": "Medium",
+      "title": "Sunny Trails",
+      "subtitle": "Summer camp adventures.",
+      "icon": "Tent",
+      "imageStyle": "Icon",
+      "backgroundMode": "gradient",
+      "bgSource": "color",
+      "gradientStart": "#E8A91D",
+      "gradientEnd": "#C7860A",
+      "textColorMode": "light"
+    },
+    "headerActions": [],
+    "theme": {
+      "color": "#D99A0B",
+      "tint": 55,
+      "font": "Fredoka",
+      "headingFont": "Fredoka",
+      "radius": "XLarge",
+      "harmonyOffset": 90,
+      "activePreset": "Mustard",
+      "colorMode": "light",
+      "tokenOverrides": {}
+    },
+    "pages": [
+      {
+        "id": "page-1",
+        "name": "Home",
+        "icon": "House",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "Camp Sessions",
+              "Subheading": "Pick a week and we’ll take it from there."
+            }
+          },
+          {
+            "componentId": "list",
+            "key": "src",
+            "variants": {
+              "Layout": "Card",
+              "Card Image Style": "None",
+              "Card Layout": "Horizontal",
+              "Card Size": "Medium",
+              "Card Action": "Icon"
+            },
+            "properties": {
+              "Show Header": false,
+              "Button Label": "View",
+              "Click Action": "Open Dynamic Page",
+              "Items": "[{\"title\":\"Explorer Week\",\"description\":\"Jul 8–12 · Ages 6–8\"},{\"title\":\"Nature Explorer Day\",\"description\":\"Day camp · Ages 6–8\"},{\"title\":\"Adventure Trail\",\"description\":\"Jul 15–19 · Ages 9–12\"}]"
+            }
+          }
+        ]
+      },
+      {
+        "id": "page-2",
+        "name": "Session",
+        "icon": "Tent",
+        "dynamic": true,
+        "dynamicSourceKey": "src",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"field\",\"value\":\"Title\",\"label\":\"Title\",\"icon\":\"type-square-filled\",\"iconCategory\":\"editor\"}]",
+              "Subheading Tokens": "[{\"type\":\"field\",\"value\":\"Description\",\"label\":\"Description\",\"icon\":\"type-square-filled\",\"iconCategory\":\"editor\"}]"
+            }
+          },
+          {
+            "componentId": "paragraph",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Text": "Hands-on outdoor games, scavenger hunts, crafts, and confidence-building group activities."
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Large",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"What you’ll do\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Outdoor Games\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Field games & relay races.\"}]",
+              "Icon": "Trophy"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Scavenger Hunts\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Explore the trails in teams.\"}]",
+              "Icon": "Map"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Arts & Crafts\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Make-and-take projects.\"}]",
+              "Icon": "Palette"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Team Challenges\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Build confidence together.\"}]",
+              "Icon": "Users"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Large",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Good to Know\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Dates\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"July 8–12\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Small",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Ages\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"6–8\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Small",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Small",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Group size\"}]",
+              "Subheading Tokens": "[{\"type\":\"text\",\"value\":\"Up to 12 campers\"}]"
+            }
+          },
+          {
+            "componentId": "divider",
+            "variants": {
+              "Spacing": "Large",
+              "Line Style": "Solid"
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Default",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Register for This Session",
+              "Left Icon": "Pencil",
+              "Right Icon": "none"
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 12
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Outlined",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Back to Camp Sessions",
+              "Left Icon": "ArrowLeft",
+              "Right Icon": "none"
+            }
+          }
+        ]
+      },
+      {
+        "id": "page-3",
+        "name": "Register",
+        "icon": "Pencil",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "Register",
+              "Subheading": "Reserve your camper’s spot in a couple of minutes."
+            }
+          },
+          {
+            "componentId": "paragraph",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Text": "Choose a session, add your camper’s details, and we’ll email your confirmation and packing list."
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 24
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Default",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Start Registration",
+              "Left Icon": "none",
+              "Right Icon": "none"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "showcase-course",
+    "defVersion": 1,
+    "name": "Northpeak",
+    "appTitle": "Northpeak",
+    "appSubtitle": "Learn at your pace.",
+    "appHeader": {
+      "show": true,
+      "layout": "Center",
+      "size": "Medium",
+      "title": "Northpeak",
+      "subtitle": "Learn at your pace.",
+      "icon": "GraduationCap",
+      "imageStyle": "Icon",
+      "backgroundMode": "gradient",
+      "bgSource": "color",
+      "gradientStart": "#4A86E8",
+      "gradientEnd": "#2D6CDF",
+      "textColorMode": "light"
+    },
+    "headerActions": [],
+    "theme": {
+      "color": "#2D6CDF",
+      "tint": 22,
+      "font": "Inter",
+      "headingFont": "Inter",
+      "radius": "Large",
+      "harmonyOffset": 150,
+      "activePreset": "Electric Indigo",
+      "colorMode": "light",
+      "tokenOverrides": {}
+    },
+    "pages": [
+      {
+        "id": "page-1",
+        "name": "Home",
+        "icon": "House",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "Courses",
+              "Subheading": "Short, practical courses you can finish."
+            }
+          },
+          {
+            "componentId": "list",
+            "key": "src",
+            "variants": {
+              "Layout": "Card",
+              "Card Image Style": "None",
+              "Card Layout": "Horizontal",
+              "Card Size": "Medium",
+              "Card Action": "Icon"
+            },
+            "properties": {
+              "Show Header": false,
+              "Button Label": "View",
+              "Click Action": "Open Dynamic Page",
+              "Items": "[{\"title\":\"Project Management Basics\",\"description\":\"Master planning, teamwork, timelines, and delivery for modern projects.\"},{\"title\":\"Design Foundations\",\"description\":\"Layout, type, and colour for non-designers.\"},{\"title\":\"Data Analytics 101\",\"description\":\"Turn spreadsheets into decisions.\"}]"
+            }
+          }
+        ]
+      },
+      {
+        "id": "page-2",
+        "name": "Course",
+        "icon": "BookOpen",
+        "dynamic": true,
+        "dynamicSourceKey": "src",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"field\",\"value\":\"Title\",\"label\":\"Title\",\"icon\":\"type-square-filled\",\"iconCategory\":\"editor\"}]",
+              "Subheading Tokens": "[{\"type\":\"field\",\"value\":\"Description\",\"label\":\"Description\",\"icon\":\"type-square-filled\",\"iconCategory\":\"editor\"}]"
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 24
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Weekly Modules\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Square",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Week 1\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Project lifecycle & stakeholder roles\"}]"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Square",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Week 2\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Scope, timeline & task planning\"}]"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Square",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Week 3\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Team communication & risk management\"}]"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Square",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Week 4\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Delivery tracking & project wrap-up\"}]"
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 24
+            }
+          },
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading Tokens": "[{\"type\":\"text\",\"value\":\"Details\"}]",
+              "Subheading Tokens": "[]"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Duration\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"4 weeks\"}]",
+              "Icon": "Clock"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Level\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Beginner\"}]",
+              "Icon": "Signal"
+            }
+          },
+          {
+            "componentId": "card",
+            "variants": {
+              "Image Style": "Icon",
+              "Layout": "Horizontal",
+              "Action": "None"
+            },
+            "properties": {
+              "Title Tokens": "[{\"type\":\"text\",\"value\":\"Format\"}]",
+              "Description Tokens": "[{\"type\":\"text\",\"value\":\"Self-paced · certificate\"}]",
+              "Icon": "Laptop"
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 24
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Default",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Enroll in This Course",
+              "Left Icon": "none",
+              "Right Icon": "none"
+            }
+          },
+          {
+            "componentId": "spacer",
+            "properties": {
+              "Height": 12
+            }
+          },
+          {
+            "componentId": "button",
+            "variants": {
+              "Type": "Standard",
+              "Variant": "Outlined",
+              "Corner": "Rounded",
+              "Size": "Default",
+              "Width": "Full"
+            },
+            "properties": {
+              "Label": "Back to Courses",
+              "Left Icon": "ArrowLeft",
+              "Right Icon": "none"
+            }
+          }
+        ]
+      },
+      {
+        "id": "page-3",
+        "name": "About",
+        "icon": "Info",
+        "elements": [
+          {
+            "componentId": "heading",
+            "variants": {
+              "Size": "Large",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Heading": "About Northpeak",
+              "Subheading": "Practical learning, built around your schedule."
+            }
+          },
+          {
+            "componentId": "paragraph",
+            "variants": {
+              "Size": "Medium",
+              "Alignment": "Left"
+            },
+            "properties": {
+              "Text": "Every course is self-paced with weekly modules, hands-on exercises, and a certificate on completion."
+            }
+          }
+        ]
+      }
+    ]
+  }
 ]
 
 export function getPresetById(id: string): AppPreset {

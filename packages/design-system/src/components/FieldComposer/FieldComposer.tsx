@@ -14,7 +14,7 @@ const iconKey = (name?: string, category?: string) =>
   name && category ? `${category}/${name}` : '';
 
 export type FieldToken =
-  | { type: 'field'; value: string; label: string; icon?: string; iconCategory?: string }
+  | { type: 'field'; value: string; label: string; icon?: string; iconCategory?: string; /** Inline display tag, rendered as {tag} by the Paragraph editor (e.g. "4_description"). */ tag?: string }
   | { type: 'text'; value: string };
 
 export interface FieldComposerOption {

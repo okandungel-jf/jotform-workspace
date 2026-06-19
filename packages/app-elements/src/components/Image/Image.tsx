@@ -20,6 +20,10 @@ export interface ImageProps {
   shrinked?: boolean;
   skeleton?: boolean;
   skeletonAnimation?: 'pulse' | 'shimmer';
+  /** Bound to a data source (dynamic detail page) whose row has no image. Shows a
+   *  read-only placeholder (icon + fill) at the image's footprint instead of the
+   *  upload/drag-and-drop box. */
+  boundEmpty?: boolean;
 }
 
 export const Image: FC<ImageProps> = ({
@@ -35,6 +39,7 @@ export const Image: FC<ImageProps> = ({
   shrinked = false,
   skeleton = false,
   skeletonAnimation = 'pulse',
+  boundEmpty = false,
 }) => {
   const animClass = skeletonAnimation === 'shimmer' ? 'animate-shimmer' : 'animate-pulse';
   const [isDragging, setIsDragging] = useState(false);
@@ -52,6 +57,38 @@ export const Image: FC<ImageProps> = ({
     return (
       <div className={rootClasses}>
         <div className={`jf-image__media jf-skeleton__bone ${animClass}`} />
+      </div>
+    );
+  }
+
+  // =====================
+  // Bound-but-empty placeholder (dynamic detail page: bound to a data source whose
+  // row has no image) — a read-only fill + icon at the image footprint, not the
+  // upload box.
+  // =====================
+  if (boundEmpty && !imageUrl) {
+    const rootClasses = [
+      'jf-image',
+      `jf-image--${alignment.toLowerCase()}`,
+      `jf-image--${size.toLowerCase()}`,
+      selected && 'jf-image--selected',
+      shrinked && 'jf-image--shrinked',
+    ].filter(Boolean).join(' ');
+    const phClasses = [
+      'jf-image__media',
+      'jf-image__placeholder',
+      shape === 'Circle' && 'jf-image__media--circle',
+      shape === 'Rounded' && 'jf-image__media--rounded',
+    ].filter(Boolean).join(' ');
+    const phStyle: React.CSSProperties = {};
+    if (width != null) phStyle.width = `${width}px`;
+    if (height != null) phStyle.height = `${height}px`;
+    if (width != null || height != null) phStyle.maxWidth = '100%';
+    return (
+      <div className={rootClasses}>
+        <div className={phClasses} style={phStyle}>
+          <Icon name="Image" size={32} className="jf-image__placeholder-icon" />
+        </div>
       </div>
     );
   }

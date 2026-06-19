@@ -69,14 +69,21 @@ ComponentRegistry.register({
 
   render(variants: VariantValues, props: PropertyValues, _states: StateValues): React.ReactNode {
     const hasImage = variants['Has Image'] === 'Yes';
+    // Injected by applyDynamicBinding when this image is bound to a data-source
+    // column on a dynamic detail page but the previewed row has no image.
+    const boundEmpty = props['__boundEmpty'] === true;
+    // The placeholder respects alignment/size/shape too, so apply them whenever a
+    // visual (real image OR placeholder) is shown.
+    const showVisual = hasImage || boundEmpty;
     const widthValue = Number(props['Width']);
     const heightValue = Number(props['Height']);
     return (
       <Image
         hasImage={hasImage}
-        alignment={hasImage ? variants['Alignment'] as ImageAlignment : undefined}
-        size={hasImage ? variants['Size'] as ImageSize : undefined}
-        shape={hasImage ? variants['Image Shape'] as ImageShape : undefined}
+        boundEmpty={boundEmpty}
+        alignment={showVisual ? variants['Alignment'] as ImageAlignment : undefined}
+        size={showVisual ? variants['Size'] as ImageSize : undefined}
+        shape={showVisual ? variants['Image Shape'] as ImageShape : undefined}
         imageUrl={props['Image URL'] as string}
         altText={props['Alt Text'] as string}
         width={Number.isFinite(widthValue) && widthValue > 0 ? widthValue : undefined}
