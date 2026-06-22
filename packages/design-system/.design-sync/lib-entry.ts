@@ -8,4 +8,22 @@
 // foundation (Circular @font-face + --gray-*/--background-*/--spacing-* tokens).
 import './host-tokens.css';
 import '../src/styles/app.scss';
-export * from '../src/index';
+// Builder-chrome showcase styles (TopBar / panels / add-element) — app-builder
+// app.scss globals stripped (see extract-chrome-styles.mjs).
+import './chrome-styles.css';
+// Re-export every DS component EXCEPT DesignLibrary (the docs app) — exporting it
+// via `export *` pulled the whole ~MB docs shell into the bundle and pushed it
+// past the 5MB upload cap. It is excluded as a component anyway (componentSrcMap).
+export {
+  Icon, Button, SearchInput, DateInput,
+  DropdownSingle, DropdownMulti, DropdownLanguage, DropdownMenuShell, useDropdown,
+  Toggle, Slider, Input, TextArea, ColorInput, UrlInput,
+  FieldChip, FieldMapper, FieldComposer, FormField, NumberInput,
+  Modal, Link, Badge, Indicator, Dialog, Tabs, Segmented,
+  Checkbox, RadioButton, Header, Table, TableTitle,
+} from '../src/index';
+// Builder-chrome components (real app-builder shell pieces) shown under the
+// "Builder Chrome" group as reference — not part of the DS component library.
+export { TopBar } from '../../app-builder/src/shell/TopBar';
+export { PagePropertiesPanel } from '../../app-builder/src/components/PagePropertiesPanel';
+export { AddElementPanel } from './builder-chrome/AddElementPanel/AddElementPanel';

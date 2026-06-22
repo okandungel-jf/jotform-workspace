@@ -3,7 +3,7 @@
   "globalName": "JFDesignSystem",
   "projectId": "b403d5e9-65b9-433c-97e5-84dcb70e710c",
   "shape": "package",
-  "buildCmd": "node .design-sync/extract-host-tokens.mjs && npx vite build -c .design-sync/vite.lib.config.mts && npx tsc -p .design-sync/tsconfig.dts.json",
+  "buildCmd": "node .design-sync/extract-host-tokens.mjs && node .design-sync/extract-chrome-styles.mjs && npx vite build -c .design-sync/vite.lib.config.mts && npx tsc -p .design-sync/tsconfig.dts.json",
   "cssEntry": ".design-sync/.cache/lib/jf-ds.css",
   "readmeHeader": ".design-sync/conventions.md",
   "runtimeFontPrefixes": ["Inter"],
@@ -11,7 +11,10 @@
     "Modal": { "cardMode": "single", "viewport": "640x520", "primaryStory": "Default" },
     "Table": { "cardMode": "column", "primaryStory": "Basic" },
     "Dialog": { "cardMode": "single", "viewport": "560x460", "primaryStory": "Informative" },
-    "Header": { "cardMode": "column", "primaryStory": "Build" }
+    "Header": { "cardMode": "column", "primaryStory": "Build" },
+    "TopBar": { "cardMode": "column", "viewport": "1100x320", "primaryStory": "Default" },
+    "PagePropertiesPanel": { "cardMode": "single", "viewport": "380x620", "primaryStory": "Default" },
+    "AddElementPanel": { "cardMode": "single", "viewport": "340x780", "primaryStory": "Default" }
   },
   "componentSrcMap": {
     "Icon": "src/components/Icon/Icon.tsx",
@@ -45,6 +48,19 @@
     "Header": "src/components/Header/Header.tsx",
     "Table": "src/components/Table/Table.tsx",
     "TableTitle": "src/components/Table/TableTitle.tsx",
+    "TopBar": ".design-sync/builder-chrome/TopBar/TopBar.tsx",
+    "PagePropertiesPanel": ".design-sync/builder-chrome/PagePropertiesPanel/PagePropertiesPanel.tsx",
+    "AddElementPanel": ".design-sync/builder-chrome/AddElementPanel/AddElementPanel.tsx",
     "DesignLibrary": null
+  },
+  "dtsPropsFor": {
+    "TopBar": "activePage: 'build' | 'settings' | 'publish'; onPageChange: (page: 'build' | 'settings' | 'publish') => void; appName?: string; onAppNameChange?: (name: string) => void; previewMode: boolean; onPreviewToggle: () => void; presets: { id: string; name: string }[]; activePresetId: string; onPresetChange: (id: string) => void;",
+    "PagePropertiesPanel": "page: { id: string; name: string; icon?: string; hidden?: boolean; requireLogin?: boolean; showIcon?: boolean; landing?: boolean }; isFirstPage: boolean; onRename: (name: string) => void; onChangeIcon: (icon: string) => void; onToggleHidden: (hidden: boolean) => void; onToggleRequireLogin: (require: boolean) => void; onToggleShowIcon: (show: boolean) => void; onToggleLanding: (landing: boolean) => void; onClose: () => void;",
+    "AddElementPanel": "/** No props — reference showcase of the builder's App Elements panel. */"
+  },
+  "docsMap": {
+    "TopBar": ".design-sync/groups/builder-chrome.md",
+    "PagePropertiesPanel": ".design-sync/groups/builder-chrome.md",
+    "AddElementPanel": ".design-sync/groups/builder-chrome.md"
   }
 }

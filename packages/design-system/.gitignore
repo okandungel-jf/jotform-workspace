@@ -31,3 +31,4 @@ ds-bundle/
 .design-sync/node_modules
 dist-types/
 .design-sync/host-tokens.css
+.design-sync/chrome-styles.css

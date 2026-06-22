@@ -43,6 +43,13 @@ Before styling, read `styles.css` (and the `_ds_bundle.css` it imports) for the 
 set, and each component's `components/<group>/<Name>/<Name>.d.ts` (its prop contract) and
 `<Name>.prompt.md` (usage notes).
 
+## Builder Chrome (reference only)
+
+The `builder-chrome` group (`TopBar`, `PagePropertiesPanel`, `AddElementPanel`)
+shows the Jotform **App Builder's own UI** for reference — the real top bar, the
+page-properties panel, and the add-element panel. These are NOT for building app
+content; use them only when designing builder/admin chrome itself.
+
 ## Example
 
 ```jsx
