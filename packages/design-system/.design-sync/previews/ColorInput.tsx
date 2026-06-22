@@ -41,3 +41,25 @@ export function Swatches() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div
+      data-theme="dark"
+      style={{
+        background: 'var(--bg-fill)',
+        padding: 20,
+        borderRadius: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+        width: 320,
+      }}
+    >
+      <ColorInput color="#FF6100" />
+      <ColorInput color="#0075E3" />
+      <ColorInput status="success" color="#22C55E" />
+      <ColorInput status="error" color="#E11D48" />
+    </div>
+  );
+}

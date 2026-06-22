@@ -39,3 +39,25 @@ export function States() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div
+      data-theme="dark"
+      style={{
+        background: 'var(--bg-fill)',
+        padding: 20,
+        borderRadius: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+        width: 320,
+      }}
+    >
+      <DateInput />
+      <DateInput status="success" />
+      <DateInput status="error" />
+      <DateInput readOnly />
+    </div>
+  );
+}

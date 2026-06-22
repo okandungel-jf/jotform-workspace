@@ -95,3 +95,20 @@ export function Grouped() {
     </Frame>
   );
 }
+
+// Dark page background: the same dsp-static shell hack hosting an actions menu on a dark panel.
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12, width: 300 }}>
+      <Frame>
+        <DropdownMenuShell placement="bottom" isSheet={false} className="dsp-static" menuRef={noop} onClose={noop} onKeyDown={noop}>
+          <Item label="Edit" icon="pencil-to-square" active />
+          <Item label="Duplicate" icon="copy" />
+          <Item label="Share" icon="share-nodes-filled" />
+          <div className="jf-dropdown__divider" role="separator" />
+          <Item label="Delete" icon="trash-filled" />
+        </DropdownMenuShell>
+      </Frame>
+    </div>
+  );
+}

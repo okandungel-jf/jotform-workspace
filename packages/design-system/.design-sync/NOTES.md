@@ -77,6 +77,27 @@ Reusable gotchas (so re-syncs / new previews don't relearn them):
   visible. Enum quirks: Link size is `sm|lg` only; Indicator has no `warning` status;
   Segmented sizes are `sm|md` only.
 
+## Dark mode
+
+Every preview has a `Dark` cell (a representative composition wrapped in
+`<div data-theme="dark" style={{ background: 'var(--bg-fill)', … }}>`) EXCEPT
+**Modal** and **Dialog** — those portal to `document.body`, which escapes the
+`data-theme` wrapper, so a Dark cell can't theme them (would need `data-theme`
+on `<body>`). They render light; dark still works for the agent if it sets
+`data-theme="dark"` high enough.
+
+**DS dark-theme gap (important):** `[data-theme='dark']` only remaps the
+neutral/primary oklch ramps + shadow tokens. It does **not** remap the legacy
+`--navy-*` / `--text-darkest` / `--text-medium` semantic tokens. So any component
+that colors text with those needs its OWN `[data-theme='dark']` block (Input,
+FormField, Dropdown already have one). **TableTitle was missing one — fixed in
+`src/components/Table/TableTitle.scss`** (title → `--core-white`, subtitle →
+`--gray-200`, mirroring Input). Watch for this on any new text component.
+
+- **FieldChip** has no dark block and uses `--gray-75` → in dark it renders as a
+  legible light-gray pill (not a dark-adapted fill). Graded good (high contrast),
+  noted as a component limitation — a future DS dark block would improve it.
+
 ## Re-sync risks (watch-list)
 
 - **app-elements token drift**: `host-tokens.css` is a point-in-time mirror of

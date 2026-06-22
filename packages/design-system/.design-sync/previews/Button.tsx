@@ -52,3 +52,15 @@ export function States() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ ...row, background: 'var(--bg-fill)', padding: 20, borderRadius: 12 }}>
+      <Button variant="filled" colorScheme="primary">Primary</Button>
+      <Button variant="filled" colorScheme="secondary">Secondary</Button>
+      <Button variant="ghost" colorScheme="primary">Ghost</Button>
+      <Button colorScheme="primary" leftIcon={<Icon name="plus" size={16} />}>New item</Button>
+      <Button variant="filled" colorScheme="destructive">Delete</Button>
+    </div>
+  );
+}

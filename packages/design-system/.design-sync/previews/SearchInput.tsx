@@ -35,3 +35,16 @@ export function Sizes() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+      <div style={{ width: 320 }}>
+        <SearchInput value="Quarterly report" placeholder="Search submissions…" readOnly />
+      </div>
+      <div style={{ width: 360 }}>
+        <SearchInput placeholder="Search forms" showFilter readOnly />
+      </div>
+    </div>
+  );
+}

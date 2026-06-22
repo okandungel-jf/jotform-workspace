@@ -76,3 +76,33 @@ export function Empty() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div
+      data-theme="dark"
+      style={{
+        background: 'var(--bg-fill)',
+        padding: 20,
+        borderRadius: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        width: 340,
+      }}
+    >
+      <DropdownMulti
+        title="Categories"
+        showTitle
+        options={tagOptions}
+        value={['design', 'engineering', 'marketing']}
+      />
+      <DropdownMulti
+        title="Notification channels"
+        showTitle
+        options={channelOptions}
+        value={['email', 'push']}
+      />
+    </div>
+  );
+}

@@ -55,3 +55,16 @@ export function WithIcons() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+      <Badge status="success">Active</Badge>
+      <Badge status="error">Failed</Badge>
+      <Badge status="warning">Pending</Badge>
+      <Badge status="information" emphasis="bold">Published</Badge>
+      <Badge status="neutral" shape="rectangle" emphasis="outlined">v2.4.0</Badge>
+      <Badge status="success" icon={<Icon name="check-sm" size={12} />}>Verified</Badge>
+    </div>
+  );
+}

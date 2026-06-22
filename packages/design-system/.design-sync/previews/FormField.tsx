@@ -77,3 +77,36 @@ export function Disabled() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div
+      data-theme="dark"
+      style={{
+        background: 'var(--bg-fill)',
+        padding: 20,
+        borderRadius: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        width: 340,
+      }}
+    >
+      <FormField
+        title="Email address"
+        description="We'll send your receipt and account updates here."
+        helpText="Use your work email if you have one."
+        required
+      >
+        <Input placeholder="name@company.com" defaultValue="ava@acme.com" />
+      </FormField>
+      <FormField
+        title="Account role"
+        description="Controls what this member can see and edit."
+        helpText="You can change this later in settings."
+      >
+        <DropdownSingle options={roleOptions} value="admin" showLeadingIcon={false} />
+      </FormField>
+    </div>
+  );
+}

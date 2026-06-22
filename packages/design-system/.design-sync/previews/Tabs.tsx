@@ -61,3 +61,20 @@ export function AppsAccent() {
     />
   );
 }
+
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+      <Tabs
+        value="activity"
+        onChange={noop}
+        items={[
+          { value: 'overview', label: 'Overview' },
+          { value: 'activity', label: 'Activity' },
+          { value: 'members', label: 'Members' },
+          { value: 'settings', label: 'Settings' },
+        ]}
+      />
+    </div>
+  );
+}

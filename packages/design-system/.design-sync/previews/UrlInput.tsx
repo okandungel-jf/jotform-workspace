@@ -39,3 +39,24 @@ export function Variations() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div
+      data-theme="dark"
+      style={{
+        background: 'var(--bg-fill)',
+        padding: 20,
+        borderRadius: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+        width: 320,
+      }}
+    >
+      <UrlInput defaultValue="acme.com/pricing" />
+      <UrlInput status="success" defaultValue="acme.com/welcome" />
+      <UrlInput urlPrefix="jotform.com/" defaultValue="contact-form" />
+    </div>
+  );
+}

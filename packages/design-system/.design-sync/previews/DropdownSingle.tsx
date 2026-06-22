@@ -103,3 +103,30 @@ export function Disabled() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div
+      data-theme="dark"
+      style={{
+        background: 'var(--bg-fill)',
+        padding: 20,
+        borderRadius: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        width: 340,
+      }}
+    >
+      <DropdownSingle title="Status" showTitle options={statusOptions} value="active" />
+      <DropdownSingle
+        title="Subscription plan"
+        showTitle
+        options={planOptions}
+        value="gold"
+        showLeadingIcon={false}
+      />
+      <DropdownSingle title="Assignee" showTitle options={memberOptions} value="ava" showLeadingIcon={false} />
+    </div>
+  );
+}

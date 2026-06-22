@@ -45,3 +45,24 @@ export function Placeholder() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div
+      data-theme="dark"
+      style={{
+        background: 'var(--bg-fill)',
+        padding: 20,
+        borderRadius: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        width: 340,
+      }}
+    >
+      <DropdownLanguage title="Language" showTitle options={langOptions} value="en" />
+      <DropdownLanguage options={langOptions} value="tr" />
+      <DropdownLanguage options={langOptions} value="de" />
+    </div>
+  );
+}

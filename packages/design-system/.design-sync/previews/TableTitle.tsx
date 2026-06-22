@@ -57,3 +57,19 @@ export function CustomLeading() {
 export function TitleOnly() {
   return <TableTitle title="Submissions" badge={<Badge status="neutral" emphasis="subtle">42</Badge>} />;
 }
+
+// Dark page background: icon block + title + subtitle + status Badge on a dark panel.
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12, width: 420 }}>
+      <TableTitle
+        size="md"
+        icon="user-filled"
+        iconCategory="users"
+        title="Team Members"
+        subtitle="Active workspace seats"
+        badge={<Badge status="success" emphasis="subtle">Live</Badge>}
+      />
+    </div>
+  );
+}

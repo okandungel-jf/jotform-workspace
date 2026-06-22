@@ -47,3 +47,30 @@ export function NoIcon() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div
+      data-theme="dark"
+      style={{
+        background: 'var(--bg-fill)',
+        padding: 20,
+        borderRadius: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        width: 340,
+      }}
+    >
+      <div style={row}>
+        <FieldChip icon="user-filled" iconCategory="users" label="Full Name" />
+        <FieldChip icon="envelope-closed-filled" iconCategory="communication" label="Email" />
+        <FieldChip icon="calendar" iconCategory="time-date" label="Order Date" />
+      </div>
+      <div style={row}>
+        <FieldChip icon="tag" iconCategory="finance" label="Category" onClick={() => {}} />
+        <FieldChip label="Submission ID" />
+      </div>
+    </div>
+  );
+}

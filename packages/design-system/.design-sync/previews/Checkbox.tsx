@@ -50,3 +50,14 @@ export function States() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <Checkbox label="Email me about product updates" defaultChecked />
+      <Checkbox label="Notify me about new comments" />
+      <Checkbox label="Indeterminate" indeterminate />
+      <Checkbox label="Required field is invalid" error defaultChecked />
+    </div>
+  );
+}

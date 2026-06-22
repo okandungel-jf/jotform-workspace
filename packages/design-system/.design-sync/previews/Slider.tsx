@@ -45,3 +45,14 @@ export function States() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 18, width: 280 }}>
+      <Slider value={60} onChange={noop} showValue />
+      <Slider value={72} min={0} max={100} onChange={noop} showValue formatValue={(v) => `${v}%`} />
+      <Slider value={65} onChange={noop} error showValue />
+      <Slider value={50} onChange={noop} disabled showValue />
+    </div>
+  );
+}

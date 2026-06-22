@@ -50,3 +50,17 @@ export function ErrorState() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <Toggle
+        label="Push notifications"
+        description="Receive alerts on this device."
+        defaultChecked
+      />
+      <Toggle label="Auto-sync" description="Keep your data up to date across devices." />
+      <Toggle label="Disabled" disabled defaultChecked />
+    </div>
+  );
+}

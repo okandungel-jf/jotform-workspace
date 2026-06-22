@@ -43,3 +43,16 @@ export function Light() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+      <Indicator style="color" status="information">8</Indicator>
+      <Indicator style="color" status="success">3</Indicator>
+      <Indicator style="color" status="error">12</Indicator>
+      <Indicator style="dot" status="error" />
+      <Indicator style="light" status="information">7</Indicator>
+      <Indicator style="light" status="success">2</Indicator>
+    </div>
+  );
+}

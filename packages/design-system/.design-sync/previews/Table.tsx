@@ -34,3 +34,11 @@ export function Selectable() {
 export function Loading() {
   return <Table columns={columns} data={[]} loading loadingVariant="skeleton" skeletonRows={4} />;
 }
+
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12 }}>
+      <Table columns={columns} data={data} rowKey={rowKey} sort={{ key: 'name', direction: 'asc' }} selectable selectedRowKeys={[1, 3]} />
+    </div>
+  );
+}

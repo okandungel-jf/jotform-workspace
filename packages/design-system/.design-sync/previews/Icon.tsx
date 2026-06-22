@@ -38,3 +38,12 @@ export function Colored() {
     </div>
   );
 }
+
+export function Dark() {
+  const names = ['star-filled', 'heart', 'check', 'magnifying-glass', 'gear-filled', 'trash-filled', 'plus', 'at'];
+  return (
+    <div data-theme="dark" style={{ ...grid, background: 'var(--bg-fill)', padding: 20, borderRadius: 12 }}>
+      {names.map((n) => <Icon key={n} name={n} size={28} />)}
+    </div>
+  );
+}

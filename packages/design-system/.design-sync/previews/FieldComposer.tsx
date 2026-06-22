@@ -48,3 +48,21 @@ export function FieldHeavy() {
     </div>
   );
 }
+
+// Dark page background: the composer reusing the Default template, on a dark panel.
+export function Dark() {
+  const value = [
+    { type: 'text', value: 'Hi ' },
+    { type: 'field', value: 'first_name', label: 'First Name', icon: 'type-square-filled', iconCategory: 'editor' },
+    { type: 'text', value: ', your order ' },
+    { type: 'field', value: 'order_id', label: 'Order ID', icon: 'type-square-filled', iconCategory: 'editor' },
+    { type: 'text', value: ' has shipped.' },
+  ];
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12, width: 520 }}>
+      <div style={frame}>
+        <FieldComposer value={value} options={options} onCreate={() => {}} createLabel="Create field" />
+      </div>
+    </div>
+  );
+}

@@ -53,3 +53,37 @@ export function Disabled() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div
+      data-theme="dark"
+      style={{
+        background: 'var(--bg-fill)',
+        padding: 20,
+        borderRadius: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+        width: 320,
+      }}
+    >
+      <TextArea
+        size="lg"
+        defaultValue="Thanks for the quick turnaround on the latest mockups — the team is thrilled with the new dashboard layout."
+        maxLength={300}
+      />
+      <TextArea
+        status="error"
+        defaultValue="Please keep your feedback under the character limit."
+        maxLength={300}
+      />
+      <TextArea
+        status="readonly"
+        defaultValue="This response was submitted on May 3 and can no longer be edited."
+        readOnly
+        maxLength={300}
+      />
+    </div>
+  );
+}

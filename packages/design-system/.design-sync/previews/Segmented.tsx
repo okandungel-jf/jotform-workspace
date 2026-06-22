@@ -103,3 +103,28 @@ export function Accent() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 12, width: 320 }}>
+      <Segmented
+        value="weekly"
+        onChange={noop}
+        items={[
+          { value: 'daily', label: 'Daily' },
+          { value: 'weekly', label: 'Weekly' },
+          { value: 'monthly', label: 'Monthly' },
+        ]}
+      />
+      <Segmented
+        variant="iconText"
+        value="grid"
+        onChange={noop}
+        items={[
+          { value: 'grid', label: 'Grid', icon: 'grid-dots' },
+          { value: 'table', label: 'Table', icon: 'table' },
+        ]}
+      />
+    </div>
+  );
+}

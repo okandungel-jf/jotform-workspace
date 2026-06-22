@@ -65,3 +65,14 @@ export function States() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ ...col, background: 'var(--bg-fill)', padding: 20, borderRadius: 12 }}>
+      <Input defaultValue="jordan@company.com" leftContent={<Icon name="envelope-closed-filled" category="communication" size={18} />} />
+      <Input status="error" defaultValue="jordan@compny" rightContent={<Icon name="exclamation-circle-filled" size={18} />} />
+      <Input placeholder="Search projects" leftContent={<Icon name="magnifying-glass" size={18} />} />
+      <Input defaultValue="Locked field" disabled />
+    </div>
+  );
+}

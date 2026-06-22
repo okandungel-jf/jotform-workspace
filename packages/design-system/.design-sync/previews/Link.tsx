@@ -39,3 +39,15 @@ export function States() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+      <Link href="#" colorScheme="primary">View documentation</Link>
+      <Link href="#" colorScheme="constructive">Approve request</Link>
+      <Link href="#" colorScheme="destructive">Delete account</Link>
+      <Link href="#" leftIcon={<Icon name="link-diagonal" size={16} />}>Copy link</Link>
+      <Link href="#" colorScheme="primary" disabled>Unavailable</Link>
+    </div>
+  );
+}

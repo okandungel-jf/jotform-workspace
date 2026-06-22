@@ -54,3 +54,16 @@ export function MappingPanel() {
     </div>
   );
 }
+
+// Dark page background: the realistic mapping panel reused on a dark panel.
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12, width: 420 }}>
+      <div style={stack}>
+        <FieldMapper field={{ label: 'Customer Name', icon: 'user-filled', iconCategory: 'users' }} onAdd={() => {}} />
+        <FieldMapper field={{ label: 'Order Total', icon: 'dollar-sign', iconCategory: 'finance' }} onAdd={() => {}} />
+        <FieldMapper field={null} onAdd={() => {}} />
+      </div>
+    </div>
+  );
+}

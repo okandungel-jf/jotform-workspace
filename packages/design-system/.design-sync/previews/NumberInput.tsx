@@ -48,3 +48,25 @@ export function WithDescription() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div
+      data-theme="dark"
+      style={{
+        background: 'var(--bg-fill)',
+        padding: 20,
+        borderRadius: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+        width: 320,
+      }}
+    >
+      <NumberInput value={24} unit="kg" />
+      <NumberInput status="error" value={999} unit="kg" />
+      <NumberInput status="success" value={42} unit="kg" />
+      <NumberInput value={12} unit="kg" description="Maximum package weight per box" />
+    </div>
+  );
+}

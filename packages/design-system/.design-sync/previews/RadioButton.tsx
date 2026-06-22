@@ -52,3 +52,14 @@ export function States() {
     </div>
   );
 }
+
+export function Dark() {
+  return (
+    <div data-theme="dark" style={{ background: 'var(--bg-fill)', padding: 20, borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <RadioButton name="dark-plan" label="Pro — $12 / month" defaultChecked />
+      <RadioButton name="dark-plan" label="Free" />
+      <RadioButton name="dark-plan2" label="Disabled option" disabled />
+      <RadioButton name="dark-plan3" label="Invalid choice" error />
+    </div>
+  );
+}
