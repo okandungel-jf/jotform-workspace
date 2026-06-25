@@ -77,13 +77,6 @@ export { SocialFollow } from './components/SocialFollow';
 export { DailyTaskManager } from './components/DailyTaskManager';
 export { ProgressIndicator } from './components/ProgressIndicator';
 export { Spacer } from './components/Spacer';
-// Messaging primitives (Wave 6) — composition pieces, not standalone canvas elements.
-export { Avatar } from './components/Avatar';
-export type { AvatarProps, AvatarPresence } from './components/Avatar';
-export { Input } from './components/Input';
-export type { InputProps } from './components/Input';
-export { Badge } from './components/Badge';
-export type { BadgeProps, BadgeTone } from './components/Badge';
 
 // Layout
 export { AppDesigner, applyDefaultTheme, applyStoredOrDefaultTheme } from './layout/AppDesigner';
@@ -103,8 +96,6 @@ export type { FavoriteItem, FavoritesContextValue } from './runtime/FavoritesCon
 export { ProductDetailProvider, useProductDetail } from './runtime/ProductDetailContext';
 export type { ProductDetailContextValue } from './runtime/ProductDetailContext';
 export { FormSheet } from './runtime/FormSheet';
-export { MessagesProvider, useMessages } from './runtime/MessagesContext';
-export type { AppUser, Message, Conversation, MessagesContextValue } from './runtime/MessagesContext';
 
 // Icon
 export { Icon as AppIcon } from './components/Icon/Icon';

@@ -147,42 +147,6 @@ The currently empty Conditions tab in element properties gets real content.
 
 ---
 
-### Wave 6 — Messaging (Settings tab → new "Messaging" menu)
-
-**The #1 requested copilot feature** (chat/DM/social/group messaging between app users). Positioned as the **social sibling of the Manage page (Wave 5)**: both are compositions over Waves 1–4, scoped by role.
-
-| | Scope | Result |
-|---|---|---|
-| **Manage page** | `allowedRoles: ['admin']`, reads `appData` | Operational / CRUD |
-| **Messaging** | app-user scoped, **user ↔ user** | Social |
-
-Neither is a special construct. Messaging decomposes across existing layers: **enablement** in Settings (its own menu), **identity** from App Users (Wave 2), **data** in `appData`, **surfaces** as role-restricted system pages reusing the shipped **Open Dynamic Page** mechanism.
-
-**Adds:**
-- **Settings → new "Messaging" `SideNav` item + `MessagingPanel`** (design-system components, `--ds-*`). Enable toggle, DM/group toggles, "who can message whom" policy dropdown. Persists `messagingSettings` in the snapshot. Sibling to AI Chatbot — **not nested** (see Decision Log).
-- **`appData` entities** (bootstrapped here since Wave 1 hasn't landed): `conversations[]`, `messages[]`, `appUsers[]` (mock identity directory — prototypes a slice of Wave 2).
-- **Runtime `MessagesContext`** (`app-elements/src/runtime/`) — `conversations`/`messages`/`send()`, **optimistic echo + canned auto-reply**, persists to snapshot. Mirrors the proven `CartContext`/`CollectionsContext` Provider+hook pattern.
-- **New app-elements primitives** (token-based, dogfood — currently MISSING from app-elements): **Avatar**, **Input/Textarea** (composer), **Badge** (unread count).
-- **"Chat" system page** (`LivePreviewChatPage`) — conversation/user list (`List` + `Avatar` + `Badge`). Mirrors the **Profile** system-page pattern (`isPreviewChatOpen`, `chatHeaderEl`, `renderTopHeaderBack`). **Must be wired in BOTH live-preview render paths.**
-- **"Message Thread" element** (bubbles + composer) on a per-conversation detail page, **reusing Open Dynamic Page** navigation+binding (binding key = `conversationId`).
-- **"Message" entry-point action** (new `cardActionOptions` option, e.g. `'Open Chat'`) attachable to `List`/`Card`/`Button` → opens a thread with a user.
-
-**Open questions**
-- `appData` bootstrap: introduce a minimal `appData` root now (Wave 6) or block on Wave 1? (Lean: bootstrap `conversations`/`messages`/`appUsers` now; de-risks Wave 1.)
-- Mock identity: how many seed app users, and how is the "current user" chosen in preview? Reuse `PROFILE_USER` as current user?
-- Chat page discovery affordance: dedicated nav tab vs top-header chat icon vs avatar-style entry (system pages are excluded from `navPages`). Operational model wants a **single destination**, no nav bloat.
-- Thread navigation: reuse `reconcileDynamicPage` (today coupled to `List`'s Click Action) vs a parallel overlay like Profile.
-- Home list v1: full app-user **directory** vs **conversation list** (recent + unread). (Lean: directory first, evolve to conversation list.)
-- Group chat in Wave 6, or defer to **6b**?
-
-**Standalone value:** Avatar/Input/Badge primitives + `MessagesContext` are reusable far beyond chat. Mock `appUsers` prototypes Wave 2 identity. Ships a reference experience for the most-requested copilot feature.
-
-**Out of scope (Wave 6):** real-time backend/websockets, real auth, cross-device sync, push delivery, moderation/blocking backend, encryption. Prototype = **session-local mock** (IndexedDB + optimistic echo + canned reply).
-
-**Depends on:** conceptually Wave 2 (App Users) for identity — Wave 6 bootstraps a mock subset. Reuses **Open Dynamic Page** (shipped, `340522e`) + the **Profile system-page** pattern. Full file map: `MESSAGING_PLAN.md`.
-
----
-
 ## Decision Log
 
 So future sessions don't relitigate rejected approaches.
@@ -211,13 +175,6 @@ localStorage holds current user identity / role. Real auth deferred.
 
 ### Confirmed: Narrow view boundary
 Builder = structural (layout, new pages, new elements). Admin page = operational (CRUD on data).
-
-### Confirmed: Messaging lives in Settings as its OWN menu (not nested in AI Chatbot)
-AI Chatbot = user ↔ AI (a trained support agent); Messaging = user ↔ user (live chat). Different jobs, **disjoint config surfaces** (train-on-data/persona vs who-can-DM/group/moderation) → separate sibling menus in the Settings rail. The runtime **Inbox may surface both** AI and human threads (shared surface), but the **builder config stays separate**. Long-term option (not now): collapse AI Chatbot into Messaging as a "participant type."
-
-### Rejected: Messaging as a regular canvas element
-*Drop a "Chat" box on a page.*
-**Why rejected:** Works only for user↔owner support. The actual request is user↔user (DM/social/group), which needs identity, an inbox + thread navigation, and inter-user shared state — a multi-surface capability, not a single element. The only true element is the small "Message" entry-point action + the "Message Thread" element inside the thread page.
 
 ---
 
@@ -254,4 +211,3 @@ Verified during architectural discussion. May drift — verify against current c
 - **Plan locked:** 2026-05-18
 - **Active wave:** Pre-Wave 1 (no implementation started)
 - **Next session:** Wave 1 — Data tab in top header
-- **Wave 6 (Messaging):** planned 2026-06-23, depends on Wave 2 identity (bootstraps a mock subset). Detailed file map in `MESSAGING_PLAN.md`. Branch `feat/messaging-capability`.

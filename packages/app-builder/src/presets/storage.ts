@@ -11,43 +11,16 @@
 // IndexedDB has a much larger quota (typically hundreds of MB) so image-heavy
 // presets persist correctly.
 
-import type { AppUser, Conversation, Message } from '@jf/app-elements'
-
 const DB_NAME = 'jf-app-builder'
 const DB_VERSION = 1
 const STORE = 'preset-snapshots'
 const LEGACY_LS_PREFIX = 'jf-app-builder:preset:v5:'
-
-/**
- * App-level operational data (OPERATIONAL-MODEL.md). Hoisted out of element
- * properties so it can be shared, role-gated, and bound. Wave 6 bootstraps the
- * messaging slice; Wave 1 adds products/orders/coupons here.
- */
-export interface AppData {
-  appUsers?: AppUser[]
-  conversations?: Conversation[]
-  messages?: Message[]
-}
-
-export interface MessagingSettings {
-  enabled?: boolean
-  /** Allow user ↔ user direct messages. */
-  directMessages?: boolean
-  /** Group chat (deferred to Wave 6b — flag reserved). */
-  groupChat?: boolean
-  /** Who can message whom. */
-  policy?: 'everyone' | 'connections'
-}
 
 export interface PresetSnapshot {
   appTitle: string
   appSubtitle: string
   pages: unknown
   headerActions: unknown
-  /** Wave 6 — messaging capability config (Settings → Messaging). */
-  messagingSettings?: MessagingSettings
-  /** App-level operational data (messaging entities for now). */
-  appData?: AppData
   appHeader?: {
     layout: string
     icon: string

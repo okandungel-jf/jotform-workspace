@@ -23,7 +23,6 @@ import { SideNav, type SideNavItem } from '../components/SideNav'
 import { SplashScreenMockup, type SplashAnimation, type SplashStyle } from '../components/SplashScreenMockup'
 import { useCssVar } from '../hooks/useCssVar'
 import { IconPropertyField } from '../components/IconPropertyField'
-import type { MessagingSettings } from '../presets/storage'
 
 const NAV_ITEMS: SideNavItem[] = [
   {
@@ -69,16 +68,6 @@ const NAV_ITEMS: SideNavItem[] = [
     description: 'Support your users with AI',
     headerDescription: 'Use AI to provide real-time support for your customers',
     iconBg: 'var(--product-ai-default)',
-  },
-  {
-    id: 'messaging',
-    icon: 'messages-filled',
-    iconCategory: 'communication',
-    title: 'MESSAGING',
-    description: 'Let app users chat with each other',
-    headerDescription:
-      'Enable real-time chat between your app users. Turning this on adds a Chat page to your app.',
-    iconBg: 'var(--product-apps-default)',
   },
 ]
 
@@ -184,75 +173,6 @@ function AppSettingsPanel() {
         title="Prevent Cloning"
         description="Prevent other users from cloning this app."
       />
-    </section>
-  )
-}
-
-const MESSAGING_POLICY_OPTIONS = [
-  { value: 'everyone', label: 'Everyone in the app' },
-  { value: 'connections', label: 'Only connected users' },
-]
-
-interface MessagingPanelProps {
-  settings: MessagingSettings
-  onChange: (next: MessagingSettings) => void
-}
-
-function MessagingPanel({ settings, onChange }: MessagingPanelProps) {
-  const enabled = settings.enabled ?? false
-  const patch = (next: Partial<MessagingSettings>) => onChange({ ...settings, ...next })
-
-  return (
-    <section className="settings-panel__card">
-      <div className="settings-panel__row">
-        <div className="settings-panel__row-main">
-          <div className="settings-panel__row-text">
-            <p className="settings-panel__row-title">Enable Messaging</p>
-            <p className="settings-panel__row-desc">
-              Let app users message each other in real time. Adds a Chat page to your app.
-            </p>
-          </div>
-          <Toggle checked={enabled} onChange={(e) => patch({ enabled: e.target.checked })} />
-        </div>
-      </div>
-      <div className="settings-panel__row">
-        <div className="settings-panel__row-main">
-          <div className="settings-panel__row-text">
-            <p className="settings-panel__row-title">Direct Messages</p>
-            <p className="settings-panel__row-desc">One-to-one private conversations between app users.</p>
-          </div>
-          <Toggle
-            checked={settings.directMessages ?? true}
-            disabled={!enabled}
-            onChange={(e) => patch({ directMessages: e.target.checked })}
-          />
-        </div>
-      </div>
-      <div className="settings-panel__row">
-        <div className="settings-panel__row-main">
-          <div className="settings-panel__row-text">
-            <p className="settings-panel__row-title">Group Chat</p>
-            <p className="settings-panel__row-desc">Conversations with more than two participants. Coming soon.</p>
-          </div>
-          <Toggle checked={false} disabled />
-        </div>
-      </div>
-      <div className="settings-panel__row">
-        <FormField
-          title="Who Can Message Whom"
-          description="Control which app users are allowed to start conversations."
-          showHelpText={false}
-        >
-          <DropdownSingle
-            showLeadingIcon={false}
-            showHelpText={false}
-            options={MESSAGING_POLICY_OPTIONS}
-            value={settings.policy ?? 'everyone'}
-            onChange={(value) => patch({ policy: value as MessagingSettings['policy'] })}
-            disabled={!enabled}
-          />
-        </FormField>
-      </div>
     </section>
   )
 }
@@ -555,8 +475,6 @@ interface SettingsPageProps {
   onAppTitleChange?: (name: string) => void
   appIcon: AppIconState
   onAppIconChange: (next: AppIconState) => void
-  messagingSettings: MessagingSettings
-  onMessagingSettingsChange: (next: MessagingSettings) => void
 }
 
 export function SettingsPage({
@@ -564,8 +482,6 @@ export function SettingsPage({
   onAppTitleChange,
   appIcon,
   onAppIconChange,
-  messagingSettings,
-  onMessagingSettingsChange,
 }: SettingsPageProps) {
   const [activeId, setActiveId] = useState('app-settings')
 
@@ -626,9 +542,6 @@ export function SettingsPage({
             iconBg={active.iconBg}
           />
           {activeId === 'app-settings' && <AppSettingsPanel />}
-          {activeId === 'messaging' && (
-            <MessagingPanel settings={messagingSettings} onChange={onMessagingSettingsChange} />
-          )}
           {activeId === 'app-name-icon' && (
             <AppNameIconPanel
               appName={appName}
