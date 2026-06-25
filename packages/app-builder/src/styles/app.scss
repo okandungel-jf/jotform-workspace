@@ -6114,6 +6114,34 @@ body {
   }
 }
 
+// Banner background colour field: swatch + a subtle "reset to theme colour" link
+// shown only once a custom colour/gradient has been picked.
+.banner-bg-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.banner-bg-reset {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-family: var(--font-family-circular);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--gray-200);
+  cursor: pointer;
+  transition: color 150ms ease;
+
+  &:hover {
+    color: var(--core-white);
+  }
+}
+
 .color-input-popover {
   width: 272px;
 
