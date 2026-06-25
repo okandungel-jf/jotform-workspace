@@ -19,6 +19,7 @@ import {
   CartProvider,
   FavoritesProvider,
   ProductDetailProvider,
+  MessagesProvider,
   FormSheet,
   compressImageFile,
   compressImageFiles,
@@ -55,6 +56,8 @@ import { LivePreviewCheckoutPage } from '../components/LivePreviewCheckoutPage'
 import { LivePreviewOrderBar } from '../components/LivePreviewOrderBar'
 import { LivePreviewAvatarPopover } from '../components/LivePreviewAvatarPopover'
 import { LivePreviewProfilePage } from '../components/LivePreviewProfilePage'
+import { MessagingPreview } from '../components/MessagingPreview'
+import { CURRENT_USER_ID, MOCK_APP_USERS, MOCK_CONVERSATIONS, MOCK_MESSAGES } from '../presets/messagingMock'
 import { LivePreviewLoginPopover } from '../components/LivePreviewLoginPopover'
 import { QrPopover } from '../components/QrPopover'
 import { MobileBottomBar } from '../components/MobileBottomBar'
@@ -1974,6 +1977,8 @@ interface BuildPageProps {
   openAttributionSheet?: boolean
   previewMode?: boolean
   onPreviewClose?: () => void
+  /** Wave 6 — when true, the live preview gets the Chat surface (FAB + inbox/thread). */
+  messagingEnabled?: boolean
 }
 
 export function BuildPage({
@@ -1986,6 +1991,7 @@ export function BuildPage({
   openAttributionSheet = false,
   previewMode = false,
   onPreviewClose,
+  messagingEnabled = false,
 }: BuildPageProps) {
   const [rightPanel, setRightPanel] = useState<RightPanelMode>('preview')
   const [pagePropertiesId, setPagePropertiesId] = useState<string | null>(null)
@@ -3579,6 +3585,12 @@ export function BuildPage({
     <CartProvider>
     <FavoritesProvider>
     <ProductDetailProvider onOpenChange={setIsPreviewDetailOpen}>
+    <MessagesProvider
+      currentUserId={CURRENT_USER_ID}
+      users={MOCK_APP_USERS}
+      initialConversations={MOCK_CONVERSATIONS}
+      initialMessages={MOCK_MESSAGES}
+    >
     <>
       <div className={`live-preview__status-bar-bg app-scope${topNavOverlay && topNavOverHero ? ' live-preview__status-bar-bg--transparent' : ''}`} />
       <PhoneStatusBar className="live-preview__status-bar app-scope" style={{ color: topNavOverlay && topNavOverHero ? topNavOverlayFg : 'var(--fg-primary, #000)' }} />
@@ -3983,7 +3995,9 @@ export function BuildPage({
         hasBottomNav={pages.length > 1}
         onClick={() => setIsPreviewCheckoutOpen(true)}
       />
+      {messagingEnabled && <MessagingPreview />}
     </>
+    </MessagesProvider>
     </ProductDetailProvider>
     </FavoritesProvider>
     </CartProvider>
@@ -7775,6 +7789,12 @@ export function BuildPage({
               <CartProvider>
               <FavoritesProvider>
               <ProductDetailProvider onOpenChange={setIsPreviewDetailOpen}>
+              <MessagesProvider
+                currentUserId={CURRENT_USER_ID}
+                users={MOCK_APP_USERS}
+                initialConversations={MOCK_CONVERSATIONS}
+                initialMessages={MOCK_MESSAGES}
+              >
               <div className="live-preview">
                 <div className="live-preview__header" data-theme="dark">
                   <span className="live-preview__title">Live Preview</span>
@@ -8141,12 +8161,14 @@ export function BuildPage({
                         hasBottomNav={pages.length > 1}
                         onClick={() => setIsPreviewCheckoutOpen(true)}
                       />
+                      {messagingEnabled && <MessagingPreview />}
                       </>
                       )}
                     </div>
                   </div>
                 </div>
               </div>
+              </MessagesProvider>
               </ProductDetailProvider>
               </FavoritesProvider>
               </CartProvider>

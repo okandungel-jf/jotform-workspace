@@ -5,7 +5,7 @@ import { BuildPage } from './pages/BuildPage.tsx'
 import { SettingsPage } from './pages/SettingsPage.tsx'
 import { PublishPage } from './pages/PublishPage.tsx'
 import { APP_PRESETS, EMPTY_PRESET_ID, getPresetById } from './presets/appPresets.ts'
-import { loadStoredAppTitle, loadStoredAppHeaderIcon, saveSnapshot, type PresetSnapshot } from './presets/storage.ts'
+import { loadStoredAppTitle, loadStoredAppHeaderIcon, saveSnapshot, type PresetSnapshot, type MessagingSettings } from './presets/storage.ts'
 import { loadRemoteApp, applyRemoteTheme } from './presets/remoteStore.ts'
 
 type Page = 'build' | 'settings' | 'publish'
@@ -74,6 +74,15 @@ export function App() {
     id === EMPTY_PRESET_ID ? getPresetById(id).appTitle : (loadStoredAppTitle(id) ?? getPresetById(id).appTitle)
   const [appTitle, setAppTitle] = useState(() => titleForPreset(urlPreset ?? EMPTY_PRESET_ID))
   const [appIcon, setAppIcon] = useState<AppIconState>(() => defaultAppIcon(urlPreset ?? EMPTY_PRESET_ID))
+  // Messaging capability config (Settings → Messaging, Wave 6). Lifted here so
+  // the Settings editor and the BuildPage live preview (which gates the Chat
+  // page) read one source. Enabled by default so the prototype demos out of box.
+  const [messagingSettings, setMessagingSettings] = useState<MessagingSettings>({
+    enabled: true,
+    directMessages: true,
+    groupChat: false,
+    policy: 'everyone',
+  })
 
   // Sync activePresetId/appTitle whenever the URL preset changes (capture flow
   // opens different presets in the same tab without a full reload).
@@ -145,9 +154,10 @@ export function App() {
             openAttributionSheet={urlOpenAttributionSheet}
             previewMode={previewMode}
             onPreviewClose={() => setPreviewMode(false)}
+            messagingEnabled={messagingSettings.enabled ?? false}
           />
         )}
-        {activePage === 'settings' && <SettingsPage appTitle={appTitle} onAppTitleChange={setAppTitle} appIcon={appIcon} onAppIconChange={setAppIcon} />}
+        {activePage === 'settings' && <SettingsPage appTitle={appTitle} onAppTitleChange={setAppTitle} appIcon={appIcon} onAppIconChange={setAppIcon} messagingSettings={messagingSettings} onMessagingSettingsChange={setMessagingSettings} />}
         {activePage === 'publish' && <PublishPage />}
       </div>
     </div>
