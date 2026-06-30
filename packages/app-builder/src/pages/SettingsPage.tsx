@@ -477,7 +477,12 @@ interface SettingsPageProps {
   onAppIconChange: (next: AppIconState) => void
 }
 
-export function SettingsPage({ appTitle, onAppTitleChange, appIcon, onAppIconChange }: SettingsPageProps) {
+export function SettingsPage({
+  appTitle,
+  onAppTitleChange,
+  appIcon,
+  onAppIconChange,
+}: SettingsPageProps) {
   const [activeId, setActiveId] = useState('app-settings')
 
   // App name is the live app identity (managed at App level) — edits here flow
