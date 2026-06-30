@@ -5265,6 +5265,25 @@ body {
   }
 }
 
+// Hidden product (visible === false): dim the content so the row reads as
+// inactive at a glance, and keep the eye-slash toggle visible at rest (the rest
+// of the actions stay hover-only) so the state is obvious and undoable in one
+// click without drilling into the item.
+.product-list-row--hidden {
+  .product-list-row__image,
+  .product-list-row__info {
+    opacity: 0.5;
+  }
+
+  .product-list-row__actions {
+    opacity: 1;
+  }
+
+  &:not(:hover) .product-list-row__btn:not(.product-list-row__btn--eye) {
+    display: none;
+  }
+}
+
 // FAQ list — no search field above, so give the rows a little top breathing room.
 .faq-rows {
   padding-top: var(--ds-space-md);
@@ -5370,6 +5389,22 @@ body {
 
   &:hover &__handle {
     opacity: 1;
+  }
+}
+
+// Hidden FAQ item (visible === false): see .product-list-row--hidden for the
+// rationale — dim the content, keep the eye-slash toggle visible at rest.
+.faq-row--hidden {
+  .faq-row__info {
+    opacity: 0.5;
+  }
+
+  .faq-row__actions {
+    display: flex;
+  }
+
+  &:not(:hover) .faq-row__btn:not(.faq-row__btn--eye) {
+    display: none;
   }
 }
 
@@ -5493,6 +5528,23 @@ body {
 
   &:hover &__handle {
     opacity: 1;
+  }
+}
+
+// Hidden testimonial (visible === false): see .product-list-row--hidden for the
+// rationale — dim the avatar + text, keep the eye-slash toggle visible at rest.
+.testimonial-row--hidden {
+  .testimonial-row__image,
+  .testimonial-row__info {
+    opacity: 0.5;
+  }
+
+  .testimonial-row__actions {
+    display: flex;
+  }
+
+  &:not(:hover) .testimonial-row__btn:not(.testimonial-row__btn--eye) {
+    display: none;
   }
 }
 

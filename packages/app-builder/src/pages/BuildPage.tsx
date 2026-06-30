@@ -5201,7 +5201,7 @@ export function BuildPage({
                                 <button
                                   key={i}
                                   type="button"
-                                  className="testimonial-row"
+                                  className={`testimonial-row${t.visible === false ? ' testimonial-row--hidden' : ''}`}
                                   onClick={() => setEditingTestimonialIndex(i)}
                                 >
                                   <span className="testimonial-row__handle">
@@ -5220,6 +5220,17 @@ export function BuildPage({
                                       <div className="testimonial-row__subtitle">{t.text ? t.text : 'No description yet'}</div>
                                     </div>
                                     <span className="testimonial-row__actions">
+                                      <button
+                                        type="button"
+                                        className="testimonial-row__btn testimonial-row__btn--eye"
+                                        aria-label={t.visible === false ? 'Show in carousel' : 'Hide from carousel'}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          writeItems(list.map((it, j) => (j === i ? { ...it, visible: it.visible === false } : it)))
+                                        }}
+                                      >
+                                        <Icon name={t.visible === false ? 'eye-slash-filled' : 'eye-filled'} category="general" size={16} />
+                                      </button>
                                       <button
                                         type="button"
                                         className="testimonial-row__btn"
@@ -5420,7 +5431,7 @@ export function BuildPage({
                                 <button
                                   key={i}
                                   type="button"
-                                  className="faq-row"
+                                  className={`faq-row${f.visible === false ? ' faq-row--hidden' : ''}`}
                                   onClick={() => setEditingFaqIndex(i)}
                                 >
                                   <span className="faq-row__handle">
@@ -5432,6 +5443,17 @@ export function BuildPage({
                                       <div className="faq-row__subtitle">{f.answer ? f.answer : 'No answer yet'}</div>
                                     </div>
                                     <span className="faq-row__actions">
+                                      <button
+                                        type="button"
+                                        className="faq-row__btn faq-row__btn--eye"
+                                        aria-label={f.visible === false ? 'Show in list' : 'Hide from list'}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          writeFaqs(faqs.map((it, j) => (j === i ? { ...it, visible: it.visible === false } : it)))
+                                        }}
+                                      >
+                                        <Icon name={f.visible === false ? 'eye-slash-filled' : 'eye-filled'} category="general" size={16} />
+                                      </button>
                                       <button
                                         type="button"
                                         className="faq-row__btn"
@@ -5615,7 +5637,7 @@ export function BuildPage({
                                 <button
                                   key={i}
                                   type="button"
-                                  className="product-list-row"
+                                  className={`product-list-row${p.visible === false ? ' product-list-row--hidden' : ''}`}
                                   onClick={() => { setEditingOptionIndex(null); setProductSettingsTab('basic'); setEditingProductIndex(i) }}
                                 >
                                   <span className="product-list-row__handle">
@@ -5639,6 +5661,17 @@ export function BuildPage({
                                       </div>
                                     </div>
                                     <span className="product-list-row__actions">
+                                      <button
+                                        type="button"
+                                        className="product-list-row__btn product-list-row__btn--eye"
+                                        aria-label={p.visible === false ? 'Show in product list' : 'Hide from product list'}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          writeProducts(products.map((it, j) => (j === i ? { ...it, visible: it.visible === false } : it)))
+                                        }}
+                                      >
+                                        <Icon name={p.visible === false ? 'eye-slash-filled' : 'eye-filled'} category="general" size={16} />
+                                      </button>
                                       <button
                                         type="button"
                                         className="product-list-row__btn"
