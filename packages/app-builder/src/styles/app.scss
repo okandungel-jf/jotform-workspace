@@ -1171,12 +1171,13 @@ body {
   .themes-view__device {
     width: 100%;
     max-width: 100%;
-    // Edit canvas: the page card is 644px with a --space-6 (24px) inset. Publish
-    // the same to the app header columns (the AppHeader lives in
-    // .themes-view__device, a sibling above the card) so the title / description
-    // / button align with the page elements. Real narrow viewport (<=768px) is
-    // handled by the AppHeader @media, which overrides these on the element.
-    --app-header-max: 644px;
+    // Edit canvas: the page card is 760px (matching the desktop preview) with a
+    // --space-6 (24px) inset. Publish the same to the app header columns (the
+    // AppHeader lives in .themes-view__device, a sibling above the card) so the
+    // title / description / button align with the page elements. Real narrow
+    // viewport (<=768px) is handled by the AppHeader @media, which overrides
+    // these on the element.
+    --app-header-max: 760px;
     --app-header-inset: var(--space-6);
 
     > div {
@@ -1186,7 +1187,7 @@ body {
 
   .themes-view__canvas {
     width: 100%;
-    max-width: 644px;
+    max-width: 760px;
     margin: 0 auto;
     box-shadow: var(--shadow-sm);
     border-radius: var(--radius-xl);
@@ -4184,7 +4185,7 @@ body {
   align-items: center;
   gap: var(--space-2);
   width: 100%;
-  max-width: 644px;
+  max-width: 760px;
   margin: 0 auto;
   padding: 0 0 var(--space-2);
   font-family: var(--font-family-circular);
@@ -4268,7 +4269,7 @@ body {
   justify-content: space-between;
   gap: var(--space-2);
   width: 100%;
-  max-width: 644px;
+  max-width: 760px;
   margin: 0 auto;
   padding: 0 0 var(--space-2);
   font-family: var(--font-family-circular);
@@ -4459,7 +4460,7 @@ body {
   padding: 0;
   margin: var(--space-4) auto;
   width: 100%;
-  max-width: 644px;
+  max-width: 760px;
 
   @media (max-width: 768px) {
     max-width: 100%;
@@ -4468,14 +4469,14 @@ body {
 }
 
 // Builder canvas attribution: matches the AddPageDivider's centered
-// 644px column. Default keeps a 16px gap above + below; the override
+// 760px column. Default keeps a 16px gap above + below; the override
 // below drops the top margin when the preceding page-wrapper ends in
 // an AddPageDivider (which already contributes its own 16px below).
 // .themes-view__device is flex-col so margins don't collapse — handle
 // the two cases explicitly.
 .build-page__attribution {
   width: 100%;
-  max-width: 644px;
+  max-width: 760px;
   margin: var(--space-4) auto;
 
   @media (max-width: 768px) {
@@ -8877,8 +8878,8 @@ body.builder--phone-only {
     font-weight: 500;
   }
 
-  // Desktop preview uses a wider page container than the builder canvas (which
-  // stays 644px): 760px gives grid cards more room while keeping text readable.
+  // Desktop preview page container — 760px, matching the builder edit canvas so
+  // the layout you edit lines up 1:1 with the real desktop view.
   .themes-view__canvas {
     width: 100%;
     max-width: 760px;
