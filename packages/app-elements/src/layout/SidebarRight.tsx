@@ -77,7 +77,7 @@ export function SidebarRight({
                 .filter(([, config]) => {
                   if (!config.showWhen) return true;
                   return Object.entries(config.showWhen).every(
-                    ([key, val]) => (variants[key] === val) || (properties[key] === val)
+                    ([key, val]) => (Array.isArray(val) ? val : [val]).some((v) => variants[key] === v || properties[key] === v)
                   );
                 })
                 .map(([group, config]) => (
@@ -109,7 +109,7 @@ export function SidebarRight({
                 {component.properties.filter((prop) => {
                   if (!prop.showWhen) return true;
                   return Object.entries(prop.showWhen).every(
-                    ([key, val]) => (variants[key] === val) || (properties[key] === val)
+                    ([key, val]) => (Array.isArray(val) ? val : [val]).some((v) => variants[key] === v || properties[key] === v)
                   );
                 }).map((prop) => (
                   <div className="property-item" key={prop.name}>

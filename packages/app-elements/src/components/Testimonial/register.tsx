@@ -22,7 +22,7 @@ ComponentRegistry.register({
       default: 'Carousel',
     },
     Alignment: {
-      options: ['Left', 'Center'],
+      options: ['Left', 'Center', 'Right'],
       default: 'Left',
     },
     'Card Style': {
@@ -35,8 +35,9 @@ ComponentRegistry.register({
     { name: 'Show Avatars', type: 'boolean', default: true },
     { name: 'Show Rating', type: 'boolean', default: true },
     { name: 'Show Role', type: 'boolean', default: true },
-    { name: 'Show Quote Icon', type: 'boolean', default: false },
     { name: 'Show Arrows', type: 'boolean', default: true },
+    { name: 'Autoplay', type: 'boolean', default: true, showWhen: { Layout: ['Carousel', 'Spotlight'] }, description: 'Auto-advance through testimonials on a loop (pauses on hover).' },
+    { name: 'Autoplay Delay', type: 'number', default: 4, min: 1, max: 30, step: 1, showWhen: { Layout: ['Carousel', 'Spotlight'] }, description: 'Seconds each testimonial stays before sliding to the next.' },
     { name: 'Selected', type: 'boolean', default: false },
     { name: 'Skeleton', type: 'boolean', default: false },
     { name: 'Items', type: 'text', default: JSON.stringify(DEFAULT_ITEMS) },
@@ -50,7 +51,6 @@ ComponentRegistry.register({
     { token: 'Card Background', variable: '--bg-fill', value: '#FFFFFF', description: '--bg-fill → neutral-0' },
     { token: 'Card Border', variable: '--border', value: '#DADEF3', description: '--border → neutral-100' },
     { token: 'Avatar BG', variable: '--bg-surface-brand', value: '#EDE8FE', description: '--bg-surface-brand → primary-100' },
-    { token: 'Quote Icon', variable: '--fg-brand', value: '#7D38EF', description: '--fg-brand → primary-600' },
     { token: 'Stars', variable: '--fg-warning', value: '#DC7801', description: '--fg-warning → amber' },
     { token: 'Name', variable: '--fg-primary', value: '#091141', description: '--fg-primary → neutral-900' },
     { token: 'Role / Quote', variable: '--fg-secondary', value: '#6C73A8', description: '--fg-secondary → neutral-400' },
@@ -79,13 +79,13 @@ ComponentRegistry.register({
       type: '"Carousel" | "Slider" | "Grid" | "Spotlight"',
       default: '"Carousel"',
       description:
-        '**Carousel** shows one testimonial at a time with side arrows + dots. **Slider** is a horizontal, swipeable row of cards. **Grid** is a responsive multi-column wall (3→2→1 columns). **Spotlight** is a single large, centered, chromeless testimonial.',
+        '**Carousel** shows one testimonial at a time and auto-advances with a horizontal slide (side arrows to navigate; see `autoplay`). **Slider** is a horizontal, swipeable row of cards. **Grid** is a responsive multi-column wall (3→2→1 columns). **Spotlight** is a single large, centered, chromeless testimonial that also auto-advances with the same slide.',
     },
     {
       name: 'alignment',
-      type: '"Left" | "Center"',
+      type: '"Left" | "Center" | "Right"',
       default: '"Left"',
-      description: 'Text + author alignment within each card. Spotlight is always centered.',
+      description: 'Text + author alignment within each card. **Right** mirrors **Left** (text and stars align right; the author row flips so the avatar sits on the right). Spotlight is always centered.',
     },
     {
       name: 'cardStyle',
@@ -113,16 +113,22 @@ ComponentRegistry.register({
       description: 'Toggles the role/company line under the name.',
     },
     {
-      name: 'showQuoteIcon',
-      type: 'boolean',
-      default: 'false',
-      description: 'Shows a decorative quote mark above the testimonial text.',
-    },
-    {
       name: 'showArrows',
       type: 'boolean',
       default: 'true',
       description: 'Toggles the prev/next navigation arrows (Carousel, Slider, Spotlight). The Grid has no arrows.',
+    },
+    {
+      name: 'autoplay',
+      type: 'boolean',
+      default: 'true',
+      description: 'Carousel & Spotlight. Auto-advances through testimonials on a loop with a horizontal slide. Pauses while hovered or focused, and respects `prefers-reduced-motion` (cuts instead of sliding).',
+    },
+    {
+      name: 'autoplayDelay',
+      type: 'number',
+      default: '4000',
+      description: 'Autoplay interval in milliseconds (Carousel & Spotlight) — how long each testimonial stays before sliding to the next. The properties panel sets this in seconds.',
     },
     {
       name: 'showAvatars',
@@ -149,8 +155,9 @@ ComponentRegistry.register({
         showAvatars={props['Show Avatars'] as boolean}
         showRating={props['Show Rating'] as boolean}
         showRole={props['Show Role'] as boolean}
-        showQuoteIcon={props['Show Quote Icon'] as boolean}
         showArrows={props['Show Arrows'] as boolean}
+        autoplay={props['Autoplay'] !== false}
+        autoplayDelay={(Number(props['Autoplay Delay']) || 4) * 1000}
         selected={props['Selected'] as boolean}
         skeleton={props['Skeleton'] as boolean}
       />

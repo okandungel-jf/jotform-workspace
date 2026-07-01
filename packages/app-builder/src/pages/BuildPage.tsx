@@ -5367,16 +5367,16 @@ export function BuildPage({
                                   </div>
                                   <div className="property-panel__field property-panel__field--inline">
                                     <DSFormField
-                                      title="Show in carousel"
-                                      description="Display this testimonial in the carousel."
+                                      title="Hide"
+                                      description="Hide this testimonial from the carousel."
                                       size="md"
                                       showDescription
                                       showHelpText={false}
                                     >
                                       <DSToggle
                                         size="md"
-                                        checked={current.visible !== false}
-                                        onChange={(e) => updateField('visible', e.target.checked)}
+                                        checked={current.visible === false}
+                                        onChange={(e) => updateField('visible', !e.target.checked)}
                                       />
                                     </DSFormField>
                                   </div>
@@ -6821,7 +6821,7 @@ export function BuildPage({
                       .filter(([, config]) => {
                         if (!config.showWhen) return true
                         return Object.entries(config.showWhen).every(
-                          ([key, val]) => selectedElement.variants[key] === val,
+                          ([key, val]) => (Array.isArray(val) ? val : [val]).includes(selectedElement.variants[key]),
                         )
                       })
                     const isFilled = selectedElement.variants['Filled'] !== 'No'
@@ -6905,7 +6905,7 @@ export function BuildPage({
                         .filter(([, config]) => {
                           if (!config.showWhen) return true
                           return Object.entries(config.showWhen).every(
-                            ([key, val]) => selectedElement.variants[key] === val
+                            ([key, val]) => (Array.isArray(val) ? val : [val]).includes(selectedElement.variants[key])
                           )
                         })
                         .sort(([a], [b]) => {
@@ -6942,9 +6942,10 @@ export function BuildPage({
                         return false
                       }
                       if (isTestimonial) {
-                        // General is a bespoke list panel (returns early); Style shows the
-                        // display toggles. Items is managed by the list panel.
-                        if (propertyTab === 'style') return ['Show Avatars', 'Show Rating', 'Show Role', 'Show Quote Icon', 'Show Arrows'].includes(prop.name)
+                        // General is a bespoke list panel (returns early); the Style tab
+                        // renders the rating toggle as a bespoke inline row (below), so no
+                        // generic prop fields here. The other display props keep their
+                        // register defaults (avatars/role/arrows on).
                         return false
                       }
                       if (isBanner) {
@@ -6964,7 +6965,7 @@ export function BuildPage({
                     .filter((prop) => {
                       if (!prop.showWhen) return true
                       return Object.entries(prop.showWhen).every(
-                        ([key, val]) => selectedElement.variants[key] === val || selectedElement.properties[key] === val
+                        ([key, val]) => (Array.isArray(val) ? val : [val]).some((v) => selectedElement.variants[key] === v || selectedElement.properties[key] === v)
                       )
                     })
 
@@ -7745,6 +7746,42 @@ export function BuildPage({
                           </DSFormField>
                         </div>
                       ))}
+
+                      {isTestimonial && propertyTab === 'style' && (
+                        <div className="property-panel__field property-panel__field--inline">
+                          <DSFormField
+                            title="Show Rating"
+                            description="Display the star rating on each testimonial."
+                            size="md"
+                            showDescription
+                            showHelpText={false}
+                          >
+                            <DSToggle
+                              size="md"
+                              checked={Boolean(selectedElement.properties['Show Rating'])}
+                              onChange={(e) => handlePropertyChange(selectedElement.id, 'Show Rating', e.target.checked)}
+                            />
+                          </DSFormField>
+                        </div>
+                      )}
+
+                      {isTestimonial && propertyTab === 'style' && ['Carousel', 'Spotlight'].includes(String(selectedElement.variants['Layout'] ?? 'Carousel')) && (
+                        <div className="property-panel__field property-panel__field--inline">
+                          <DSFormField
+                            title="Autoplay"
+                            description="Automatically slide through testimonials on a loop."
+                            size="md"
+                            showDescription
+                            showHelpText={false}
+                          >
+                            <DSToggle
+                              size="md"
+                              checked={selectedElement.properties['Autoplay'] !== false}
+                              onChange={(e) => handlePropertyChange(selectedElement.id, 'Autoplay', e.target.checked)}
+                            />
+                          </DSFormField>
+                        </div>
+                      )}
 
                       {visibleProps.map((prop) => (
                         <div key={prop.name} className="property-panel__field">

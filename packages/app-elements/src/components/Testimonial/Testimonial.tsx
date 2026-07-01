@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect, type FC } from 'react';
+import { useState, useRef, useEffect, useCallback, type FC } from 'react';
 import { Icon } from '../Icon/Icon';
 import { Icon as DSIcon } from '@jf/design-system';
 import './Testimonial.scss';
 
 export type TestimonialLayout = 'Carousel' | 'Slider' | 'Grid' | 'Spotlight';
-export type TestimonialAlignment = 'Left' | 'Center';
+export type TestimonialAlignment = 'Left' | 'Center' | 'Right';
 export type TestimonialCardStyle = 'Border' | 'None';
 
 export interface TestimonialItem {
@@ -31,8 +31,11 @@ export interface TestimonialProps {
   showAvatars?: boolean;
   showRating?: boolean;
   showRole?: boolean;
-  showQuoteIcon?: boolean;
   showArrows?: boolean;
+  /** Spotlight only — auto-advance through testimonials on a loop. */
+  autoplay?: boolean;
+  /** Spotlight autoplay interval in milliseconds. */
+  autoplayDelay?: number;
   selected?: boolean;
   shrinked?: boolean;
   skeleton?: boolean;
@@ -97,12 +100,10 @@ interface CardFlags {
   showAvatars: boolean;
   showRating: boolean;
   showRole: boolean;
-  showQuoteIcon: boolean;
 }
 
-const TestimonialCard: FC<{ item: TestimonialItem } & CardFlags> = ({ item, showAvatars, showRating, showRole, showQuoteIcon }) => (
+const TestimonialCard: FC<{ item: TestimonialItem } & CardFlags> = ({ item, showAvatars, showRating, showRole }) => (
   <div className="jf-testimonial__card">
-    {showQuoteIcon && <Icon name="Quote" size={28} forceStyle="fill" className="jf-testimonial__quote-icon" />}
     {showRating && typeof item.rating === 'number' && item.rating > 0 && <Stars rating={item.rating} />}
     <p className="jf-testimonial__quote">{item.text}</p>
     <div className="jf-testimonial__author">
@@ -120,6 +121,102 @@ const TestimonialCard: FC<{ item: TestimonialItem } & CardFlags> = ({ item, show
 );
 
 // ============================================
+// Slide carousel — single card, auto-advancing horizontal slide
+// Shared by the Carousel and Spotlight layouts; styling differs by root class.
+// ============================================
+interface SlideCarouselProps extends CardFlags {
+  items: TestimonialItem[];
+  showArrows: boolean;
+  autoplay: boolean;
+  /** Interval between slides, in milliseconds. */
+  autoplayDelay: number;
+}
+
+/**
+ * Single-card carousel that slides horizontally between testimonials, either on
+ * a timer (autoplay) or via the flanking arrows. Uses a clone at each end of the
+ * track so forward/backward wrap seamlessly without a visible rewind.
+ */
+const SlideCarousel: FC<SlideCarouselProps> = ({ items, showArrows, autoplay, autoplayDelay, ...flags }) => {
+  const count = items.length;
+  const looped = count > 1;
+
+  // Track positions: 0 = clone(last) · 1…count = real items · count+1 = clone(first).
+  const [pos, setPos] = useState(1);
+  const [animate, setAnimate] = useState(true);
+  const [paused, setPaused] = useState(false);
+
+  const go = useCallback((dir: 1 | -1) => {
+    setAnimate(true);
+    setPos((p) => p + dir);
+  }, []);
+
+  // Auto-advance. Re-armed on every `pos` change, so a manual arrow press or a
+  // loop snap resets the delay; pauses on hover/focus.
+  useEffect(() => {
+    if (!looped || !autoplay || paused) return;
+    const id = setTimeout(() => go(1), autoplayDelay);
+    return () => clearTimeout(id);
+  }, [looped, autoplay, paused, autoplayDelay, pos, go]);
+
+  // Re-enable the transition on the frame after a silent snap, so the next move
+  // animates while the snap itself stayed instant.
+  useEffect(() => {
+    if (animate) return;
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => { raf2 = requestAnimationFrame(() => setAnimate(true)); });
+    return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
+  }, [animate]);
+
+  // Single (or no) item: static card, no track or autoplay.
+  if (!looped) {
+    return (
+      <div className="jf-testimonial__stage">
+        <TestimonialCard item={items[0] ?? { name: '', text: '' }} {...flags} />
+      </div>
+    );
+  }
+
+  const slides = [items[count - 1], ...items, items[0]];
+
+  // Once a slide onto a clone finishes, jump (no animation) to its real twin.
+  const handleTransitionEnd = () => {
+    if (pos === count + 1) { setAnimate(false); setPos(1); }
+    else if (pos === 0) { setAnimate(false); setPos(count); }
+  };
+
+  return (
+    <div
+      className="jf-testimonial__stage"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
+      {showArrows && (
+        <button className="jf-testimonial__arrow jf-testimonial__arrow--prev" onClick={() => go(-1)} aria-label="Previous"><Icon name="ChevronLeft" size={18} /></button>
+      )}
+      <div className="jf-testimonial__viewport">
+        <div
+          className={`jf-testimonial__track${animate ? '' : ' jf-testimonial__track--instant'}`}
+          style={{ transform: `translateX(-${pos * 100}%)` }}
+          onTransitionEnd={handleTransitionEnd}
+        >
+          {slides.map((it, i) => (
+            <div className="jf-testimonial__track-slide" key={i} aria-hidden={i !== pos}>
+              <TestimonialCard item={it} {...flags} />
+            </div>
+          ))}
+        </div>
+      </div>
+      {showArrows && (
+        <button className="jf-testimonial__arrow jf-testimonial__arrow--next" onClick={() => go(1)} aria-label="Next"><Icon name="ChevronRight" size={18} /></button>
+      )}
+    </div>
+  );
+};
+
+// ============================================
 // Testimonial Component
 // ============================================
 export const Testimonial: FC<TestimonialProps> = ({
@@ -130,21 +227,19 @@ export const Testimonial: FC<TestimonialProps> = ({
   showAvatars = true,
   showRating = true,
   showRole = true,
-  showQuoteIcon = false,
   showArrows = true,
+  autoplay = true,
+  autoplayDelay = 4000,
   selected = false,
   shrinked = false,
   skeleton = false,
   skeletonAnimation = 'pulse',
 }) => {
-  const [active, setActive] = useState(0);
   const [sliderActive, setSliderActive] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
 
   const visibleItems = items.filter((it) => it.visible !== false);
   const count = visibleItems.length;
-  // Clamp — items can be added, removed, or hidden from the builder.
-  const idx = count > 0 ? Math.min(active, count - 1) : 0;
 
   // Slider edge fade — only fade the side that actually has clipped overflow
   // (no left fade at the start, no right fade at the end).
@@ -162,7 +257,7 @@ export const Testimonial: FC<TestimonialProps> = ({
     return () => ro.disconnect();
   }, [layout, count]);
 
-  const flags: CardFlags = { showAvatars, showRating, showRole, showQuoteIcon };
+  const flags: CardFlags = { showAvatars, showRating, showRole };
 
   const rootClasses = [
     'jf-testimonial',
@@ -260,21 +355,17 @@ export const Testimonial: FC<TestimonialProps> = ({
     );
   }
 
-  // ---- Carousel & Spotlight: one item at a time, navigated by arrows ----
-  const current = visibleItems[idx] ?? { name: '', text: '' };
-  const handlePrev = () => setActive(idx === 0 ? count - 1 : idx - 1);
-  const handleNext = () => setActive(idx === count - 1 ? 0 : idx + 1);
+  // ---- Carousel & Spotlight: single card that auto-advances with a horizontal
+  // slide (identical mechanics; the root class drives the visual differences). ----
   return (
     <div className={rootClasses}>
-      <div className="jf-testimonial__stage">
-        {showArrows && count > 1 && (
-          <button className="jf-testimonial__arrow jf-testimonial__arrow--prev" onClick={handlePrev} aria-label="Previous"><Icon name="ChevronLeft" size={18} /></button>
-        )}
-        <TestimonialCard item={current} {...flags} />
-        {showArrows && count > 1 && (
-          <button className="jf-testimonial__arrow jf-testimonial__arrow--next" onClick={handleNext} aria-label="Next"><Icon name="ChevronRight" size={18} /></button>
-        )}
-      </div>
+      <SlideCarousel
+        items={visibleItems}
+        showArrows={showArrows}
+        autoplay={autoplay}
+        autoplayDelay={autoplayDelay}
+        {...flags}
+      />
     </div>
   );
 };

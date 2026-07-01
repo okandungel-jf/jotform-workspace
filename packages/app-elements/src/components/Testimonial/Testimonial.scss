@@ -57,12 +57,9 @@
   align-items: center;
 }
 
-// =========================================
-// Quote icon
-// =========================================
-.jf-testimonial__quote-icon {
-  color: var(--fg-brand);
-  flex-shrink: 0;
+.jf-testimonial--align-right .jf-testimonial__card {
+  text-align: right;
+  align-items: flex-end;
 }
 
 // =========================================
@@ -109,6 +106,16 @@
   flex-direction: column;
   gap: var(--space-2);
   justify-content: center;
+}
+
+// Right mirrors Left — flip the author row so the avatar sits on the right,
+// packed to the trailing edge (row-reverse main-start).
+.jf-testimonial--align-right .jf-testimonial__author {
+  flex-direction: row-reverse;
+}
+
+.jf-testimonial--align-right .jf-testimonial__author-meta {
+  align-items: flex-end;
 }
 
 .jf-testimonial__avatar {
@@ -236,10 +243,12 @@
   width: 100%;
 }
 
-.jf-testimonial--carousel .jf-testimonial__stage .jf-testimonial__card,
-.jf-testimonial--spotlight .jf-testimonial__stage .jf-testimonial__card {
+// Clipping window for the sliding track; grows to fill between the arrows.
+// Shared by Carousel and Spotlight — both slide a single card.
+.jf-testimonial__viewport {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 // =========================================
@@ -249,12 +258,39 @@
   justify-content: center;
 }
 
+// The row of full-width slides that translates horizontally between testimonials.
+.jf-testimonial__track {
+  display: flex;
+  will-change: transform;
+  transition: transform 480ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+// Applied for the silent snap from a clone back to its real twin.
+.jf-testimonial__track--instant {
+  transition: none;
+}
+
+.jf-testimonial__track-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  display: flex;
+}
+
+// Spotlight centres its width-capped card within the full-width slide;
+// Carousel lets the card fill the slide edge-to-edge.
+.jf-testimonial--spotlight .jf-testimonial__track-slide {
+  justify-content: center;
+}
+
 .jf-testimonial--spotlight .jf-testimonial__card {
   max-width: 720px;
   background: transparent;
   border: none;
   box-shadow: none;
   align-items: center;
+  // Keep content centered when a slide stretches to the tallest testimonial's
+  // height, so shorter quotes don't top-align inside the shared track height.
+  justify-content: center;
   text-align: center;
   gap: var(--space-4);
   padding: var(--space-4) 0;
@@ -276,11 +312,6 @@
 .jf-testimonial--spotlight .jf-testimonial__avatar {
   width: 56px;
   height: 56px;
-}
-
-.jf-testimonial--spotlight .jf-testimonial__quote-icon {
-  width: 36px;
-  height: 36px;
 }
 
 // =========================================
@@ -339,6 +370,15 @@
 }
 
 // =========================================
+// Reduced motion: cut between slides instead of sliding
+// =========================================
+@media (prefers-reduced-motion: reduce) {
+  .jf-testimonial__track {
+    transition: none;
+  }
+}
+
+// =========================================
 // Responsive: drop carousel/spotlight arrows below on a narrow page
 // =========================================
 @container app-content (max-width: 479px) {
@@ -348,8 +388,7 @@
     justify-content: center;
   }
 
-  .jf-testimonial--carousel .jf-testimonial__stage .jf-testimonial__card,
-  .jf-testimonial--spotlight .jf-testimonial__stage .jf-testimonial__card {
+  .jf-testimonial__stage .jf-testimonial__viewport {
     order: -1;
     flex-basis: 100%;
   }
