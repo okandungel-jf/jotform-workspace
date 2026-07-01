@@ -60,6 +60,7 @@ import { QrPopover } from '../components/QrPopover'
 import { MobileBottomBar } from '../components/MobileBottomBar'
 import { AppPreviewScreen } from '../components/AppPreviewScreen'
 import { HeaderLayoutPicker, type AppHeaderLayout } from '../components/HeaderLayoutPicker'
+import { TestimonialLayoutPicker } from '../components/TestimonialLayoutPicker'
 import {
   draggable,
   dropTargetForElements,
@@ -5326,7 +5327,7 @@ export function BuildPage({
                                     </DSFormField>
                                   </div>
                                   <div className="property-panel__field">
-                                    <DSFormField title="Title" required size="md" showDescription={false} showHelpText={false}>
+                                    <DSFormField title="Name" size="md" showDescription={false} showHelpText={false}>
                                       <DSInput
                                         value={current.name}
                                         placeholder="Name"
@@ -5344,7 +5345,7 @@ export function BuildPage({
                                     </DSFormField>
                                   </div>
                                   <div className="property-panel__field">
-                                    <DSFormField title="Description" size="md" showDescription={false} showHelpText={false}>
+                                    <DSFormField title="Testimonial" size="md" showDescription={false} showHelpText={false}>
                                       <DSTextArea
                                         size="md"
                                         rows={5}
@@ -7736,13 +7737,20 @@ export function BuildPage({
                       {visibleVariants.map(([group, config]) => (
                         <div key={group} className="property-panel__field">
                           <DSFormField title={group} size="md" showDescription={false} showHelpText={false}>
-                            <Segmented
-                              accent="apps"
-                              variant="text"
-                              value={String(selectedElement.variants[group] ?? config.default ?? '')}
-                              onChange={(val) => handleVariantChange(selectedElement.id, group, val)}
-                              items={config.options.map((opt) => ({ value: opt, label: opt }))}
-                            />
+                            {isTestimonial && group === 'Layout' ? (
+                              <TestimonialLayoutPicker
+                                value={String(selectedElement.variants[group] ?? config.default ?? 'Carousel')}
+                                onChange={(val) => handleVariantChange(selectedElement.id, group, val)}
+                              />
+                            ) : (
+                              <Segmented
+                                accent="apps"
+                                variant="text"
+                                value={String(selectedElement.variants[group] ?? config.default ?? '')}
+                                onChange={(val) => handleVariantChange(selectedElement.id, group, val)}
+                                items={config.options.map((opt) => ({ value: opt, label: opt }))}
+                              />
+                            )}
                           </DSFormField>
                         </div>
                       ))}
