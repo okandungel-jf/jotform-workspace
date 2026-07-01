@@ -146,6 +146,17 @@ const SlideCarousel: FC<SlideCarouselProps> = ({ items, showArrows, autoplay, au
   const [animate, setAnimate] = useState(true);
   const [paused, setPaused] = useState(false);
 
+  // Reconcile pos when the item count changes at runtime (items added / removed /
+  // hidden from the builder). Adjusting during render — React's recommended pattern
+  // for deriving state from props — avoids an extra commit. Without it a shrink can
+  // leave pos pointing past the last slide, which fires no transitionend and would
+  // walk autoplay off into blank space.
+  const [prevCount, setPrevCount] = useState(count);
+  if (prevCount !== count) {
+    setPrevCount(count);
+    setPos((p) => (p >= 1 && p <= count ? p : 1));
+  }
+
   const go = useCallback((dir: 1 | -1) => {
     setAnimate(true);
     setPos((p) => p + dir);
@@ -180,9 +191,11 @@ const SlideCarousel: FC<SlideCarouselProps> = ({ items, showArrows, autoplay, au
   const slides = [items[count - 1], ...items, items[0]];
 
   // Once a slide onto a clone finishes, jump (no animation) to its real twin.
+  // Use `>`/`<` (not `===`) so an overshoot from rapid mid-transition arrow clicks
+  // still snaps back into range instead of stranding on a blank slide.
   const handleTransitionEnd = () => {
-    if (pos === count + 1) { setAnimate(false); setPos(1); }
-    else if (pos === 0) { setAnimate(false); setPos(count); }
+    if (pos > count) { setAnimate(false); setPos(1); }
+    else if (pos < 1) { setAnimate(false); setPos(count); }
   };
 
   return (

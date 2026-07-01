@@ -282,6 +282,18 @@
   justify-content: center;
 }
 
+// Both single-card slide layouts stretch every card to the tallest slide's height
+// (so the viewport doesn't jump between slides). Centre the carousel card content
+// and drop the multi-card author pin, else a short quote strands the author at the
+// card's bottom edge — a visible gap inside the bordered carousel card.
+.jf-testimonial--carousel .jf-testimonial__card {
+  justify-content: center;
+}
+
+.jf-testimonial--carousel .jf-testimonial__author {
+  margin-top: 0;
+}
+
 .jf-testimonial--spotlight .jf-testimonial__card {
   max-width: 720px;
   background: transparent;
@@ -373,8 +385,12 @@
 // Reduced motion: cut between slides instead of sliding
 // =========================================
 @media (prefers-reduced-motion: reduce) {
-  .jf-testimonial__track {
-    transition: none;
+  // Near-instant instead of `none`: the seamless-loop snap relies on transitionend,
+  // which `transition: none` suppresses — leaving autoplay to run off the end into
+  // blank space. 1ms reads as a cut while keeping the snap alive; the clone snap
+  // itself (--instant) stays truly instant so it never animates a rewind.
+  .jf-testimonial__track:not(.jf-testimonial__track--instant) {
+    transition-duration: 1ms;
   }
 }
 
